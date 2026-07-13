@@ -83,6 +83,19 @@ describe('AuthService', () => {
             const result = await authService.validateUser(mockUser.email, 'wrong-password');
             expect(result).toBeNull();
         });
+
+        it('still runs a bcrypt compare for an unknown email (no timing oracle, B10)', async () => {
+            (userService.findSavedPassword as jest.Mock).mockResolvedValueOnce(null);
+            const compareSpy = jest
+                .spyOn(bcrypt, 'compare')
+                .mockImplementation(() => Promise.resolve(false));
+
+            const result = await authService.validateUser('nobody@nowhere.com', 'whatever');
+
+            expect(result).toBeNull();
+            expect(compareSpy).toHaveBeenCalledTimes(1);
+            expect(userService.findByEmail).not.toHaveBeenCalled();
+        });
     });
 
     describe('login', () => {

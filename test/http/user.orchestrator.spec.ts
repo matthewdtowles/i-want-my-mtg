@@ -138,14 +138,17 @@ describe('UserOrchestrator', () => {
             );
         });
 
-        it('should throw error if user already exists', async () => {
+        it('returns the uniform acknowledgement without leaking that the user exists (B10)', async () => {
             mockUserService.findByEmail.mockResolvedValue(
                 new User({ id: 1, email: 'new@example.com', name: 'username' })
             );
 
-            await expect(orchestrator.initiateSignup(mockCreateUserDto)).rejects.toThrow(
-                'A user with this email already exists'
-            );
+            const result = await orchestrator.initiateSignup(mockCreateUserDto);
+
+            expect(result.success).toBe(true);
+            expect(result.message).toBe('Please check your email to verify your account');
+            expect(mockPendingUserService.createPendingUser).not.toHaveBeenCalled();
+            expect(mockEmailService.sendVerificationEmail).not.toHaveBeenCalled();
         });
 
         it('should cleanup pending user if email fails to send', async () => {
@@ -184,9 +187,7 @@ describe('UserOrchestrator', () => {
             const result = await orchestrator.initiateSignup(mockCreateUserDto);
 
             expect(result.success).toBe(true);
-            expect(result.message).toBe(
-                'A verification email has already been sent. Please check your inbox or wait for the link to expire before requesting a new one.'
-            );
+            expect(result.message).toBe('Please check your email to verify your account');
             expect(mockPendingUserService.createPendingUser).not.toHaveBeenCalled();
             expect(mockEmailService.sendVerificationEmail).not.toHaveBeenCalled();
         });

@@ -2,7 +2,11 @@ import { Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { StripeGatewayPort } from 'src/core/billing/ports/stripe-gateway.port';
 import { SubscriptionRepositoryPort } from 'src/core/billing/ports/subscription.repository.port';
-import { BLOCKS_NEW_CHECKOUT_STATUSES, SubscriptionStatus } from 'src/core/billing/subscription-status.enum';
+import {
+    BLOCKS_NEW_CHECKOUT_STATUSES,
+    parseSubscriptionStatus,
+    SubscriptionStatus,
+} from 'src/core/billing/subscription-status.enum';
 import type { Stripe } from 'src/core/billing/stripe.types';
 import { User } from 'src/core/user/user.entity';
 import { getLogger } from 'src/logger/global-app-logger';
@@ -118,6 +122,12 @@ export class ApiSubscriptionService {
         }
         const periodEnd = (stripeSub as unknown as { current_period_end?: number })
             .current_period_end;
+        const status = parseSubscriptionStatus(stripeSub.status);
+        if (!status) {
+            this.LOGGER.error(
+                `Unknown Stripe subscription status '${stripeSub.status}' for customer ${customerId}; keeping existing status '${existing.status}'.`
+            );
+        }
         await this.repository.upsert(
             new ApiSubscription({
                 id: existing.id,
@@ -126,7 +136,7 @@ export class ApiSubscriptionService {
                 stripeCustomerId: customerId,
                 stripeSubscriptionId: stripeSub.id,
                 stripePriceId: priceId,
-                status: stripeSub.status as SubscriptionStatus,
+                status: status ?? existing.status,
                 currentPeriodEnd: periodEnd ? new Date(periodEnd * 1000) : null,
                 cancelAtPeriodEnd: !!stripeSub.cancel_at_period_end,
             })

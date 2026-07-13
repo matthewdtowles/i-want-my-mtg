@@ -84,7 +84,13 @@ export class StripeWebhookController {
             }
             case 'customer.subscription.created':
             case 'customer.subscription.updated': {
-                await this.routeSubscriptionEvent(event.data.object as Stripe.Subscription);
+                const sub = event.data.object as Stripe.Subscription;
+                // Re-fetch the authoritative current state instead of trusting
+                // the event payload. Stripe does not guarantee delivery order, so
+                // a late 'updated' event carrying a stale status must not regress
+                // the row — re-fetching always writes the latest state (B13).
+                const full = await this.stripe.retrieveSubscription(sub.id);
+                await this.routeSubscriptionEvent(full);
                 return;
             }
             case 'customer.subscription.deleted': {

@@ -8,7 +8,11 @@ import { AlreadySubscribedError } from './already-subscribed.error';
 import { StripeGatewayPort } from './ports/stripe-gateway.port';
 import { SubscriptionRepositoryPort } from './ports/subscription.repository.port';
 import { SubscriptionPlan } from './subscription-plan.enum';
-import { BLOCKS_NEW_CHECKOUT_STATUSES, SubscriptionStatus } from './subscription-status.enum';
+import {
+    BLOCKS_NEW_CHECKOUT_STATUSES,
+    parseSubscriptionStatus,
+    SubscriptionStatus,
+} from './subscription-status.enum';
 import { Subscription } from './subscription.entity';
 
 @Injectable()
@@ -104,6 +108,12 @@ export class SubscriptionService {
         const plan = priceId ? this.stripe.planForPriceId(priceId) : null;
         const periodEnd = (stripeSub as unknown as { current_period_end?: number })
             .current_period_end;
+        const status = parseSubscriptionStatus(stripeSub.status);
+        if (!status) {
+            this.LOGGER.error(
+                `Unknown Stripe subscription status '${stripeSub.status}' for customer ${customerId}; keeping existing status '${existing.status}'.`
+            );
+        }
         await this.repository.upsert(
             new Subscription({
                 id: existing.id,
@@ -111,7 +121,7 @@ export class SubscriptionService {
                 stripeCustomerId: customerId,
                 stripeSubscriptionId: stripeSub.id,
                 stripePriceId: priceId,
-                status: stripeSub.status as SubscriptionStatus,
+                status: status ?? existing.status,
                 plan,
                 currentPeriodEnd: periodEnd ? new Date(periodEnd * 1000) : null,
                 cancelAtPeriodEnd: !!stripeSub.cancel_at_period_end,

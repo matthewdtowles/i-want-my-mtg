@@ -8,6 +8,7 @@ jest.mock('bcrypt');
 jest.mock('src/core/auth/verification-token.util', () => ({
     generateVerificationToken: jest.fn().mockReturnValue('mock-verification-token'),
     getTokenExpiration: jest.fn().mockReturnValue(new Date('2026-02-09T05:00:00.000Z')),
+    hashToken: jest.fn((token: string) => `hashed-${token}`),
 }));
 
 import * as tokenUtil from 'src/core/auth/verification-token.util';
@@ -62,19 +63,21 @@ describe('PendingUserService', () => {
                 'plaintext-password'
             );
 
-            expect(result).toEqual(mockPendingUser);
             expect(bcrypt.hash).toHaveBeenCalledWith('plaintext-password', 10);
             expect(tokenUtil.generateVerificationToken).toHaveBeenCalled();
             expect(tokenUtil.getTokenExpiration).toHaveBeenCalledWith(24);
+            // Only the hashed token is persisted (C5)...
             expect(mockRepository.create).toHaveBeenCalledWith(
                 expect.objectContaining({
                     email: 'test@example.com',
                     name: 'Test User',
                     passwordHash: 'hashed-password',
-                    verificationToken: 'mock-verification-token',
+                    verificationToken: 'hashed-mock-verification-token',
                     expiresAt: new Date('2026-02-09T05:00:00.000Z'),
                 })
             );
+            // ...while the raw token is returned for the verification email.
+            expect(result.verificationToken).toBe('mock-verification-token');
         });
 
         it('should delete existing pending registration before creating new one', async () => {
@@ -127,7 +130,10 @@ describe('PendingUserService', () => {
             const result = await service.findByToken('mock-verification-token');
 
             expect(result).toEqual(mockPendingUser);
-            expect(mockRepository.findByToken).toHaveBeenCalledWith('mock-verification-token');
+            // Looked up by the hash, not the raw token (C5).
+            expect(mockRepository.findByToken).toHaveBeenCalledWith(
+                'hashed-mock-verification-token'
+            );
         });
 
         it('should return null when token not found', async () => {
@@ -136,7 +142,7 @@ describe('PendingUserService', () => {
             const result = await service.findByToken('nonexistent-token');
 
             expect(result).toBeNull();
-            expect(mockRepository.findByToken).toHaveBeenCalledWith('nonexistent-token');
+            expect(mockRepository.findByToken).toHaveBeenCalledWith('hashed-nonexistent-token');
         });
 
         it('should propagate repository errors', async () => {
@@ -178,7 +184,9 @@ describe('PendingUserService', () => {
 
             await service.deleteByToken('mock-verification-token');
 
-            expect(mockRepository.deleteByToken).toHaveBeenCalledWith('mock-verification-token');
+            expect(mockRepository.deleteByToken).toHaveBeenCalledWith(
+                'hashed-mock-verification-token'
+            );
         });
 
         it('should propagate repository errors', async () => {

@@ -6,6 +6,7 @@ import { PasswordResetService } from 'src/core/password-reset/password-reset.ser
 jest.mock('src/core/auth/verification-token.util', () => ({
     generateVerificationToken: jest.fn().mockReturnValue('mock-reset-token'),
     getTokenExpiration: jest.fn().mockReturnValue(new Date('2026-02-09T05:00:00.000Z')),
+    hashToken: jest.fn((token: string) => `hashed-${token}`),
 }));
 
 import * as tokenUtil from 'src/core/auth/verification-token.util';
@@ -52,16 +53,18 @@ describe('PasswordResetService', () => {
 
             const result = await service.createResetRequest('test@example.com');
 
-            expect(result).toEqual(mockPasswordReset);
             expect(tokenUtil.generateVerificationToken).toHaveBeenCalled();
             expect(tokenUtil.getTokenExpiration).toHaveBeenCalledWith(1);
+            // Only the hashed token is persisted (C5)...
             expect(mockRepository.create).toHaveBeenCalledWith(
                 expect.objectContaining({
                     email: 'test@example.com',
-                    resetToken: 'mock-reset-token',
+                    resetToken: 'hashed-mock-reset-token',
                     expiresAt: new Date('2026-02-09T05:00:00.000Z'),
                 })
             );
+            // ...while the raw token is returned for the reset email.
+            expect(result.resetToken).toBe('mock-reset-token');
         });
 
         it('should delete existing reset requests before creating new one', async () => {
@@ -101,7 +104,8 @@ describe('PasswordResetService', () => {
             const result = await service.findByToken('mock-reset-token');
 
             expect(result).toEqual(mockPasswordReset);
-            expect(mockRepository.findByToken).toHaveBeenCalledWith('mock-reset-token');
+            // Looked up by the hash, not the raw token (C5).
+            expect(mockRepository.findByToken).toHaveBeenCalledWith('hashed-mock-reset-token');
         });
 
         it('should return null when token not found', async () => {
@@ -110,7 +114,7 @@ describe('PasswordResetService', () => {
             const result = await service.findByToken('nonexistent-token');
 
             expect(result).toBeNull();
-            expect(mockRepository.findByToken).toHaveBeenCalledWith('nonexistent-token');
+            expect(mockRepository.findByToken).toHaveBeenCalledWith('hashed-nonexistent-token');
         });
 
         it('should propagate repository errors', async () => {
@@ -126,7 +130,7 @@ describe('PasswordResetService', () => {
 
             await service.deleteByToken('mock-reset-token');
 
-            expect(mockRepository.deleteByToken).toHaveBeenCalledWith('mock-reset-token');
+            expect(mockRepository.deleteByToken).toHaveBeenCalledWith('hashed-mock-reset-token');
         });
 
         it('should propagate repository errors', async () => {

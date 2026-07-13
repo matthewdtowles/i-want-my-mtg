@@ -100,6 +100,45 @@ describe('ApiSubscriptionService', () => {
             expect(upserted.stripeSubscriptionId).toBe('sub_dev');
             expect(upserted.userId).toBe(7);
         });
+
+        it('keeps the existing status when Stripe sends an unrecognized status (B13)', async () => {
+            const stripe = { apiTierForPriceId: jest.fn().mockReturnValue(ApiTier.Developer) };
+            const customRepo = {
+                findByUserId: jest.fn(),
+                findByStripeCustomerId: jest.fn().mockResolvedValue(
+                    new ApiSubscription({
+                        id: 1,
+                        userId: 7,
+                        tier: ApiTier.Developer,
+                        stripeCustomerId: 'cus_x',
+                        status: SubscriptionStatus.Active,
+                    })
+                ),
+                findByStripeSubscriptionId: jest.fn(),
+                upsert: jest.fn().mockImplementation(async (s) => s),
+                deleteByUserId: jest.fn(),
+            };
+            const m = await Test.createTestingModule({
+                providers: [
+                    ApiSubscriptionService,
+                    { provide: ApiSubscriptionRepositoryPort, useValue: customRepo },
+                    { provide: SubscriptionRepositoryPort, useValue: { findByUserId: jest.fn(), findByStripeCustomerId: jest.fn() } },
+                    { provide: StripeGatewayPort, useValue: stripe },
+                    { provide: ConfigService, useValue: { get: jest.fn() } },
+                ],
+            }).compile();
+            const svc = m.get(ApiSubscriptionService);
+            const result = await svc.syncFromStripeSubscription({
+                id: 'sub_dev',
+                customer: 'cus_x',
+                status: 'quantum_superposition',
+                cancel_at_period_end: false,
+                items: { data: [{ price: { id: 'price_developer' } }] },
+            } as never);
+            expect(result).toBe(true);
+            const upserted = customRepo.upsert.mock.calls[0][0] as ApiSubscription;
+            expect(upserted.status).toBe(SubscriptionStatus.Active);
+        });
     });
 
     describe('getEffectiveTier', () => {

@@ -233,6 +233,25 @@ describe('SubscriptionService', () => {
             await expect(service.syncFromStripeSubscription(stripeSub)).resolves.toBe(false);
             expect(repo.upsert).not.toHaveBeenCalled();
         });
+
+        it('keeps the existing status when Stripe sends an unrecognized status (B13)', async () => {
+            repo.findByStripeCustomerId.mockResolvedValue(
+                new Subscription({
+                    userId: user.id,
+                    stripeCustomerId: 'cus_1',
+                    status: SubscriptionStatus.Active,
+                })
+            );
+            const weirdSub = {
+                ...stripeSub,
+                status: 'quantum_superposition',
+            } as unknown as Stripe.Subscription;
+
+            await expect(service.syncFromStripeSubscription(weirdSub)).resolves.toBe(true);
+            expect(repo.upsert).toHaveBeenCalledWith(
+                expect.objectContaining({ status: SubscriptionStatus.Active })
+            );
+        });
     });
 
     describe('handleSubscriptionDeleted', () => {

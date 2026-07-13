@@ -262,19 +262,25 @@ The four codebase analyses run **2026-07-07** produced 29 work-package issues sp
 - Per-repo findings with file/line refs: [`docs/codebase-analyses-2026-07/`](docs/codebase-analyses-2026-07/) — `web.md`, `scry.md`, `mcp.md`, `mobile.md`.
 - Cross-repo dependencies + sequencing rationale + the work-package → issue mapping: [`docs/cross-repo-analysis-plan-2026-07.md`](docs/cross-repo-analysis-plan-2026-07.md).
 
-**Done so far:** W9 ([#577](https://github.com/matthewdtowles/i-want-my-mtg/issues/577), ON DELETE CASCADE migration, PR #578), S1 ([scry#35](https://github.com/matthewdtowles/scry/issues/35), post-ingest-prune foreignness), W1 ([#569](https://github.com/matthewdtowles/i-want-my-mtg/issues/569), error-handling overhaul, PRs #579 + #580 + #581), — 2026-07-09 — MB1 ([#63](https://github.com/matthewdtowles/i-want-my-mtg-mobile/issues/63), mobile PR #70) + MB2 ([#64](https://github.com/matthewdtowles/i-want-my-mtg-mobile/issues/64), mobile PR #71), and — 2026-07-11 — W2 ([#570](https://github.com/matthewdtowles/i-want-my-mtg/issues/570), PRs #583 + #584 + #585), W3 ([#571](https://github.com/matthewdtowles/i-want-my-mtg/issues/571), PR #587), W8 ([#576](https://github.com/matthewdtowles/i-want-my-mtg/issues/576), PR #586), and S2 ([scry#36](https://github.com/matthewdtowles/scry/issues/36), scry PR #45), and — 2026-07-12 — S3 ([scry#37](https://github.com/matthewdtowles/scry/issues/37), scry PR #46). 18 issues remain.
+**Wave 1 — complete (2026-07-09 → 2026-07-12).** All correctness / integrity / security items landed:
 
-**W2 done (2026-07-11, PRs #583 + #584 + #585):** **part 1** (PR #583) — B2 (real `ensureAtLeastOne` count) + B3 (awaited zero-qty inventory delete); **part 2** — B4: introduced `TransactionRunnerPort.run(fn)` (ambient `EntityManager` via `AsyncLocalStorage` over `DataSource.transaction()`), wrapped `TransactionService.create/update/delete` so each ledger + inventory mutation commits atomically, and took a `SELECT … FOR UPDATE` row lock on the holding (`InventoryService.lockForUpdate`) before the remaining-quantity check to close the oversell race (integration-tested with two concurrent sells); **P2** — replaced `getRemainingQuantity`'s full lot-history load with one `SUM … FILTER` aggregate query (`TransactionRepository.sumQuantities`), which runs inside the same transaction; also wrapped `DeckImportService.importDecklist` (create deck → add cards) in the same unit of work so a mid-import failure can't leave an orphan empty deck (real-DB test in `deck-import.e2e-spec.ts`). **Intentionally left as-is:** `InventoryImportService.importCards` is a *partial-success* bulk import (per-row error accumulation, best-effort deletes) — wrapping it in one transaction would change that contract and make its returned counts inconsistent on rollback, so it stays multi-step by design.
+- **web** — W9 (PR #578, `ON DELETE CASCADE` migration), W1 (PRs #579 + #580 + #581, domain-error boundary end to end), W2 (PRs #583 + #584 + #585, transactional ledger/inventory writes + oversell row-lock), W3 (PR #587, query/input hardening), W8 (PR #586, OpenAPI fixes + delta-quantity endpoint).
+- **scry** — S1 (#35, prune foreignness), S2 (PR #45, delete/reset FK coverage), S3 (PR #46, ingest robustness), S4 (PR #47, `granular_price_history` retention).
+- **mcp** — M1 (PR #23, correctness bundle; issue closed retroactively).
+- **mobile** — MB1 (PR #70, sign-out cache clear), MB2 (PR #71, CI spec-drift decoupling).
+- **cross-repo** — X6 verified both clients parse the post-W1 `{ success, error }` envelope (regression tests: MCP PR #24, mobile PR #73).
 
-**W1 landed (2026-07-09), delivered in three parts:** **part 1** (PR #579) — the boundary + convention (B1/B9/A1/A9); **part 2** (PR #580) — removed A2 catch-wrap-rethrow + migrated the core services (card/set/transaction/user/validation/set-checklist) to `Domain*Error`; **part 3** (PR #581) — migrated the HBS orchestrators' user-facing "not found" throws (card/set/deck/published-deck) to `DomainNotFoundError` and deleted the transitional keyword fallback in `toHttpException`, so unmapped plain Errors are now honest 500s (internal presenter invariants included).
+**Wave 2 in progress.** 14 issues remain. Web Wave 2 items done:
+- **W4** (security hardening, PR #589) — B9 generic ≥500 responses (no message leak), B10 uniform signup response + dummy-compare timing defense, C5 sha256-at-rest for verification/reset tokens, B13 Stripe status validated against the enum + re-fetch-on-webhook against out-of-order delivery.
+- **W5** (performance, PR #590) — B12 set page skips inventory queries for anonymous visitors + hoists the quantity map + parallelizes reads, P1 imports resolve cards in bulk (`resolveCards` + `findBySetCodeAndNumbers`/`findByNameSetPairs`) instead of one query per row and buy-list seeding parallelizes, A6 single `latestPriceCondition` helper. (P3's `getOrCreateCustomer`/`AuthService.refresh` left as-is — short-circuit / data-dependency, documented in the PR.)
 
-**X6 verified (2026-07-09):** confirmed both clients parse the post-W1 API error body — a uniform `{ success: false, error: "<message>" }` envelope (via `HttpExceptionFilter` → `ApiResponseDto.error()`). W1 changed statuses/messages, not the shape. MCP `extractApiMessage` reads `.error` (falls back from the never-set `.message`); mobile `errMessage` reads `.error`. No defect. Added regression tests pinning the real envelope: MCP PR #24, mobile PR #73 (the latter also stands up mobile's first test runner — `tsx` + `node:test` + a CI `test` gate).
+Per-item detail lives in the linked issues/PRs and git history.
 
 ### Cross-repo hard orderings (everything else is repo-local and parallelizable)
 
 - ~~**X1**~~ — **Done.** web **W9** migration → scry **S2** delete/reset cleanup (✅ done, scry PR #45).
 - ~~**X3 / X4**~~ — **Done.** mobile **MB2** landed before web **W8** (✅ done, PR #586), so the web deploy didn't break open mobile PRs. W8 now triggers the still-open client follow-ups: MCP **M3** `as never` sweep + mobile schema regen.
-- **X2** — `granular_price_history` retention is owned by scry **S4** (unbounded daily growth until it lands).
+- ~~**X2**~~ — **Done.** `granular_price_history` retention now runs (scry **S4**, PR #47), closing the unbounded-growth gap.
 - **X5** — scry's integration-test schema fixture is synced from web migrations in scry **S8**.
 - ~~**X6**~~ — **Done (2026-07-09).** Verified MCP `extractApiMessage` + mobile `errMessage` against the post-W1 `{ success, error }` error bodies; no defect. Regression tests: MCP PR #24, mobile PR #73.
 
@@ -290,8 +296,8 @@ The four codebase analyses run **2026-07-07** produced 29 work-package issues sp
 | ~~[W2](https://github.com/matthewdtowles/i-want-my-mtg/issues/570)~~ | web | Inventory/ledger integrity: transactional writes, fix silent failures | ✅ **done** (PRs #583 + #584 + #585) |
 | ~~[S2](https://github.com/matthewdtowles/scry/issues/36)~~ | scry | Delete/reset FK coverage; remove fake CASCADE | ✅ **done** (scry PR #45); was unblocked by W9 (X1) |
 | ~~[S3](https://github.com/matthewdtowles/scry/issues/37)~~ | scry | Ingest robustness: stream failures, non-TTY prompts, batch/mapping bugs | ✅ **done** (scry PR #46) |
-| [S4](https://github.com/matthewdtowles/scry/issues/38) | scry | Implement `granular_price_history` retention | Unbounded growth (X2) |
-| [M1](https://github.com/matthewdtowles/iwantmymtg-mcp/issues/19) | mcp | Correctness bundle: undefined results, CSV passthrough, JSON Schema, empty patch | |
+| ~~[S4](https://github.com/matthewdtowles/scry/issues/38)~~ | scry | Implement `granular_price_history` retention | ✅ **done** (scry PR #47); closed the unbounded-growth gap (X2) |
+| ~~[M1](https://github.com/matthewdtowles/iwantmymtg-mcp/issues/19)~~ | mcp | Correctness bundle: undefined results, CSV passthrough, JSON Schema, empty patch | ✅ **done** (mcp PR #23) |
 
 **Wave 2 — Hardening + the OpenAPI spec chain (P2).**
 
@@ -299,8 +305,8 @@ The four codebase analyses run **2026-07-07** produced 29 work-package issues sp
 |---|---|---|---|
 | ~~[W8](https://github.com/matthewdtowles/i-want-my-mtg/issues/576)~~ | web | OpenAPI spec fixes + delta-quantity endpoint | ✅ **done** (PR #586); landed after MB2 (X3/X4); now triggers M3 + mobile regen |
 | ~~[W3](https://github.com/matthewdtowles/i-want-my-mtg/issues/571)~~ | web | Query/input hardening: filter charset, limit caps, pool config | ✅ **done** (PR #587) |
-| [W4](https://github.com/matthewdtowles/i-want-my-mtg/issues/572) | web | Security hardening: error leaks, enumeration, token hashing, Stripe sync | |
-| [W5](https://github.com/matthewdtowles/i-want-my-mtg/issues/573) | web | Performance: set page, batched imports, Promise.all, latest-price helper | |
+| ~~[W4](https://github.com/matthewdtowles/i-want-my-mtg/issues/572)~~ | web | Security hardening: error leaks, enumeration, token hashing, Stripe sync | ✅ **done** (PR #589); B9 no-leak ≥500s, B10 signup enumeration/timing, C5 sha256 token storage, B13 Stripe status validation + re-fetch |
+| ~~[W5](https://github.com/matthewdtowles/i-want-my-mtg/issues/573)~~ | web | Performance: set page, batched imports, Promise.all, latest-price helper | ✅ **done** (PR #590); B12 anon set page, P1 bulk import resolution, A6 latest-price helper |
 | [S5](https://github.com/matthewdtowles/scry/issues/39) | scry | Remove no-op concurrency + dead granular parsing; fix misleading counts | |
 | [S6](https://github.com/matthewdtowles/scry/issues/40) | scry | Structure: thin `main.rs`, extract `IngestPipeline`, add ports | |
 | [S8](https://github.com/matthewdtowles/scry/issues/42) | scry | Tooling: clippy/fmt CI gates, Docker hardening, schema fixture sync | X5 |

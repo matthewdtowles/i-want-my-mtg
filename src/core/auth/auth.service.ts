@@ -11,6 +11,14 @@ import { RefreshTokenService } from './refresh-token.service';
 export class AuthService {
     private readonly LOGGER = getLogger(AuthService.name);
 
+    /**
+     * A real cost-10 bcrypt hash used only to spend the same CPU on a failed
+     * lookup as on a real password check. Without it, an unknown email skips the
+     * compare and returns measurably faster, leaking which accounts exist (B10).
+     */
+    private static readonly DUMMY_HASH =
+        '$2b$10$WjJM2qU5s2W6RWe..hgVeOJFPBthl8.AVgrIMpJKXxn7SUAhIvU46';
+
     constructor(
         @Inject(UserService) private readonly userService: UserService,
         @Inject(JwtService) private readonly jwtService: JwtService,
@@ -20,8 +28,14 @@ export class AuthService {
     async validateUser(email: string, password: string): Promise<User | null> {
         this.LOGGER.debug(`Attempt to authenticate ${email}.`);
         const encPwd: string = await this.userService.findSavedPassword(email);
+        // Always run a compare (against a dummy hash when the email is unknown)
+        // so the response time doesn't reveal whether the account exists (B10).
+        const passwordMatches = await bcrypt.compare(
+            password,
+            encPwd || AuthService.DUMMY_HASH
+        );
         let user: User = null;
-        if (encPwd && (await bcrypt.compare(password, encPwd))) {
+        if (encPwd && passwordMatches) {
             user = await this.userService.findByEmail(email);
             this.LOGGER.debug(`Authenticated user ${user.id}.`);
         } else {

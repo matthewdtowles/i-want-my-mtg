@@ -23,6 +23,7 @@ class FakeStripeGateway implements StripeGatewayPort {
     createCustomerCalls: Array<{ email: string; name?: string; userId: number }> = [];
     checkoutCalls: CheckoutSessionParams[] = [];
     portalCalls: Array<{ customerId: string; returnUrl: string }> = [];
+    lastCreatedCustomerId?: string;
 
     async createCustomer(params: {
         email: string;
@@ -30,7 +31,8 @@ class FakeStripeGateway implements StripeGatewayPort {
         userId: number;
     }): Promise<string> {
         this.createCustomerCalls.push(params);
-        return `cus_fake_${params.userId}`;
+        this.lastCreatedCustomerId = `cus_fake_${params.userId}`;
+        return this.lastCreatedCustomerId;
     }
 
     async createCheckoutSession(params: CheckoutSessionParams): Promise<{ url: string }> {
@@ -47,9 +49,13 @@ class FakeStripeGateway implements StripeGatewayPort {
     }
 
     async retrieveSubscription(subscriptionId: string): Promise<Stripe.Subscription> {
+        // The webhook re-fetches the authoritative subscription for
+        // created/updated events (B13), so echo back one that belongs to the
+        // customer we created — mirroring how real Stripe returns the true
+        // customer for a subscription id.
         return {
             id: subscriptionId,
-            customer: 'cus_fake_from_retrieve',
+            customer: this.lastCreatedCustomerId ?? 'cus_fake_from_retrieve',
             status: 'active',
             cancel_at_period_end: false,
             current_period_end: Math.floor(Date.now() / 1000) + 30 * 24 * 3600,

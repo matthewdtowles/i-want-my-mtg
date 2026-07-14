@@ -37,7 +37,7 @@ export class CardRepository implements CardRepositoryPort {
     }
 
     async totalCards(): Promise<number> {
-        const result = await this.repository.query(`SELECT COUNT(*) AS total FROM card`);
+        const result = await this.repository.query(`SELECT COUNT(*) AS total FROM ${this.TABLE}`);
         return Number(result[0]?.total ?? 0);
     }
 

@@ -14,6 +14,7 @@ import { TransactionImportRow } from 'src/core/transaction/import/transaction-im
 import { CostBasisSummary, TransactionService } from 'src/core/transaction/transaction.service';
 import { ApiResponseDto } from 'src/http/base/api-response.dto';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
+import { isAuthenticated } from 'src/http/base/http.util';
 import { FilterView } from 'src/http/hbs/list/filter.view';
 import { PaginationView } from 'src/http/hbs/list/pagination.view';
 import { transactionSortHeader } from 'src/http/hbs/list/sortable-header.view';
@@ -71,7 +72,7 @@ export class TransactionOrchestrator {
             const baseUrl = '/transactions';
 
             return new TransactionViewDto({
-                authenticated: req.isAuthenticated(),
+                authenticated: isAuthenticated(req),
                 subscribed,
                 breadcrumbs: [
                     { label: 'Home', url: '/' },

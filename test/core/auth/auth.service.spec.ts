@@ -17,6 +17,13 @@ const mockUser: User = {
     role: UserRole.User,
 };
 
+// bcrypt.compare is overloaded; jest.spyOn resolves to the callback overload
+// (returns void), so retype the spy to the Promise overload here - one place -
+// and mockResolvedValue then takes a plain boolean.
+type CompareSpy = jest.SpyInstance<Promise<boolean>, [string, string]>;
+const spyBcryptCompare = (result: boolean) =>
+    (jest.spyOn(bcrypt, 'compare') as unknown as CompareSpy).mockResolvedValue(result);
+
 describe('AuthService', () => {
     let authService: AuthService;
     let userService: UserService;
@@ -70,7 +77,7 @@ describe('AuthService', () => {
 
     describe('validateUser', () => {
         it('should return User if the email and password are valid', async () => {
-            jest.spyOn(bcrypt, 'compare').mockResolvedValue(true as never);
+            spyBcryptCompare(true);
             const result = await authService.validateUser(mockUser.email, 'password');
             expect(bcrypt.compare).toHaveBeenCalledWith('password', mockUser.email);
             expect(userService.findByEmail).toHaveBeenCalledWith(mockUser.email);
@@ -78,7 +85,7 @@ describe('AuthService', () => {
         });
 
         it('should return null if the email or password is invalid', async () => {
-            jest.spyOn(bcrypt, 'compare').mockResolvedValue(false as never);
+            spyBcryptCompare(false);
 
             const result = await authService.validateUser(mockUser.email, 'wrong-password');
             expect(result).toBeNull();
@@ -86,9 +93,7 @@ describe('AuthService', () => {
 
         it('still runs a bcrypt compare for an unknown email (no timing oracle, B10)', async () => {
             (userService.findSavedPassword as jest.Mock).mockResolvedValueOnce(null);
-            const compareSpy = jest
-                .spyOn(bcrypt, 'compare')
-                .mockResolvedValue(false as never);
+            const compareSpy = spyBcryptCompare(false);
 
             const result = await authService.validateUser('nobody@nowhere.com', 'whatever');
 

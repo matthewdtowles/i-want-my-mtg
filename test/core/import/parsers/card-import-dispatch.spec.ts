@@ -98,6 +98,7 @@ describe('parseCardImport', () => {
     });
 
     it('strips UTF-8 BOM from header detection (Moxfield exports include BOM)', () => {
+        // eslint-disable-next-line no-irregular-whitespace -- the leading char is an intentional UTF-8 BOM under test
         const csv = `﻿${MOXFIELD_HEADER}\n"1","0","Lightning Bolt","MH3","NM","en","","","2026-01-01","123","False","False","0"\n`;
         const { format, rows } = parseCardImport(toBuffer(csv));
         expect(format).toBe('moxfield');

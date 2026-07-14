@@ -5,7 +5,7 @@ import { create } from 'express-handlebars';
 import { join } from 'path';
 import { HttpExceptionFilter } from './http/http.exception.filter';
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
+// eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/no-require-imports
 const { version } = require(join(__dirname, '..', 'package.json'));
 
 /**

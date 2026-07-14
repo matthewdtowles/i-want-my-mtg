@@ -1,0 +1,17 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "strict": true,
+    "strictNullChecks": true,
+    "noImplicitAny": true,
+    "strictBindCallApply": true,
+    "noEmit": true,
+    "incremental": false,
+    "tsBuildInfoFile": null
+  },
+  "include": [
+    "src/core/errors/**/*.ts",
+    "src/core/affiliate/**/*.ts",
+    "src/core/query/**/*.ts"
+  ]
+}

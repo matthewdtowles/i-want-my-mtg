@@ -70,7 +70,7 @@ describe('AuthService', () => {
 
     describe('validateUser', () => {
         it('should return User if the email and password are valid', async () => {
-            jest.spyOn(bcrypt, 'compare').mockImplementation(() => Promise.resolve(true));
+            jest.spyOn(bcrypt, 'compare').mockResolvedValue(true as never);
             const result = await authService.validateUser(mockUser.email, 'password');
             expect(bcrypt.compare).toHaveBeenCalledWith('password', mockUser.email);
             expect(userService.findByEmail).toHaveBeenCalledWith(mockUser.email);
@@ -78,7 +78,7 @@ describe('AuthService', () => {
         });
 
         it('should return null if the email or password is invalid', async () => {
-            jest.spyOn(bcrypt, 'compare').mockImplementation(() => Promise.resolve(false));
+            jest.spyOn(bcrypt, 'compare').mockResolvedValue(false as never);
 
             const result = await authService.validateUser(mockUser.email, 'wrong-password');
             expect(result).toBeNull();
@@ -88,7 +88,7 @@ describe('AuthService', () => {
             (userService.findSavedPassword as jest.Mock).mockResolvedValueOnce(null);
             const compareSpy = jest
                 .spyOn(bcrypt, 'compare')
-                .mockImplementation(() => Promise.resolve(false));
+                .mockResolvedValue(false as never);
 
             const result = await authService.validateUser('nobody@nowhere.com', 'whatever');
 

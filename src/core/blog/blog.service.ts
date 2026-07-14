@@ -7,7 +7,9 @@ import { BlogPost, BlogPostSummary } from './blog-post';
 // `import X = require()` form: these packages are CommonJS and the project
 // compiles without `esModuleInterop`, so a default import would emit a bare
 // `.default` access that is undefined at runtime.
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 import matter = require('gray-matter');
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 import MarkdownIt = require('markdown-it');
 
 /**

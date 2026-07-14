@@ -38,8 +38,8 @@ export class EmailService {
             });
             this.isConfigured = true;
             this.LOGGER.log(`Email service configured with host: ${host}:${port}`);
-            // Verify connection on startup
-            this.verifyConnection();
+            // Verify connection on startup (fire-and-forget; it only logs)
+            void this.verifyConnection();
         } else if (host === 'mailhog') {
             this.transporter = nodemailer.createTransport({
                 host,

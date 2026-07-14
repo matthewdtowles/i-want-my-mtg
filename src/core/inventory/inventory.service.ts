@@ -112,13 +112,6 @@ export class InventoryService {
         return inventoryList;
     }
 
-    async totalCards(): Promise<number> {
-        this.LOGGER.debug(`Get total number of cards in existence.`);
-        const result = await this.repository.totalCards();
-        this.LOGGER.debug(`Total number of existing cards is ${result}`);
-        return result;
-    }
-
     async totalInventoryItems(userId: number, options: SafeQueryOptions): Promise<number> {
         this.LOGGER.debug(`totalInventoryItemsForUser ${userId}, filter: ${options.filter}.`);
         const result = await this.repository.totalInventoryCards(userId, options);

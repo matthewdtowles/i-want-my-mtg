@@ -6,7 +6,6 @@ import { resolveSort } from 'src/core/query/query.util';
 import { SET_SORTS, SortOptions } from 'src/core/query/sort-options.enum';
 import { Set } from 'src/core/set/set.entity';
 import { SetRepositoryPort } from 'src/core/set/ports/set.repository.port';
-import { BaseRepository } from 'src/database/base.repository';
 import { QueryBuilderHelper } from 'src/database/query/query-builder.helper';
 import { getLogger } from 'src/logger/global-app-logger';
 import { Repository, SelectQueryBuilder } from 'typeorm';
@@ -14,7 +13,7 @@ import { SetMapper } from './set.mapper';
 import { SetOrmEntity } from './set.orm-entity';
 
 @Injectable()
-export class SetRepository extends BaseRepository<SetOrmEntity> implements SetRepositoryPort {
+export class SetRepository implements SetRepositoryPort {
     private readonly LOGGER = getLogger(SetRepository.name);
 
     readonly TABLE = 'set';
@@ -29,7 +28,6 @@ export class SetRepository extends BaseRepository<SetOrmEntity> implements SetRe
     constructor(
         @InjectRepository(SetOrmEntity) protected readonly repository: Repository<SetOrmEntity>
     ) {
-        super();
         this.LOGGER.debug(`Instantiated.`);
     }
 
@@ -95,9 +93,9 @@ export class SetRepository extends BaseRepository<SetOrmEntity> implements SetRe
             })
             .andWhere(`${this.TABLE}.releaseDate <= CURRENT_DATE`);
         this.applyBaseFilter(qb, options);
-        qb.orderBy(`${this.TABLE}.isMain`, this.DESC);
-        qb.addOrderBy(`${this.TABLE}.releaseDate`, this.ASC, this.NULLS_LAST);
-        qb.addOrderBy(`${this.TABLE}.name`, this.ASC, this.NULLS_LAST);
+        qb.orderBy(`${this.TABLE}.isMain`, 'DESC');
+        qb.addOrderBy(`${this.TABLE}.releaseDate`, 'ASC', 'NULLS LAST');
+        qb.addOrderBy(`${this.TABLE}.name`, 'ASC', 'NULLS LAST');
         const results = (await qb.getMany()).map((set: SetOrmEntity) => SetMapper.toCore(set));
         this.LOGGER.debug(`Found ${results.length} sets for block keys.`);
         return results;
@@ -124,8 +122,8 @@ export class SetRepository extends BaseRepository<SetOrmEntity> implements SetRe
             .createQueryBuilder(this.TABLE)
             .leftJoinAndSelect(`${this.TABLE}.setPrice`, 'setPrice')
             .where(`${this.TABLE}.releaseDate > CURRENT_DATE`);
-        qb.orderBy(`${this.TABLE}.releaseDate`, this.ASC, this.NULLS_LAST);
-        qb.addOrderBy(`${this.TABLE}.name`, this.ASC, this.NULLS_LAST);
+        qb.orderBy(`${this.TABLE}.releaseDate`, 'ASC', 'NULLS LAST');
+        qb.addOrderBy(`${this.TABLE}.name`, 'ASC', 'NULLS LAST');
         const results = (await qb.getMany()).map((set: SetOrmEntity) => SetMapper.toCore(set));
         this.LOGGER.debug(`Found ${results.length} spoiler sets.`);
         return results;
@@ -196,8 +194,8 @@ export class SetRepository extends BaseRepository<SetOrmEntity> implements SetRe
         this.LOGGER.debug(`Searching sets by name or code: ${filter}.`);
         const qb = this.repository.createQueryBuilder(this.TABLE);
         this.applySearchFilter(qb, filter);
-        qb.orderBy(`${this.TABLE}.releaseDate`, this.DESC, this.NULLS_LAST);
-        qb.addOrderBy(`${this.TABLE}.name`, this.ASC, this.NULLS_LAST);
+        qb.orderBy(`${this.TABLE}.releaseDate`, 'DESC', 'NULLS LAST');
+        qb.addOrderBy(`${this.TABLE}.name`, 'ASC', 'NULLS LAST');
         qb.skip((options.page - 1) * options.limit).take(options.limit);
         const results = (await qb.getMany()).map((set: SetOrmEntity) => SetMapper.toCore(set));
         this.LOGGER.debug(`Search found ${results.length} sets for "${filter}".`);
@@ -250,7 +248,7 @@ export class SetRepository extends BaseRepository<SetOrmEntity> implements SetRe
 
     private addBlockOrdering(qb: SelectQueryBuilder<SetOrmEntity>): void {
         qb.addSelect(`MIN(${this.TABLE}.releaseDate)`, 'earliest_date');
-        qb.orderBy('earliest_date', this.DESC, this.NULLS_LAST);
+        qb.orderBy('earliest_date', 'DESC', 'NULLS LAST');
     }
 
     private addSetOrdering(qb: SelectQueryBuilder<SetOrmEntity>, options: SafeQueryOptions): void {
@@ -259,20 +257,20 @@ export class SetRepository extends BaseRepository<SetOrmEntity> implements SetRe
         const sort = resolveSort(options.sort, SET_SORTS);
         if (!sort) {
             // Default: release date desc, then name asc
-            qb.orderBy(`${this.TABLE}.releaseDate`, this.DESC, this.NULLS_LAST);
-            qb.addOrderBy(`${this.TABLE}.name`, this.ASC, this.NULLS_LAST);
+            qb.orderBy(`${this.TABLE}.releaseDate`, 'DESC', 'NULLS LAST');
+            qb.addOrderBy(`${this.TABLE}.name`, 'ASC', 'NULLS LAST');
             return;
         }
 
-        const direction = options.ascend ? this.ASC : this.DESC;
+        const direction = options.ascend ? 'ASC' : 'DESC';
 
         if (sort === SortOptions.SET_BASE_PRICE) {
             qb.addSelect(
                 PriceCalculationPolicy.effectiveSetPriceExpression('setPrice'),
                 'effective_price'
-            ).orderBy('effective_price', direction, this.NULLS_LAST);
+            ).orderBy('effective_price', direction, 'NULLS LAST');
         } else {
-            qb.orderBy(sort, direction, this.NULLS_LAST);
+            qb.orderBy(sort, direction, 'NULLS LAST');
         }
     }
 }

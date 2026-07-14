@@ -2,21 +2,17 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Card } from 'src/core/card/card.entity';
 import { CardRepositoryPort } from 'src/core/card/ports/card.repository.port';
-import { Format } from 'src/core/card/format.enum';
-import { PriceCalculationPolicy } from 'src/core/pricing/price-calculation.policy';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
 import { SET_CARD_SORTS, SortOptions } from 'src/core/query/sort-options.enum';
-import { BaseRepository } from 'src/database/base.repository';
 import { latestPriceCondition } from 'src/database/query/latest-price.sql';
 import { QueryBuilderHelper } from 'src/database/query/query-builder.helper';
 import { getLogger } from 'src/logger/global-app-logger';
 import { Repository, SelectQueryBuilder } from 'typeorm';
 import { CardMapper } from './card.mapper';
 import { CardOrmEntity } from './card.orm-entity';
-import { LegalityOrmEntity } from './legality.orm-entity';
 
 @Injectable()
-export class CardRepository extends BaseRepository<CardOrmEntity> implements CardRepositoryPort {
+export class CardRepository implements CardRepositoryPort {
     readonly TABLE = 'card';
     private readonly LOGGER = getLogger(CardRepository.name);
     private readonly DEFAULT_RELATIONS: string[] = ['set', 'legalities', 'prices'];
@@ -35,33 +31,26 @@ export class CardRepository extends BaseRepository<CardOrmEntity> implements Car
     });
 
     constructor(
-        @InjectRepository(CardOrmEntity) protected readonly repository: Repository<CardOrmEntity>,
-        @InjectRepository(LegalityOrmEntity)
-        protected readonly legalityRepository: Repository<LegalityOrmEntity>
+        @InjectRepository(CardOrmEntity) protected readonly repository: Repository<CardOrmEntity>
     ) {
-        super();
         this.LOGGER.debug(`Instantiated.`);
     }
 
-    async save(cards: Card[]): Promise<number> {
-        this.LOGGER.debug(`Saving ${cards?.length ?? 0} cards.`);
-        const ormCards: CardOrmEntity[] = cards.map((card: Card) => CardMapper.toOrmEntity(card));
-        const saved = await this.repository.save(ormCards);
-        const count = saved?.length ?? 0;
-        this.LOGGER.debug(`Saved ${count} cards.`);
-        return count;
+    async totalCards(): Promise<number> {
+        const result = await this.repository.query(`SELECT COUNT(*) AS total FROM card`);
+        return Number(result[0]?.total ?? 0);
     }
 
-    async findById(uuid: string, _relations: string[]): Promise<Card | null> {
+    async findById(id: string, relations: string[]): Promise<Card | null> {
         this.LOGGER.debug(
-            `Finding card by id: ${uuid}, relations: ${_relations ?? this.DEFAULT_RELATIONS}.`
+            `Finding card by id: ${id}, relations: ${relations ?? this.DEFAULT_RELATIONS}.`
         );
         const qb = this.repository
             .createQueryBuilder(this.TABLE)
-            .where(`${this.TABLE}.id = :id`, { id: uuid });
-        this.applyRelationJoins(qb, _relations ?? this.DEFAULT_RELATIONS);
+            .where(`${this.TABLE}.id = :id`, { id });
+        this.applyRelationJoins(qb, relations ?? this.DEFAULT_RELATIONS);
         const ormCard = await qb.getOne();
-        this.LOGGER.debug(`Card ${ormCard ? 'found' : 'not found'} for id: ${uuid}.`);
+        this.LOGGER.debug(`Card ${ormCard ? 'found' : 'not found'} for id: ${id}.`);
         return ormCard ? CardMapper.toCore(ormCard) : null;
     }
 
@@ -129,14 +118,14 @@ export class CardRepository extends BaseRepository<CardOrmEntity> implements Car
     async findBySetCodeAndNumber(
         code: string,
         number: string,
-        _relations: string[]
+        relations: string[]
     ): Promise<Card | null> {
         this.LOGGER.debug(`Finding card by set code ${code} and number ${number}.`);
         const qb = this.repository
             .createQueryBuilder(this.TABLE)
             .where(`${this.TABLE}.setCode = :code`, { code })
             .andWhere(`${this.TABLE}.number = :number`, { number });
-        this.applyRelationJoins(qb, _relations ?? this.DEFAULT_RELATIONS);
+        this.applyRelationJoins(qb, relations ?? this.DEFAULT_RELATIONS);
         const ormCard = await qb.getOne();
         this.LOGGER.debug(
             `Card ${ormCard ? 'found' : 'not found'} for set ${code} number ${number}.`
@@ -168,30 +157,6 @@ export class CardRepository extends BaseRepository<CardOrmEntity> implements Car
         return count;
     }
 
-    async totalValueForSet(
-        code: string,
-        includeFoil: boolean,
-        baseOnly: boolean = true
-    ): Promise<number> {
-        this.LOGGER.debug(
-            `Calculating total value for set ${code}${includeFoil ? ' with foils' : ''}.`
-        );
-        const selectExpr = PriceCalculationPolicy.cardValueExpression(includeFoil);
-        const result = await this.repository.query(
-            `
-            SELECT COALESCE(SUM(${selectExpr}), 0) AS total_value
-            FROM card c
-            JOIN price p ON p.card_id = c.id
-            WHERE c.set_code = $1
-            AND c.in_main = $2
-            `,
-            [code, baseOnly]
-        );
-        const total = Number(result[0]?.total_value ?? 0);
-        this.LOGGER.debug(`Total value for set ${code}: ${total}.`);
-        return total;
-    }
-
     async verifyCardsExist(cardIds: string[]): Promise<Set<string>> {
         this.LOGGER.debug(`Verifying existence of ${cardIds?.length ?? 0} card ids.`);
         if (cardIds.length === 0) {
@@ -209,12 +174,6 @@ export class CardRepository extends BaseRepository<CardOrmEntity> implements Car
         return found;
     }
 
-    async delete(id: string): Promise<void> {
-        this.LOGGER.debug(`Deleting card with id: ${id}.`);
-        await this.repository.delete(id);
-        this.LOGGER.debug(`Deleted card with id: ${id}.`);
-    }
-
     async searchByName(filter: string, options: SafeQueryOptions): Promise<Card[]> {
         this.LOGGER.debug(`Searching cards by name: ${filter}.`);
         const qb = this.repository
@@ -224,8 +183,8 @@ export class CardRepository extends BaseRepository<CardOrmEntity> implements Car
         this.applySearchFilter(qb, filter);
         this.applyCatalogFilters(qb, options);
 
-        qb.orderBy(`${this.TABLE}.name`, this.ASC, this.NULLS_LAST);
-        qb.addOrderBy('set.releaseDate', this.DESC, this.NULLS_LAST);
+        qb.orderBy(`${this.TABLE}.name`, 'ASC', 'NULLS LAST');
+        qb.addOrderBy('set.releaseDate', 'DESC', 'NULLS LAST');
 
         qb.skip((options.page - 1) * options.limit).take(options.limit);
         const results = (await qb.getMany()).map(CardMapper.toCore);
@@ -278,10 +237,10 @@ export class CardRepository extends BaseRepository<CardOrmEntity> implements Car
         // the remaining terms select the representative printing: newest set,
         // then lowest collector number, then id as a final deterministic
         // tiebreaker so same-name/same-release printings don't flip arbitrarily.
-        qb.orderBy(`${this.TABLE}.name`, this.ASC, this.NULLS_LAST);
-        qb.addOrderBy('set.releaseDate', this.DESC, this.NULLS_LAST);
-        qb.addOrderBy(`${this.TABLE}.sortNumber`, this.ASC, this.NULLS_LAST);
-        qb.addOrderBy(`${this.TABLE}.id`, this.ASC);
+        qb.orderBy(`${this.TABLE}.name`, 'ASC', 'NULLS LAST');
+        qb.addOrderBy('set.releaseDate', 'DESC', 'NULLS LAST');
+        qb.addOrderBy(`${this.TABLE}.sortNumber`, 'ASC', 'NULLS LAST');
+        qb.addOrderBy(`${this.TABLE}.id`, 'ASC');
 
         // Raw limit/offset (not skip/take) so pagination applies to the
         // DISTINCT ON result rather than triggering TypeORM's id-subquery path.
@@ -425,12 +384,6 @@ export class CardRepository extends BaseRepository<CardOrmEntity> implements Car
             )
         );
         return groups.flat().map(CardMapper.toCore);
-    }
-
-    async deleteLegality(cardId: string, format: Format): Promise<void> {
-        this.LOGGER.debug(`Deleting legality for card ${cardId} format ${format}.`);
-        await this.legalityRepository.delete({ cardId, format });
-        this.LOGGER.debug(`Deleted legality for card ${cardId} format ${format}.`);
     }
 
     private applyRelationJoins(qb: SelectQueryBuilder<CardOrmEntity>, relations: string[]): void {

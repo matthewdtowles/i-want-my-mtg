@@ -11,6 +11,7 @@ import { InventoryService } from 'src/core/inventory/inventory.service';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
 import { Set } from 'src/core/set/set.entity';
 import { SetService } from 'src/core/set/set.service';
+import { CardService } from 'src/core/card/card.service';
 import { TransactionService } from 'src/core/transaction/transaction.service';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
 import { InventoryBinderViewDto } from 'src/http/hbs/inventory/dto/inventory-binder.view.dto';
@@ -23,6 +24,7 @@ describe('InventoryOrchestrator', () => {
     let exportService: jest.Mocked<InventoryExportService>;
     let transactionService: jest.Mocked<TransactionService>;
     let setService: jest.Mocked<SetService>;
+    let cardService: jest.Mocked<CardService>;
 
     const mockAuthenticatedRequest = {
         user: { id: 1, name: 'Test User', email: 'test@example.com' },
@@ -45,7 +47,6 @@ describe('InventoryOrchestrator', () => {
                         completionRateAll: jest.fn(),
                         save: jest.fn(),
                         delete: jest.fn(),
-                        totalCards: jest.fn(),
                         totalOwnedValue: jest.fn(),
                         totalInventoryItemsForSet: jest.fn(),
                         ownedValueForSet: jest.fn(),
@@ -72,6 +73,12 @@ describe('InventoryOrchestrator', () => {
                         findByCode: jest.fn(),
                     },
                 },
+                {
+                    provide: CardService,
+                    useValue: {
+                        totalCards: jest.fn(),
+                    },
+                },
             ],
         }).compile();
 
@@ -80,6 +87,7 @@ describe('InventoryOrchestrator', () => {
         exportService = module.get(InventoryExportService) as jest.Mocked<InventoryExportService>;
         transactionService = module.get(TransactionService) as jest.Mocked<TransactionService>;
         setService = module.get(SetService) as jest.Mocked<SetService>;
+        cardService = module.get(CardService) as jest.Mocked<CardService>;
     });
 
     beforeEach(() => {
@@ -152,7 +160,7 @@ describe('InventoryOrchestrator', () => {
                 .mockResolvedValueOnce(0) // currentCount (filtered)
                 .mockResolvedValueOnce(0) // targetCount
                 .mockResolvedValueOnce(10); // unfilteredCount
-            inventoryService.totalCards.mockResolvedValue(100);
+            cardService.totalCards.mockResolvedValue(100);
             inventoryService.totalOwnedValue.mockResolvedValue(50);
 
             const filteredOptions = new SafeQueryOptions({
@@ -367,7 +375,7 @@ describe('InventoryOrchestrator', () => {
                     card: mockCard,
                 } as Inventory,
             ]);
-            inventoryService.totalCards.mockResolvedValue(100);
+            cardService.totalCards.mockResolvedValue(100);
             inventoryService.totalOwnedValue.mockResolvedValue(50);
         });
 

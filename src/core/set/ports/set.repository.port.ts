@@ -1,5 +1,4 @@
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
-import { BaseRepositoryPort } from 'src/core/base.repository.port';
 import { Set } from '../set.entity';
 
 export const SetRepositoryPort = 'SetRepositoryPort';
@@ -7,7 +6,7 @@ export const SetRepositoryPort = 'SetRepositoryPort';
 /**
  * Interface representing the repository port for managing Set entities.
  */
-export interface SetRepositoryPort extends BaseRepositoryPort {
+export interface SetRepositoryPort {
     /**
      * Retrieves metadata for Set entities with pagination.
      * @param {SafeQueryOptions} options - The query options for pagination and filtering.

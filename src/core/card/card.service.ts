@@ -25,6 +25,13 @@ export class CardService {
         return this.repository.findByIds(ids);
     }
 
+    /**
+     * @returns the total number of cards in the catalog (all sets).
+     */
+    async totalCards(): Promise<number> {
+        return this.repository.totalCards();
+    }
+
     async findByIdsWithPrices(ids: string[]): Promise<Card[]> {
         this.LOGGER.debug(`Find ${ids.length} cards by ids with latest prices.`);
         return this.repository.findByIds(ids, { includeLatestPrice: true });

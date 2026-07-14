@@ -1,20 +1,16 @@
-import { BaseRepositoryPort } from 'src/core/base.repository.port';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
 import { Card } from '../card.entity';
-import { Format } from '../format.enum';
 
 export const CardRepositoryPort = 'CardRepositoryPort';
 
 /**
  * Persistence layer interface for Card entity.
  */
-export interface CardRepositoryPort extends BaseRepositoryPort {
+export interface CardRepositoryPort {
     /**
-     * Saves an array of Card entities. Updates existing cards if they already exist.
-     * @param cards Array of Card entities to save.
-     * @returns Promise resolving to the number of saved cards.
+     * @returns the total number of cards in the catalog.
      */
-    save(cards: Card[]): Promise<number>;
+    totalCards(): Promise<number>;
 
     /**
      * Finds a Card entity by its unique identifier.
@@ -96,21 +92,6 @@ export interface CardRepositoryPort extends BaseRepositoryPort {
      * @returns Promise resolving to an array of Card entities.
      */
     findByIds(ids: string[], options?: { includeLatestPrice?: boolean }): Promise<Card[]>;
-
-    /**
-     * Deletes a Card entity by its unique identifier.
-     * @param id Unique identifier of the card to delete.
-     * @returns Promise resolving when the card is deleted.
-     */
-    delete(id: string): Promise<void>;
-
-    /**
-     * Deletes the legality of a card for a specific format.
-     * @param cardId Unique identifier of the card.
-     * @param format Format for which the legality is to be removed.
-     * @returns Promise resolving when the legality is deleted.
-     */
-    deleteLegality(cardId: string, format: Format): Promise<void>;
 
     /**
      * Searches cards by name using partial matching (ILIKE).

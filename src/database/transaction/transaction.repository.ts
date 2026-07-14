@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
 import { SortOptions, TRANSACTION_SORTS } from 'src/core/query/sort-options.enum';
 import { Transaction, TransactionType } from 'src/core/transaction/transaction.entity';
+import { TransactionWithCard } from 'src/core/transaction/transaction-with-card.read-model';
 import {
     CashFlowPeriod,
     TransactionRepositoryPort,
@@ -163,7 +164,7 @@ export class TransactionRepository implements TransactionRepositoryPort {
         options: SafeQueryOptions,
         sinceDate?: Date,
         type?: TransactionType
-    ): Promise<Transaction[]> {
+    ): Promise<TransactionWithCard[]> {
         this.LOGGER.debug(`Finding paginated transactions for user ${userId}.`);
         const qb = this.repository
             .createQueryBuilder('transaction')
@@ -179,13 +180,14 @@ export class TransactionRepository implements TransactionRepositoryPort {
         const results = await qb.getMany();
         return results.map((orm) => {
             const core = TransactionMapper.toCore(orm);
-            if (orm.card) {
-                (core as any).cardName = orm.card.name;
-                (core as any).cardSetCode = orm.card.setCode;
-                (core as any).cardNumber = orm.card.number;
-                (core as any).cardImgSrc = buildScryfallImagePath(orm.card.scryfallId);
-            }
-            return core;
+            if (!orm.card) return core;
+            const withCard: TransactionWithCard = Object.assign(core, {
+                cardName: orm.card.name,
+                cardSetCode: orm.card.setCode,
+                cardNumber: orm.card.number,
+                cardImgSrc: buildScryfallImagePath(orm.card.scryfallId),
+            });
+            return withCard;
         });
     }
 

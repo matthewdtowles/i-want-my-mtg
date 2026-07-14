@@ -58,16 +58,15 @@ export class TransactionOrchestrator {
                 this.transactionService.countByUser(req.user.id, new SafeQueryOptions()),
             ]);
 
-            const responseItems: TransactionResponseDto[] = transactions.map((t) => {
-                const tx = t as any;
-                return TransactionPresenter.toResponseDto(
+            const responseItems: TransactionResponseDto[] = transactions.map((t) =>
+                TransactionPresenter.toResponseDto(
                     t,
-                    tx.cardName,
-                    tx.cardSetCode,
-                    tx.cardNumber,
-                    tx.cardImgSrc
-                );
-            });
+                    t.cardName,
+                    t.cardSetCode,
+                    t.cardNumber,
+                    t.cardImgSrc
+                )
+            );
 
             const baseUrl = '/transactions';
 

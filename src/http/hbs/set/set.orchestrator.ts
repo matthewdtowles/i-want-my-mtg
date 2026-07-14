@@ -1,4 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
+import { Card } from 'src/core/card/card.entity';
 import { CardImgType } from 'src/core/card/card.img.type.enum';
 import { DomainNotFoundError } from 'src/core/errors/domain.errors';
 import { CardService } from 'src/core/card/card.service';
@@ -219,11 +220,10 @@ export class SetOrchestrator {
                 targetCount,
                 forceShowAll
             );
-            set.cards.push(...cards);
-
             const setResponse = await this.createSetResponseDto(
                 userId,
                 set,
+                cards,
                 effectiveOptions,
                 sealedProducts
             );
@@ -283,6 +283,13 @@ export class SetOrchestrator {
     async getLastCardPage(setCode: string, options: SafeQueryOptions): Promise<number> {
         this.LOGGER.debug(`Fetch last page number for cards in set ${setCode}.`);
         try {
+            // Two sources of truth for a set's card count (A7): when a filter is
+            // present we must COUNT the matching rows (CardService.totalInSet);
+            // with no filter we trust the set's stored baseSize/totalSize
+            // (SetService.totalCardsInSet), which is cheaper. Invariant: MTGJSON's
+            // stored sizes equal the actual card-row count for the set - if they
+            // ever drift, filtered and unfiltered pagination totals disagree on
+            // the same page. Reconciliation lives in the ETL (Scry), not here.
             let totalCards: number;
             if (options.filter) {
                 totalCards = await this.cardService.totalInSet(setCode, options);
@@ -668,7 +675,9 @@ export class SetOrchestrator {
 
             return SealedProductHbsPresenter.toRows(products, ownedQuantities);
         } catch (error) {
-            this.LOGGER.debug(
+            // Swallowed so a sealed-product failure doesn't break the whole set
+            // page - but log at warn so it's visible in production (C4).
+            this.LOGGER.warn(
                 `Failed to load sealed products for set ${setCode}: ${error?.message}`
             );
             return [];
@@ -678,10 +687,11 @@ export class SetOrchestrator {
     private async createSetResponseDto(
         userId: number,
         set: Set,
+        cards: Card[],
         _options: SafeQueryOptions,
         sealedProducts: SealedProductRowDto[] = []
     ): Promise<SetResponseDto> {
-        const setPayloadSize = set.cards?.length || 0;
+        const setPayloadSize = cards?.length || 0;
         const isAuthed = !!userId;
 
         // Anonymous visitors own nothing — skip every inventory read on this
@@ -695,7 +705,7 @@ export class SetOrchestrator {
                 setPayloadSize > 0
                     ? this.inventoryService.findByCards(
                           userId,
-                          set.cards.map((c) => c.id)
+                          cards.map((c) => c.id)
                       )
                     : Promise.resolve([] as Inventory[]),
                 this.inventoryService.totalInventoryItemsForSet(userId, set.code),
@@ -722,8 +732,8 @@ export class SetOrchestrator {
             tags: SetTypeMapper.mapSetTypeToTags(set),
             totalSize: set.totalSize,
             url: `/sets/${set.code.toLowerCase()}`,
-            cards: set.cards
-                ? set.cards.map((card) =>
+            cards: cards
+                ? cards.map((card) =>
                       CardPresenter.toCardResponse(
                           card,
                           quantityByCardId?.get(card.id),

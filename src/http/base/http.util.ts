@@ -3,14 +3,23 @@ import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
 
 export const BASE_IMAGE_URL: string = 'https://cards.scryfall.io';
 
-export function toDollar(amount: number): string {
-    let dollarAmount: string = '-';
-    if (amount) {
-        const roundedNumber = Math.round(amount * 100) / 100;
-        dollarAmount = roundedNumber.toFixed(2);
-        dollarAmount = '$' + dollarAmount.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-    }
-    return dollarAmount;
+const USD_FORMAT = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' });
+
+/**
+ * Single source of truth for formatting a USD amount. Returns `empty` for
+ * null/undefined/non-finite input; otherwise `$1,234.50` (negatives as `-$3.99`,
+ * zero as `$0.00`).
+ */
+export function formatUsd(amount: number | null | undefined, empty = '-'): string {
+    if (amount == null || !Number.isFinite(Number(amount))) return empty;
+    return USD_FORMAT.format(Number(amount));
+}
+
+export function toDollar(amount: number | null | undefined): string {
+    // 0 (and null/undefined/NaN) render as the "no value" sentinel, matching the
+    // client-side formatter and the set-price display. This only fixes the sign
+    // bug (negatives previously rendered as `$-3.99` instead of `-$3.99`).
+    return amount ? formatUsd(amount) : '-';
 }
 
 export function isAuthenticated(req: AuthenticatedRequest): boolean {

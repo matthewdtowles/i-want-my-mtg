@@ -1,6 +1,5 @@
 import { HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { AuthService } from 'src/core/auth/auth.service';
-import { AuthToken } from 'src/core/auth/auth.types';
 import { EmailService } from 'src/core/email/email.service';
 import { PendingUserService } from 'src/core/user/pending-user.service';
 import { User } from 'src/core/user/user.entity';
@@ -198,30 +197,6 @@ export class UserOrchestrator {
                 success: false,
                 message: 'An error occurred during verification. Please try again.',
             });
-        }
-    }
-
-    async create(createUserDto: CreateUserRequestDto): Promise<AuthToken> {
-        this.LOGGER.debug(`Creating user with email: ${createUserDto.email}.`);
-        try {
-            const user: User = new User({
-                email: createUserDto.email,
-                name: createUserDto.name,
-                password: createUserDto.password,
-                role: UserRole.User,
-            });
-            const createdUser: User = await this.userService.create(user);
-            if (!createdUser) {
-                throw new Error('User creation failed');
-            }
-            const authToken: AuthToken = await this.authService.login(createdUser);
-            if (!authToken?.access_token) {
-                throw new Error('Authentication token generation failed');
-            }
-            return authToken;
-        } catch (error) {
-            this.LOGGER.debug(`Error creating user with email: ${createUserDto.email}.`);
-            HttpErrorHandler.toHttpException(error, 'create');
         }
     }
 

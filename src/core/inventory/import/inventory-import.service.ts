@@ -2,6 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { CardImportResolver } from 'src/core/import/card-import-resolver';
 import { MAX_IMPORT_ROWS } from 'src/core/import/import.constants';
 import { ImportError, ImportResult, parseBool } from 'src/core/import/import.types';
+import { Inventory } from 'src/core/inventory/inventory.entity';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
 import { Set } from 'src/core/set/set.entity';
 import { SetRepositoryPort } from 'src/core/set/ports/set.repository.port';
@@ -129,7 +130,6 @@ export class InventoryImportService {
 
             let exactSaved = 0;
             if (toSave.length > 0) {
-                const { Inventory } = await import('../inventory.entity');
                 const inventoryItems = toSave.map(
                     (item) =>
                         new Inventory({

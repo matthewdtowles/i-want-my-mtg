@@ -63,12 +63,6 @@ describe('UserService', () => {
         jest.clearAllMocks();
     });
 
-    it('create should successfully insert a user', async () => {
-        const repoSpy = jest.spyOn(repository, 'create');
-        await expect(service.create(createUser)).resolves.toEqual(existingUser);
-        expect(repoSpy).toHaveBeenCalled();
-    });
-
     it('findById should get a single user with given id', async () => {
         const repoSpy = jest.spyOn(repository, 'findById');
         await expect(service.findById(1)).resolves.toEqual(existingUser);

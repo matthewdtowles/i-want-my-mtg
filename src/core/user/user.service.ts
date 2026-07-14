@@ -15,15 +15,6 @@ export class UserService {
         @Inject(RefreshTokenService) private readonly refreshTokenService: RefreshTokenService
     ) {}
 
-    async create(userIn: User): Promise<User | null> {
-        this.LOGGER.debug(`Create user ${userIn?.email}.`);
-        const user: User = new User({
-            ...userIn,
-            password: await this.encrypt(userIn.password),
-        });
-        return await this.repository.create(user);
-    }
-
     async createWithHashedPassword(user: User): Promise<User> {
         // Skip password hashing since it's already hashed
         return await this.repository.create(user);

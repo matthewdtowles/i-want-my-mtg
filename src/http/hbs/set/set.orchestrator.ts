@@ -446,8 +446,7 @@ export class SetOrchestrator {
             const num = toChangeNumber(value);
             if (num === null) return { changeWeekly: '', changeWeeklySign: '' };
             if (num === 0) return { changeWeekly: '$0.00', changeWeeklySign: 'neutral' };
-            const abs = Math.abs(Math.round(num * 100) / 100);
-            const formatted = '$' + abs.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+            const formatted = toDollar(Math.abs(num));
             return num > 0
                 ? { changeWeekly: `+${formatted}`, changeWeeklySign: 'positive' }
                 : { changeWeekly: `-${formatted}`, changeWeeklySign: 'negative' };

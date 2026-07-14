@@ -4,6 +4,7 @@ import * as cookieParser from 'cookie-parser';
 import { create } from 'express-handlebars';
 import { join } from 'path';
 import { HttpExceptionFilter } from './http/http.exception.filter';
+import { formatUsd } from './http/base/http.util';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { version } = require(join(__dirname, '..', 'package.json'));
@@ -30,21 +31,16 @@ export function configureApp(app: INestApplication, viewsDir: string): void {
         defaultLayout: 'main',
         extname: '.hbs',
         helpers: {
-            toUpperCase: (str: string) => str.toUpperCase(),
-            toLowerCase: (str: string) => str.toLowerCase(),
-            capitalize: (str: string) => str.charAt(0).toUpperCase() + str.slice(1),
+            toUpperCase: (str: unknown) => (typeof str === 'string' ? str.toUpperCase() : ''),
+            toLowerCase: (str: unknown) => (typeof str === 'string' ? str.toLowerCase() : ''),
+            capitalize: (str: unknown) =>
+                typeof str === 'string' && str.length > 0
+                    ? str.charAt(0).toUpperCase() + str.slice(1)
+                    : '',
             eq: (a: any, b: any) => a === b,
             gt: (a: any, b: any) => a > b,
             lt: (a: any, b: any) => a < b,
-            money: (n: any) => {
-                const num = Number(n);
-                return n != null && Number.isFinite(num)
-                    ? `$${num.toLocaleString('en-US', {
-                          minimumFractionDigits: 2,
-                          maximumFractionDigits: 2,
-                      })}`
-                    : '—';
-            },
+            money: (n: any) => formatUsd(n, '—'),
             encodeURIComponent: (str: string) => encodeURIComponent(str || ''),
             assetVersion: () => version,
             concat: (...args: any[]) => {

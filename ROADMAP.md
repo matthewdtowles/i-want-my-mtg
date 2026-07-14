@@ -320,15 +320,15 @@ Per-item detail lives in the linked issues/PRs and git history.
 | ~~[MB5](https://github.com/matthewdtowles/i-want-my-mtg-mobile/issues/67)~~ | mobile | Centralize query keys; re-key deck-owned under inventory | ✅ **done** (mobile PR #76) |
 | ~~[MB6](https://github.com/matthewdtowles/i-want-my-mtg-mobile/issues/68)~~ | mobile | Test + lint infrastructure (ESLint + pure-module tests; jest-expo deferred) | ✅ **done** (mobile PR #77) |
 
-**Wave 3 — Structure & cleanup (P3).**
+**Wave 3 — Structure & cleanup (P3).** All five have PRs open (2026-07-14); each landed its high-value core and consciously deferred the lowest-leverage/highest-churn sub-items (noted per issue + PR).
 
 | Issue | Repo | Title | Notes |
 |---|---|---|---|
-| [W6](https://github.com/matthewdtowles/i-want-my-mtg/issues/574) | web | TypeScript strictness + type-aware lint | |
-| [W7](https://github.com/matthewdtowles/i-want-my-mtg/issues/575) | web | Architecture cleanup: dead code, read models, presenters, logging | |
-| [S7](https://github.com/matthewdtowles/scry/issues/41) | scry | DRY, perf, and transactionality cleanup | |
-| [M3](https://github.com/matthewdtowles/iwantmymtg-mcp/issues/21) | mcp | Consistency sweep: shared schemas/enums, client memoization, `as never` sweep | Client follow-up to W8 (X3) |
-| [MB7](https://github.com/matthewdtowles/i-want-my-mtg-mobile/issues/69) | mobile | Shared UI + hooks layer: steppers, rows, chips, `useOptimisticMutation`, edit-by-id | |
+| [W6](https://github.com/matthewdtowles/i-want-my-mtg/issues/574) | web | TypeScript strictness + type-aware lint | PR #593. `tsconfig.strict.json` ratchet (errors/affiliate/query modules) + no-floating/misused-promises + `quality` CI gate. C7 leak already gone. |
+| [W7](https://github.com/matthewdtowles/i-want-my-mtg/issues/575) | web | Architecture cleanup: dead code, read models, presenters, logging | PR #594. A3/A4/B6/A5/A7/A10/B11/B14/C3/C4 done. Deferred: A8 SEO move (would break cross-controller consistency - do repo-wide) + `createSetPriceDto`→presenter + broad C8 spec backfill. |
+| [S7](https://github.com/matthewdtowles/scry/issues/41) | scry | DRY, perf, and transactionality cleanup | PR #53. §6 save_legalities tx, §5 save_deck tx + single-statement clean_up_prices, §10 byte-slice panic + dead Price.id. Deferred: §4.1 SubtreeCollector (ingest-critical rewrite), §4.2/4.3 SQL dedup, §3.x, §7. |
+| [M3](https://github.com/matthewdtowles/iwantmymtg-mcp/issues/21) | mcp | Consistency sweep: shared schemas/enums, client memoization, `as never` sweep | PR #28. A3 client memoize, I1 format enum, I3/I4 shared id/cardId, I7 refine. Deferred: **I8 as-never sweep still gated on the regenerated spec types landing** (X3); I2/I5/I6/I9/I10/A5/A6 polish. |
+| [MB7](https://github.com/matthewdtowles/i-want-my-mtg-mobile/issues/69) | mobile | Shared UI + hooks layer: steppers, rows, chips, `useOptimisticMutation`, edit-by-id | PR #78. **Spec regen done** (clears the spec-drift after W8; tightened query params fixed). 2.1/2.6 nextPage/mapPageItems, 3.5 dead code. Deferred: the component/hook extractions (2.2-2.5, 3.2, 3.3) - land with the app running. |
 
 **Sequencing note:** Wave 1 is correctness/integrity/security and should land **before the Phase 8 go-to-market push** — MB1 alone (cross-account data leak) is a hard blocker on marketing the mobile app. Waves 2–3 can interleave with Phase 8/9 as capacity allows.
 

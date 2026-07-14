@@ -270,9 +270,12 @@ The four codebase analyses run **2026-07-07** produced 29 work-package issues sp
 - **mobile** — MB1 (PR #70, sign-out cache clear), MB2 (PR #71, CI spec-drift decoupling).
 - **cross-repo** — X6 verified both clients parse the post-W1 `{ success, error }` envelope (regression tests: MCP PR #24, mobile PR #73).
 
-**Wave 2 in progress.** 14 issues remain. Web Wave 2 items done:
-- **W4** (security hardening, PR #589) — B9 generic ≥500 responses (no message leak), B10 uniform signup response + dummy-compare timing defense, C5 sha256-at-rest for verification/reset tokens, B13 Stripe status validated against the enum + re-fetch-on-webhook against out-of-order delivery.
-- **W5** (performance, PR #590) — B12 set page skips inventory queries for anonymous visitors + hoists the quantity map + parallelizes reads, P1 imports resolve cards in bulk (`resolveCards` + `findBySetCodeAndNumbers`/`findByNameSetPairs`) instead of one query per row and buy-list seeding parallelizes, A6 single `latestPriceCondition` helper. (P3's `getOrCreateCustomer`/`AuthService.refresh` left as-is — short-circuit / data-dependency, documented in the PR.)
+**Wave 2 — complete (2026-07-13 → 2026-07-14).** All 14 items landed; two scry items shipped their core and carved off a focused remainder (tracked on the issues, below).
+
+- **web** — W3 (PR #587), W4 (PR #589), W5 (PR #590), W8 (PR #586).
+- **scry** — S5 (PR #48, remove no-op concurrency + dead granular parsing + count/date/config fixes), S6 (PR #49, thin `main.rs` + `IngestPipeline` + `ConnectionPool` tightening; **§3.1 ports + §3.2 cross-module orchestration remain open on #40**), S8 (PR #50, clippy/fmt CI gates + Docker hardening + X5 schema-fixture sync + docs; **new portfolio/published-deck integration tests remain open on #42**).
+- **mcp** — M2 (PR #25, generic `ToolDefinition`/`defineTool` + `requiresAuth` + annotations + auth invariant test), M4 (PR #26 + follow-up #27, Biome lint/format + NodeNext + Node 20 matrix + server handler tests).
+- **mobile** — MB3 (PR #74, inset + silent-rollback alerts + stepper debounce/settle), MB4 (PR #75, badge via unread-count + inbox scroll pagination), MB5 (PR #76, centralized query keys + deck-owned re-key), MB6 (PR #77, ESLint + pure-module tests).
 
 Per-item detail lives in the linked issues/PRs and git history.
 
@@ -281,7 +284,7 @@ Per-item detail lives in the linked issues/PRs and git history.
 - ~~**X1**~~ — **Done.** web **W9** migration → scry **S2** delete/reset cleanup (✅ done, scry PR #45).
 - ~~**X3 / X4**~~ — **Done.** mobile **MB2** landed before web **W8** (✅ done, PR #586), so the web deploy didn't break open mobile PRs. W8 now triggers the still-open client follow-ups: MCP **M3** `as never` sweep + mobile schema regen.
 - ~~**X2**~~ — **Done.** `granular_price_history` retention now runs (scry **S4**, PR #47), closing the unbounded-growth gap.
-- **X5** — scry's integration-test schema fixture is synced from web migrations in scry **S8**.
+- ~~**X5**~~ — **Done.** scry's integration-test schema fixture is synced from the web schema (scry **S8**, PR #50) — added the missing `transaction`/`portfolio_*`/`published_deck*` tables + `inventory.user_id` and fixed `portfolio_value_history`, validated against Postgres 18.
 - ~~**X6**~~ — **Done (2026-07-09).** Verified MCP `extractApiMessage` + mobile `errMessage` against the post-W1 `{ success, error }` error bodies; no defect. Regression tests: MCP PR #24, mobile PR #73.
 
 ### Execution order
@@ -307,15 +310,15 @@ Per-item detail lives in the linked issues/PRs and git history.
 | ~~[W3](https://github.com/matthewdtowles/i-want-my-mtg/issues/571)~~ | web | Query/input hardening: filter charset, limit caps, pool config | ✅ **done** (PR #587) |
 | ~~[W4](https://github.com/matthewdtowles/i-want-my-mtg/issues/572)~~ | web | Security hardening: error leaks, enumeration, token hashing, Stripe sync | ✅ **done** (PR #589); B9 no-leak ≥500s, B10 signup enumeration/timing, C5 sha256 token storage, B13 Stripe status validation + re-fetch |
 | ~~[W5](https://github.com/matthewdtowles/i-want-my-mtg/issues/573)~~ | web | Performance: set page, batched imports, Promise.all, latest-price helper | ✅ **done** (PR #590); B12 anon set page, P1 bulk import resolution, A6 latest-price helper |
-| [S5](https://github.com/matthewdtowles/scry/issues/39) | scry | Remove no-op concurrency + dead granular parsing; fix misleading counts | |
-| [S6](https://github.com/matthewdtowles/scry/issues/40) | scry | Structure: thin `main.rs`, extract `IngestPipeline`, add ports | |
-| [S8](https://github.com/matthewdtowles/scry/issues/42) | scry | Tooling: clippy/fmt CI gates, Docker hardening, schema fixture sync | X5 |
-| [M2](https://github.com/matthewdtowles/iwantmymtg-mcp/issues/20) | mcp | ToolDefinition refactor: generics, requiresAuth, annotations, auth invariant test | |
-| [M4](https://github.com/matthewdtowles/iwantmymtg-mcp/issues/22) | mcp | Tooling: linter in CI, NodeNext, Node 20 matrix, server handler tests | |
-| [MB3](https://github.com/matthewdtowles/i-want-my-mtg-mobile/issues/65) | mobile | Behavior fixes: double inset, silent rollbacks, stepper debounce + settle invalidation | X4 short-term (debounce) |
-| [MB4](https://github.com/matthewdtowles/i-want-my-mtg-mobile/issues/66) | mobile | Notification badge via unread-count; inbox paginates on scroll | |
-| [MB5](https://github.com/matthewdtowles/i-want-my-mtg-mobile/issues/67) | mobile | Centralize query keys; re-key deck-owned under inventory | |
-| [MB6](https://github.com/matthewdtowles/i-want-my-mtg-mobile/issues/68) | mobile | Test + lint infrastructure (jest-expo, ESLint); cover pure modules | |
+| ~~[S5](https://github.com/matthewdtowles/scry/issues/39)~~ | scry | Remove no-op concurrency + dead granular parsing; fix misleading counts | ✅ **done** (scry PR #48) |
+| [S6](https://github.com/matthewdtowles/scry/issues/40) | scry | Structure: thin `main.rs`, extract `IngestPipeline`, add ports | **core done** (scry PR #49: §3.5/§3.3/§3.4); §3.1 ports + §3.2 cross-module orchestration remain open on #40 |
+| [S8](https://github.com/matthewdtowles/scry/issues/42) | scry | Tooling: clippy/fmt CI gates, Docker hardening, schema fixture sync | X5; **core done** (scry PR #50); new portfolio/published-deck integration tests remain open on #42 |
+| ~~[M2](https://github.com/matthewdtowles/iwantmymtg-mcp/issues/20)~~ | mcp | ToolDefinition refactor: generics, requiresAuth, annotations, auth invariant test | ✅ **done** (mcp PR #25) |
+| ~~[M4](https://github.com/matthewdtowles/iwantmymtg-mcp/issues/22)~~ | mcp | Tooling: linter in CI, NodeNext, Node 20 matrix, server handler tests | ✅ **done** (mcp PR #26 + #27) |
+| ~~[MB3](https://github.com/matthewdtowles/i-want-my-mtg-mobile/issues/65)~~ | mobile | Behavior fixes: double inset, silent rollbacks, stepper debounce + settle invalidation | ✅ **done** (mobile PR #74); X4 short-term (debounce) |
+| ~~[MB4](https://github.com/matthewdtowles/i-want-my-mtg-mobile/issues/66)~~ | mobile | Notification badge via unread-count; inbox paginates on scroll | ✅ **done** (mobile PR #75) |
+| ~~[MB5](https://github.com/matthewdtowles/i-want-my-mtg-mobile/issues/67)~~ | mobile | Centralize query keys; re-key deck-owned under inventory | ✅ **done** (mobile PR #76) |
+| ~~[MB6](https://github.com/matthewdtowles/i-want-my-mtg-mobile/issues/68)~~ | mobile | Test + lint infrastructure (ESLint + pure-module tests; jest-expo deferred) | ✅ **done** (mobile PR #77) |
 
 **Wave 3 — Structure & cleanup (P3).**
 

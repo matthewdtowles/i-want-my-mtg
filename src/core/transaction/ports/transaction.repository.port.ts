@@ -1,5 +1,6 @@
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
 import { Transaction, TransactionType } from '../transaction.entity';
+import { TransactionWithCard } from '../transaction-with-card.read-model';
 
 export const TransactionRepositoryPort = 'TransactionRepositoryPort';
 
@@ -75,7 +76,7 @@ export interface TransactionRepositoryPort {
         options: SafeQueryOptions,
         sinceDate?: Date,
         type?: TransactionType
-    ): Promise<Transaction[]>;
+    ): Promise<TransactionWithCard[]>;
 
     /**
      * Count transactions for a user with the same filters.

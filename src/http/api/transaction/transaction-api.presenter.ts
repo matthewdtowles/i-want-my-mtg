@@ -1,14 +1,13 @@
-import { Transaction } from 'src/core/transaction/transaction.entity';
+import { TransactionWithCard } from 'src/core/transaction/transaction-with-card.read-model';
 import { TransactionPresenter } from 'src/http/hbs/transaction/transaction.presenter';
 import { buildCardUrl } from 'src/http/base/http.util';
 import { TransactionApiItemDto } from './dto/transaction-response.dto';
 
 export class TransactionApiPresenter {
-    static toTransactionItem(t: Transaction): TransactionApiItemDto {
-        const tx = t as any;
-        const cardName = tx.cardName;
-        const setCode = tx.cardSetCode;
-        const cardNumber = tx.cardNumber;
+    static toTransactionItem(t: TransactionWithCard): TransactionApiItemDto {
+        const cardName = t.cardName;
+        const setCode = t.cardSetCode;
+        const cardNumber = t.cardNumber;
         const cardUrl = setCode && cardNumber ? buildCardUrl(setCode, cardNumber) : undefined;
 
         return {

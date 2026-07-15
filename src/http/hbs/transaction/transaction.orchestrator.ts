@@ -14,6 +14,7 @@ import { TransactionImportRow } from 'src/core/transaction/import/transaction-im
 import { CostBasisSummary, TransactionService } from 'src/core/transaction/transaction.service';
 import { ApiResponseDto } from 'src/http/base/api-response.dto';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
+import { isAuthenticated } from 'src/http/base/http.util';
 import { FilterView } from 'src/http/hbs/list/filter.view';
 import { PaginationView } from 'src/http/hbs/list/pagination.view';
 import { transactionSortHeader } from 'src/http/hbs/list/sortable-header.view';
@@ -58,21 +59,20 @@ export class TransactionOrchestrator {
                 this.transactionService.countByUser(req.user.id, new SafeQueryOptions()),
             ]);
 
-            const responseItems: TransactionResponseDto[] = transactions.map((t) => {
-                const tx = t as any;
-                return TransactionPresenter.toResponseDto(
+            const responseItems: TransactionResponseDto[] = transactions.map((t) =>
+                TransactionPresenter.toResponseDto(
                     t,
-                    tx.cardName,
-                    tx.cardSetCode,
-                    tx.cardNumber,
-                    tx.cardImgSrc
-                );
-            });
+                    t.cardName,
+                    t.cardSetCode,
+                    t.cardNumber,
+                    t.cardImgSrc
+                )
+            );
 
             const baseUrl = '/transactions';
 
             return new TransactionViewDto({
-                authenticated: req.isAuthenticated(),
+                authenticated: isAuthenticated(req),
                 subscribed,
                 breadcrumbs: [
                     { label: 'Home', url: '/' },

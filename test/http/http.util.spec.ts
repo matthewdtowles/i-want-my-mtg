@@ -3,11 +3,27 @@ import { SortOptions } from 'src/core/query/sort-options.enum';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
 import {
     completionRate,
+    formatUsd,
     toDollar,
     isAuthenticated,
     buildQueryString,
     toStringRecord,
 } from 'src/http/base/http.util';
+
+describe('formatUsd', () => {
+    it('formats zero and negatives as currency (no sentinel)', () => {
+        expect(formatUsd(0)).toBe('$0.00');
+        expect(formatUsd(-3.99)).toBe('-$3.99');
+        expect(formatUsd(1234.5)).toBe('$1,234.50');
+    });
+
+    it('returns the empty token for null/undefined/non-finite', () => {
+        expect(formatUsd(null)).toBe('-');
+        expect(formatUsd(undefined)).toBe('-');
+        expect(formatUsd(Number.NaN)).toBe('-');
+        expect(formatUsd(null, '—')).toBe('—');
+    });
+});
 
 describe('toDollar', () => {
     it('should handle numbers less than 1 correctly', () => {
@@ -19,7 +35,7 @@ describe('toDollar', () => {
     });
 
     it('should handle negative numbers correctly', () => {
-        expect(toDollar(-1234.56)).toBe('$-1,234.56');
+        expect(toDollar(-1234.56)).toBe('-$1,234.56');
     });
 
     it('should handle zero correctly', () => {

@@ -12,6 +12,7 @@ import { InventoryExportService } from 'src/core/inventory/export/inventory-expo
 import { InventoryImportService } from 'src/core/inventory/import/inventory-import.service';
 import { CardImportRow, SetImportRow } from 'src/core/inventory/import/inventory-import.types';
 import { InventoryKey, InventoryService } from 'src/core/inventory/inventory.service';
+import { CardService } from 'src/core/card/card.service';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
 import { SortOptions } from 'src/core/query/sort-options.enum';
 import { SetService } from 'src/core/set/set.service';
@@ -46,7 +47,8 @@ export class InventoryOrchestrator {
         @Inject(InventoryImportService) private readonly importService: InventoryImportService,
         @Inject(InventoryExportService) private readonly exportService: InventoryExportService,
         @Inject(TransactionService) private readonly transactionService: TransactionService,
-        @Inject(SetService) private readonly setService: SetService
+        @Inject(SetService) private readonly setService: SetService,
+        @Inject(CardService) private readonly cardService: CardService
     ) {
         this.LOGGER.debug(`Initialized`);
     }
@@ -74,7 +76,7 @@ export class InventoryOrchestrator {
                     userId,
                     options.withBaseOnly(!options.baseOnly)
                 ),
-                this.inventoryService.totalCards(),
+                this.cardService.totalCards(),
                 this.inventoryService.totalOwnedValue(userId),
                 this.inventoryService.totalInventoryItems(
                     userId,

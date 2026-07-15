@@ -14,7 +14,7 @@ export function Timing(): MethodDecorator {
             const start = Date.now();
             const result = await originalMethod.apply(this, args);
             const duration = Date.now() - start;
-            logger.log(`[${className}.${methodName})}] Execution took ${duration}ms`);
+            logger.log(`[${className}.${methodName}] Execution took ${duration}ms`);
             return result;
         };
         return descriptor;

@@ -32,7 +32,9 @@ export class SearchOrchestrator {
                 sets: result.sets.map((set) => this.toSuggestSet(set)),
             });
         } catch (error) {
-            this.LOGGER.debug(`Error getting suggestions for "${term}": ${error?.message}`);
+            // Swallowed so the type-ahead never surfaces an error to the user;
+            // log at warn so the failure is still visible in production (C4).
+            this.LOGGER.warn(`Error getting suggestions for "${term}": ${error?.message}`);
             return new SearchSuggestResponseDto({ query: term });
         }
     }

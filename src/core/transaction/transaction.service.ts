@@ -7,6 +7,7 @@ import { getLogger } from 'src/logger/global-app-logger';
 import { TransactionRunnerPort } from 'src/core/transaction-runner.port';
 import { EDIT_WINDOW_MS } from './transaction.constants';
 import { Transaction, TransactionType } from './transaction.entity';
+import { TransactionWithCard } from './transaction-with-card.read-model';
 import { CashFlowPeriod, TransactionRepositoryPort } from './ports/transaction.repository.port';
 
 export interface LotAllocation {
@@ -119,7 +120,7 @@ export class TransactionService {
         options: SafeQueryOptions,
         sinceDate?: Date,
         type?: TransactionType
-    ): Promise<Transaction[]> {
+    ): Promise<TransactionWithCard[]> {
         this.LOGGER.debug(`Finding paginated transactions for user ${userId}.`);
         return this.repository.findByUserPaginated(userId, options, sinceDate, type);
     }

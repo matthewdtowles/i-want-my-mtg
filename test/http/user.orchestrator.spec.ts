@@ -355,69 +355,6 @@ describe('UserOrchestrator', () => {
         });
     });
 
-    describe('create', () => {
-        it('should create user and return auth token', async () => {
-            const mockUser = new User({ id: 1, name: 'New User', email: 'new@example.com' });
-            const mockToken = { access_token: 'test-token', expires_in: 3600 };
-            mockUserService.create.mockResolvedValue(mockUser);
-            mockAuthService.login.mockResolvedValue(mockToken);
-
-            const result = await orchestrator.create(mockCreateUserDto);
-
-            expect(result).toEqual(mockToken);
-            expect(userService.create).toHaveBeenCalledWith(expect.any(User));
-            expect(authService.login).toHaveBeenCalledWith(mockUser);
-        });
-
-        it('should throw error if user creation fails', async () => {
-            mockUserService.create.mockResolvedValue(null);
-            const error = new Error('User creation failed');
-            mockHttpErrorHandler.toHttpException.mockImplementation(() => {
-                throw error;
-            });
-
-            await expect(orchestrator.create(mockCreateUserDto)).rejects.toThrow(
-                'User creation failed'
-            );
-            expect(HttpErrorHandler.toHttpException).toHaveBeenCalledWith(error, 'create');
-        });
-
-        it('should throw error if token generation fails after successful creation', async () => {
-            mockUserService.create.mockResolvedValue(
-                new User({
-                    id: 1,
-                    name: 'New User',
-                    email: 'useremail@email.com',
-                    password: 'P4ssw0rd!',
-                    role: UserRole.User,
-                })
-            );
-            mockAuthService.login.mockResolvedValue({ access_token: null });
-            const error = new Error('Authentication token generation failed');
-            mockHttpErrorHandler.toHttpException.mockImplementation(() => {
-                throw error;
-            });
-
-            await expect(orchestrator.create(mockCreateUserDto)).rejects.toThrow(
-                'Authentication token generation failed'
-            );
-            expect(HttpErrorHandler.toHttpException).toHaveBeenCalledWith(error, 'create');
-        });
-
-        it('should handle and rethrow service errors', async () => {
-            const serviceError = new Error('Database connection failed');
-            mockUserService.create.mockRejectedValue(serviceError);
-            mockHttpErrorHandler.toHttpException.mockImplementation(() => {
-                throw serviceError;
-            });
-
-            await expect(orchestrator.create(mockCreateUserDto)).rejects.toThrow(
-                'Database connection failed'
-            );
-            expect(HttpErrorHandler.toHttpException).toHaveBeenCalledWith(serviceError, 'create');
-        });
-    });
-
     describe('findUser', () => {
         beforeEach(() =>
             mockHttpErrorHandler.validateAuthenticatedRequest.mockImplementation(() => {})

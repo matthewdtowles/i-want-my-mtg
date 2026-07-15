@@ -5,7 +5,6 @@ import { InventoryRepositoryPort } from 'src/core/inventory/ports/inventory.repo
 import { PriceCalculationPolicy } from 'src/core/pricing/price-calculation.policy';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
 import { INVENTORY_SORTS, SortOptions } from 'src/core/query/sort-options.enum';
-import { BaseRepository } from 'src/database/base.repository';
 import { QueryBuilderHelper } from 'src/database/query/query-builder.helper';
 import { activeEntityManager } from 'src/database/transaction-runner';
 import { getLogger } from 'src/logger/global-app-logger';
@@ -15,10 +14,7 @@ import { InventoryMapper } from './inventory.mapper';
 import { InventoryOrmEntity } from './inventory.orm-entity';
 
 @Injectable()
-export class InventoryRepository
-    extends BaseRepository<InventoryOrmEntity>
-    implements InventoryRepositoryPort
-{
+export class InventoryRepository implements InventoryRepositoryPort {
     readonly TABLE = 'inventory';
     private readonly LOGGER = getLogger(InventoryRepository.name);
 
@@ -33,7 +29,6 @@ export class InventoryRepository
         @InjectRepository(InventoryOrmEntity)
         protected readonly repository: Repository<InventoryOrmEntity>
     ) {
-        super();
         this.LOGGER.debug(`Instantiated.`);
     }
 

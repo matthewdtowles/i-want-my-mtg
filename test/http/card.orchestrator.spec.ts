@@ -1,3 +1,4 @@
+import { ConfigService } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
 import { Card } from 'src/core/card/card.entity';
 import { CardRarity } from 'src/core/card/card.rarity.enum';
@@ -7,6 +8,7 @@ import { PriceAlertService } from 'src/core/price-alert/price-alert.service';
 import { TransactionService } from 'src/core/transaction/transaction.service';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
+import { buildCardUrl } from 'src/http/base/http.util';
 import { CardOrchestrator } from 'src/http/hbs/card/card.orchestrator';
 import { CardViewDto } from 'src/http/hbs/card/dto/card.view.dto';
 import { HttpErrorHandler } from 'src/http/http.error.handler';
@@ -120,6 +122,12 @@ describe('CardOrchestrator', () => {
                         getRemainingQuantity: jest.fn().mockResolvedValue(0),
                     },
                 },
+                {
+                    provide: ConfigService,
+                    useValue: {
+                        get: jest.fn((key: string, defaultValue: string) => defaultValue),
+                    },
+                },
             ],
         }).compile();
 
@@ -165,6 +173,20 @@ describe('CardOrchestrator', () => {
             expect(cardService.findBySetCodeAndNumber).toHaveBeenCalled();
             expect(cardService.findWithName).toHaveBeenCalled();
             expect(inventoryService.findForUser).toHaveBeenCalled();
+
+            // setName is absent on this fixture, so the orchestrator falls back to the
+            // upper-cased set code.
+            expect(result.title).toBe('Lightning Bolt (TST) - I Want My MTG');
+            expect(result.metaDescription).toBe(
+                'Lightning Bolt from TST - prices, legalities, and other printings.'
+            );
+            expect(result.indexable).toBe(true);
+            expect(result.canonicalUrl).toBe(
+                `http://localhost:3000${buildCardUrl(result.card.setCode, result.card.number)}`
+            );
+            expect(result.ogImage).toBe(result.card.imgSrc);
+            expect(result.lcpImageUrl).toBe(result.card.imgSrc);
+            expect(result.jsonLd).toBeTruthy();
         });
 
         it('should throw error when card not found', async () => {

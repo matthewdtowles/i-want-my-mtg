@@ -1,4 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { Card } from 'src/core/card/card.entity';
 import { DomainNotFoundError } from 'src/core/errors/domain.errors';
 import { CardImgType } from 'src/core/card/card.img.type.enum';
@@ -11,6 +12,11 @@ import { SortOptions } from 'src/core/query/sort-options.enum';
 import { TransactionService } from 'src/core/transaction/transaction.service';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
 import { buildCardUrl, isAuthenticated, toStringRecord } from 'src/http/base/http.util';
+import {
+    buildBreadcrumbJsonLd,
+    buildCardJsonLd,
+    buildJsonLd,
+} from 'src/http/base/json-ld.util';
 import { HttpErrorHandler } from 'src/http/http.error.handler';
 import { InventoryPresenter } from 'src/http/hbs/inventory/inventory.presenter';
 import { FilterView } from 'src/http/hbs/list/filter.view';
@@ -28,13 +34,16 @@ import { SingleCardResponseDto } from './dto/single-card.response.dto';
 @Injectable()
 export class CardOrchestrator {
     private readonly LOGGER = getLogger(CardOrchestrator.name);
+    private readonly appUrl: string;
 
     constructor(
         @Inject(CardService) private readonly cardService: CardService,
         @Inject(InventoryService) private readonly inventoryService: InventoryService,
         @Inject(PriceAlertService) private readonly priceAlertService: PriceAlertService,
-        @Inject(TransactionService) private readonly transactionService: TransactionService
+        @Inject(TransactionService) private readonly transactionService: TransactionService,
+        private readonly configService: ConfigService
     ) {
+        this.appUrl = this.configService.get<string>('APP_URL', 'http://localhost:3000');
         this.LOGGER.debug(`Initialized`);
     }
 
@@ -167,14 +176,18 @@ export class CardOrchestrator {
                 printingHeaders.push(setCardSortHeader(options, SortOptions.PRICE_FOIL, ['pr-2']));
             }
 
+            const breadcrumbs = [
+                { label: 'Home', url: '/' },
+                { label: 'Sets', url: '/sets' },
+                { label: singleCard.setCode.toUpperCase(), url: `/sets/${singleCard.setCode}` },
+                { label: singleCard.name, url: baseUrl },
+            ];
+            const cardName = singleCard.name || 'Card';
+            const setName = singleCard.setName || setCode.toUpperCase();
+
             return new CardViewDto({
                 authenticated: isAuthenticated(req),
-                breadcrumbs: [
-                    { label: 'Home', url: '/' },
-                    { label: 'Sets', url: '/sets' },
-                    { label: singleCard.setCode.toUpperCase(), url: `/sets/${singleCard.setCode}` },
-                    { label: singleCard.name, url: baseUrl },
-                ],
+                breadcrumbs,
                 card: singleCard,
                 costBasis,
                 untrackedNormal,
@@ -187,6 +200,16 @@ export class CardOrchestrator {
                 pagination: new PaginationView(options, baseUrl, totalPrintings),
                 filter: new FilterView(options, baseUrl),
                 tableHeadersRow: new TableHeadersRowView(printingHeaders),
+                title: `${cardName} (${setName}) - I Want My MTG`,
+                metaDescription: `${cardName} from ${setName} - prices, legalities, and other printings.`,
+                indexable: true,
+                lcpImageUrl: singleCard.imgSrc,
+                canonicalUrl: `${this.appUrl}${baseUrl}`,
+                ogImage: singleCard.imgSrc,
+                jsonLd: buildJsonLd(
+                    buildCardJsonLd(this.appUrl, singleCard, baseUrl),
+                    buildBreadcrumbJsonLd(this.appUrl, breadcrumbs)
+                ),
             });
         } catch (error) {
             this.LOGGER.debug(`Error finding set card ${setCode}/${setNumber}: ${error?.message}`);

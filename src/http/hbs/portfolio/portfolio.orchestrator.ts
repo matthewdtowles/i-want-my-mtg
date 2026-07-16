@@ -25,7 +25,7 @@ import {
     ColorChipView,
 } from './dto/portfolio-breakdown.view.dto';
 import { PortfolioViewDto } from './dto/portfolio.view.dto';
-import { formatGain, gainSign } from 'src/http/base/http.util';
+import { formatGain, gainSign, isAuthenticated } from 'src/http/base/http.util';
 import {
     CardPerformanceViewData,
     PortfolioPresenter,
@@ -120,7 +120,7 @@ export class PortfolioOrchestrator {
             }
 
             return new PortfolioViewDto({
-                authenticated: req.isAuthenticated(),
+                authenticated: isAuthenticated(req),
                 subscribed,
                 breadcrumbs: [
                     { label: 'Home', url: '/' },

@@ -5,6 +5,7 @@ import { SubscriptionService } from 'src/core/billing/subscription.service';
 import { User } from 'src/core/user/user.entity';
 import { UserService } from 'src/core/user/user.service';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
+import { isAuthenticated } from 'src/http/base/http.util';
 import { BillingViewDto, SubscriptionSummary } from './dto/billing.view.dto';
 
 @Injectable()
@@ -24,7 +25,7 @@ export class BillingOrchestrator {
         const subscription = await this.subscriptionService.getSubscriptionForUser(req.user.id);
         const summary = this.toSummary(subscription);
         return new BillingViewDto({
-            authenticated: req.isAuthenticated(),
+            authenticated: isAuthenticated(req),
             subscribed: !!summary?.isActive,
             breadcrumbs: this.breadCrumbs,
             indexable: false,

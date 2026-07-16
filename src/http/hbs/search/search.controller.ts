@@ -27,9 +27,6 @@ export class SearchController {
         @Req() req: AuthenticatedRequest
     ): Promise<SearchViewDto> {
         const options = new SearchQueryOptions(query);
-        const view = await this.searchOrchestrator.search(req, options);
-        view.title = options.q ? `Search: ${options.q} - I Want My MTG` : 'Search - I Want My MTG';
-        view.metaDescription = 'Search for Magic: The Gathering cards and sets.';
-        return view;
+        return this.searchOrchestrator.search(req, options);
     }
 }

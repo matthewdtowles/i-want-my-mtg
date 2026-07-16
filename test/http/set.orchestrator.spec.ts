@@ -1,3 +1,4 @@
+import { ConfigService } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
 import { Card } from 'src/core/card/card.entity';
 import { CardRarity } from 'src/core/card/card.rarity.enum';
@@ -119,6 +120,12 @@ describe('SetOrchestrator', () => {
                         findInventoryQuantitiesForUser: jest.fn(),
                     },
                 },
+                {
+                    provide: ConfigService,
+                    useValue: {
+                        get: jest.fn((key: string, defaultValue: string) => defaultValue),
+                    },
+                },
             ],
         }).compile();
 
@@ -158,6 +165,10 @@ describe('SetOrchestrator', () => {
             expect(result.setList.length).toBe(1);
             expect(result.pagination.current).toBe(1);
             expect(result.toast).toBeUndefined();
+            expect(result.title).toBe('Sets - I Want My MTG');
+            expect(result.indexable).toBe(true);
+            expect(result.canonicalUrl).toBe('http://localhost:3000/sets');
+            expect(result.ogImage).toBe('http://localhost:3000/public/images/logo.webp');
         });
 
         it('returns error DTO on service failure', async () => {
@@ -222,6 +233,9 @@ describe('SetOrchestrator', () => {
             expect(result).toBeInstanceOf(SetListViewDto);
             expect(result.setList.length).toBe(1);
             expect(result.pagination).toBeUndefined();
+            expect(result.title).toBe('Upcoming Sets - I Want My MTG');
+            expect(result.indexable).toBe(true);
+            expect(result.canonicalUrl).toBe('http://localhost:3000/spoilers');
         });
 
         it('handles empty spoiler list', async () => {
@@ -260,6 +274,13 @@ describe('SetOrchestrator', () => {
             expect(result.set.cards.length).toBe(1);
             expect(result.pagination.current).toBe(1);
             expect(result.toast).toBeUndefined();
+            expect(result.title).toBe('Test Set - I Want My MTG');
+            expect(result.metaDescription).toBe(
+                'View cards, prices, and collection stats for Test Set.'
+            );
+            expect(result.indexable).toBe(true);
+            expect(result.canonicalUrl).toBe('http://localhost:3000/sets/tst');
+            expect(result.ogImage).toBe('http://localhost:3000/public/images/logo.webp');
         });
 
         it('returns error if set not found', async () => {

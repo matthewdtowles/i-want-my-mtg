@@ -14,7 +14,7 @@ describe('SetPresenter.toSetPriceDto', () => {
     });
 
     it('tolerates a null SetPrice', () => {
-        const result = SetPresenter.toSetPriceDto(null as unknown as SetPrice);
+        const result = SetPresenter.toSetPriceDto(null);
 
         expect(result.gridCols).toBe(0);
         expect(result.defaultPrice).toBe('-');

@@ -279,7 +279,7 @@ describe('SetOrchestrator', () => {
                 'View cards, prices, and collection stats for Test Set.'
             );
             expect(result.indexable).toBe(true);
-            expect(result.canonicalUrl).toBe('http://localhost:3000/sets/TST');
+            expect(result.canonicalUrl).toBe('http://localhost:3000/sets/tst');
             expect(result.ogImage).toBe('http://localhost:3000/public/images/logo.webp');
         });
 

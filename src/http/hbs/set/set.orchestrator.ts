@@ -278,7 +278,7 @@ export class SetOrchestrator {
                 title: `${setResponse.name || setCode.toUpperCase()} - I Want My MTG`,
                 metaDescription: `View cards, prices, and collection stats for ${setResponse.name || setCode.toUpperCase()}.`,
                 indexable: true,
-                canonicalUrl: `${this.appUrl}/sets/${setCode}`,
+                canonicalUrl: `${this.appUrl}/sets/${set.code.toLowerCase()}`,
                 ogImage: `${this.appUrl}/public/images/logo.webp`,
             });
         } catch (error) {

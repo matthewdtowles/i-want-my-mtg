@@ -51,6 +51,8 @@ export class SearchOrchestrator {
                         { label: 'Search', url: '/search' },
                     ],
                     query: '',
+                    title: 'Search - I Want My MTG',
+                    metaDescription: 'Search for Magic: The Gathering cards and sets.',
                 });
             }
 
@@ -71,6 +73,8 @@ export class SearchOrchestrator {
                 cardTotal: result.cardTotal,
                 setTotal: result.setTotal,
                 pagination: new PaginationView(options, baseUrl, paginationTotal),
+                title: `Search: ${term} - I Want My MTG`,
+                metaDescription: 'Search for Magic: The Gathering cards and sets.',
             });
         } catch (error) {
             this.LOGGER.debug(`Error searching for "${term}": ${error?.message}`);

@@ -1,4 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { Card } from 'src/core/card/card.entity';
 import { CardImgType } from 'src/core/card/card.img.type.enum';
 import { DomainNotFoundError } from 'src/core/errors/domain.errors';
@@ -48,6 +49,7 @@ import { SetTypeMapper } from 'src/http/base/set-type.mapper';
 @Injectable()
 export class SetOrchestrator {
     private readonly LOGGER = getLogger(SetOrchestrator.name);
+    private readonly appUrl: string;
 
     constructor(
         @Inject(SetService) private readonly setService: SetService,
@@ -57,8 +59,11 @@ export class SetOrchestrator {
         private readonly importService: InventoryImportService,
         @Inject(SetChecklistService) private readonly checklistService: SetChecklistService,
         @Inject(SealedProductService)
-        private readonly sealedProductService: SealedProductService
-    ) {}
+        private readonly sealedProductService: SealedProductService,
+        private readonly configService: ConfigService
+    ) {
+        this.appUrl = this.configService.get<string>('APP_URL', 'http://localhost:3000');
+    }
 
     async findSetList(
         req: AuthenticatedRequest,
@@ -69,10 +74,16 @@ export class SetOrchestrator {
         try {
             const userId = req.user?.id ?? 0;
 
-            if (options.sort) {
-                return await this.findFlatSetList(req, breadcrumbs, options, userId);
-            }
-            return await this.findBlockSetList(req, breadcrumbs, options, userId);
+            const view = options.sort
+                ? await this.findFlatSetList(req, breadcrumbs, options, userId)
+                : await this.findBlockSetList(req, breadcrumbs, options, userId);
+            view.title = 'Sets - I Want My MTG';
+            view.metaDescription =
+                'Browse all Magic: The Gathering sets with prices, card lists, and collection tracking.';
+            view.indexable = true;
+            view.canonicalUrl = `${this.appUrl}/sets`;
+            view.ogImage = `${this.appUrl}/public/images/logo.webp`;
+            return view;
         } catch (error) {
             this.LOGGER.debug(`Error finding list of sets: ${error?.message}`);
             HttpErrorHandler.toHttpException(error, 'findSetList');
@@ -177,6 +188,11 @@ export class SetOrchestrator {
                 authenticated: isAuthenticated(req),
                 breadcrumbs,
                 setList: await this.createSetMetaResponseDtos(userId, sets),
+                title: 'Upcoming Sets - I Want My MTG',
+                metaDescription:
+                    'Preview upcoming Magic: The Gathering sets before they release.',
+                indexable: true,
+                canonicalUrl: `${this.appUrl}/spoilers`,
             });
         } catch (error) {
             this.LOGGER.debug(`Error finding spoiler sets: ${error?.message}`);
@@ -259,6 +275,11 @@ export class SetOrchestrator {
                     hasAnyFoilPrice,
                     isAuthenticated(req)
                 ),
+                title: `${setResponse.name || setCode.toUpperCase()} - I Want My MTG`,
+                metaDescription: `View cards, prices, and collection stats for ${setResponse.name || setCode.toUpperCase()}.`,
+                indexable: true,
+                canonicalUrl: `${this.appUrl}/sets/${setCode}`,
+                ogImage: `${this.appUrl}/public/images/logo.webp`,
             });
         } catch (error) {
             this.LOGGER.debug(`Failed to find set ${setCode}: ${error?.message}.`);

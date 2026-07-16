@@ -1,3 +1,4 @@
+import { ConfigService } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
 import { NotFoundException } from '@nestjs/common';
 import { SealedProductInventory } from 'src/core/sealed-product/sealed-product-inventory.entity';
@@ -74,6 +75,12 @@ describe('SealedProductOrchestrator', () => {
                         findByCode: jest.fn(),
                     },
                 },
+                {
+                    provide: ConfigService,
+                    useValue: {
+                        get: jest.fn((key: string, defaultValue: string) => defaultValue),
+                    },
+                },
             ],
         }).compile();
 
@@ -108,6 +115,11 @@ describe('SealedProductOrchestrator', () => {
             expect(result.product.contentsSummary).toBe('36x Draft Booster Pack');
             expect(result.product.productSize).toBe(36);
             expect(result.product.cardCount).toBe(36);
+            expect(result.title).toBe('Draft Booster Box - I Want My MTG');
+            expect(result.metaDescription).toBe(
+                'Draft Booster Box sealed product details and pricing.'
+            );
+            expect(result.canonicalUrl).toBe('http://localhost:3000/sealed-products/sp-abc');
         });
 
         it('populates breadcrumbs with set and product links', async () => {

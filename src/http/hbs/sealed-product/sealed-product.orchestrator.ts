@@ -1,4 +1,5 @@
 import { HttpException, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { SealedProductService } from 'src/core/sealed-product/sealed-product.service';
 import { SetService } from 'src/core/set/set.service';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
@@ -12,12 +13,16 @@ import { SealedProductHbsPresenter } from './sealed-product.presenter';
 @Injectable()
 export class SealedProductOrchestrator {
     private readonly LOGGER = getLogger(SealedProductOrchestrator.name);
+    private readonly appUrl: string;
 
     constructor(
         @Inject(SealedProductService)
         private readonly sealedProductService: SealedProductService,
-        @Inject(SetService) private readonly setService: SetService
-    ) {}
+        @Inject(SetService) private readonly setService: SetService,
+        private readonly configService: ConfigService
+    ) {
+        this.appUrl = this.configService.get<string>('APP_URL', 'http://localhost:3000');
+    }
 
     async findByUuid(
         req: AuthenticatedRequest,
@@ -56,6 +61,9 @@ export class SealedProductOrchestrator {
                 product: row,
                 setName: set?.name,
                 setKeyruneCode: set?.keyruneCode,
+                title: `${row.name} - I Want My MTG`,
+                metaDescription: `${row.name} sealed product details and pricing.`,
+                canonicalUrl: `${this.appUrl}/sealed-products/${uuid}`,
             });
         } catch (error) {
             if (error instanceof HttpException) throw error;

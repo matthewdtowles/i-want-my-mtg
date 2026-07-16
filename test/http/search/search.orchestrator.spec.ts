@@ -73,6 +73,8 @@ describe('SearchOrchestrator', () => {
             expect(result.query).toBe('');
             expect(result.cards).toEqual([]);
             expect(result.sets).toEqual([]);
+            expect(result.title).toBe('Search - I Want My MTG');
+            expect(result.metaDescription).toBe('Search for Magic: The Gathering cards and sets.');
         });
 
         it('should return search results with mapped DTOs', async () => {
@@ -97,6 +99,8 @@ describe('SearchOrchestrator', () => {
             expect(result.sets[0].url).toBe('/sets/lea');
             expect(result.cardTotal).toBe(1);
             expect(result.setTotal).toBe(1);
+            expect(result.title).toBe('Search: bolt - I Want My MTG');
+            expect(result.metaDescription).toBe('Search for Magic: The Gathering cards and sets.');
         });
 
         it('should include breadcrumbs', async () => {

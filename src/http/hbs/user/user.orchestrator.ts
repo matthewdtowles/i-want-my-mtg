@@ -7,6 +7,7 @@ import { UserService } from 'src/core/user/user.service';
 import { ActionStatus } from 'src/http/base/action-status.enum';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
 import { BaseViewDto } from 'src/http/base/base.view.dto';
+import { isAuthenticated } from 'src/http/base/http.util';
 import { Toast } from 'src/http/base/toast';
 import { HttpErrorHandler } from 'src/http/http.error.handler';
 import { getLogger } from 'src/logger/global-app-logger';
@@ -213,7 +214,7 @@ export class UserOrchestrator {
                 req.query.action === 'login';
             this.LOGGER.debug(`User ${userId} login ${login ? 'success' : 'failed'}.`);
             return {
-                authenticated: req.isAuthenticated(),
+                authenticated: isAuthenticated(req),
                 breadcrumbs: this.breadCrumbs,
                 indexable: false,
                 title: 'My Account - I Want My MTG',
@@ -257,7 +258,7 @@ export class UserOrchestrator {
             if (req.user.email === userRequestDto.email && req.user.name === userRequestDto.name) {
                 this.LOGGER.debug(`No changes detected for user ${userId}.`);
                 return new UserViewDto({
-                    authenticated: req.isAuthenticated(),
+                    authenticated: isAuthenticated(req),
                     breadcrumbs: this.breadCrumbs,
                     toast: new Toast('No changes detected', ActionStatus.INFO),
                     user: null,
@@ -271,7 +272,7 @@ export class UserOrchestrator {
             const updatedUser: UserResponseDto = await this.userService.update(updateUser);
             this.LOGGER.debug(`User ${updatedUser.id} updated successfully.`);
             return new UserViewDto({
-                authenticated: req.isAuthenticated(),
+                authenticated: isAuthenticated(req),
                 breadcrumbs: this.breadCrumbs,
                 toast: new Toast(
                     `User ${updatedUser.name} updated successfully`,
@@ -301,7 +302,7 @@ export class UserOrchestrator {
                 `Password update for user ${userId}: ${pwdUpdated ? 'success' : 'failed'}.`
             );
             return new BaseViewDto({
-                authenticated: req.isAuthenticated(),
+                authenticated: isAuthenticated(req),
                 breadcrumbs: this.breadCrumbs,
                 toast: new Toast(
                     pwdUpdated ? 'Password updated' : 'Error updating password',

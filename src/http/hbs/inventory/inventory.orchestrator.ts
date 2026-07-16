@@ -20,7 +20,7 @@ import { TransactionService } from 'src/core/transaction/transaction.service';
 import { ActionStatus } from 'src/http/base/action-status.enum';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
 import { Toast } from 'src/http/base/toast';
-import { completionRate, toDollar } from 'src/http/base/http.util';
+import { completionRate, isAuthenticated, toDollar } from 'src/http/base/http.util';
 import { HttpErrorHandler } from 'src/http/http.error.handler';
 import { BaseOnlyToggleView } from 'src/http/hbs/list/base-only-toggle.view';
 import { FilterView } from 'src/http/hbs/list/filter.view';
@@ -94,7 +94,7 @@ export class InventoryOrchestrator {
             this.LOGGER.debug(`Found ${cards.length} inventory items for user ${userId}.`);
 
             return new InventoryViewDto({
-                authenticated: req.isAuthenticated(),
+                authenticated: isAuthenticated(req),
                 baseOnlyToggle: new BaseOnlyToggleView(
                     options,
                     baseUrl,

@@ -26,6 +26,7 @@ import {
 import { ApiResponseDto } from 'src/http/base/api-response.dto';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
 import { JwtAuthGuard } from 'src/http/auth/jwt.auth.guard';
+import { ApiOkEnvelope } from '../shared/api-ok-envelope.decorator';
 import { ApiRateLimitGuard } from '../shared/api-rate-limit.guard';
 import { CreateApiKeyDto } from './dto/api-key-request.dto';
 import { ApiKeyDto, CreatedApiKeyDto } from './dto/api-key-response.dto';
@@ -78,7 +79,7 @@ export class ApiKeyApiController {
 
     @Get()
     @ApiOperation({ summary: 'List API keys for the authenticated user' })
-    @ApiResponse({ status: 200 })
+    @ApiOkEnvelope(ApiKeyDto, { isArray: true, description: 'API keys for the user' })
     async findAll(@Req() req: AuthenticatedRequest): Promise<ApiResponseDto<ApiKeyDto[]>> {
         const keys = await this.apiKeyService.listForUser(req.user.id);
         return ApiResponseDto.ok(keys.map(ApiKeyApiPresenter.toDto));
@@ -87,7 +88,7 @@ export class ApiKeyApiController {
     @Post()
     @HttpCode(HttpStatus.CREATED)
     @ApiOperation({ summary: 'Create a new API key. Raw key is returned once.' })
-    @ApiResponse({ status: 201 })
+    @ApiOkEnvelope(CreatedApiKeyDto, { status: 201, description: 'Created API key (raw key shown once)' })
     async create(
         @Body() dto: CreateApiKeyDto,
         @Req() req: AuthenticatedRequest

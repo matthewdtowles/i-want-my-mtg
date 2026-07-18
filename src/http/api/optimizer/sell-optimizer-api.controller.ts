@@ -1,8 +1,9 @@
 import { Controller, Get, Inject, Query, Req, UseGuards } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { SellOptimizerService } from 'src/core/optimizer/sell-optimizer.service';
 import { ApiResponseDto } from 'src/http/base/api-response.dto';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
+import { ApiOkEnvelope } from '../shared/api-ok-envelope.decorator';
 import { ApiRateLimitGuard } from '../shared/api-rate-limit.guard';
 import { JwtOrApiKeyGuard } from '../shared/jwt-or-api-key.guard';
 import { OptimizerApiResponseDto } from './dto/optimizer-response.dto';
@@ -32,7 +33,7 @@ export class SellOptimizerApiController {
         description:
             'Store-credit bonus as a fraction (0.30 = +30%). Clamped to [0, 2]; default 0.30.',
     })
-    @ApiResponse({ status: 200, description: 'Cash-vs-credit plan' })
+    @ApiOkEnvelope(OptimizerApiResponseDto, { description: 'Cash-vs-credit plan' })
     async getOptimizer(
         @Req() req: AuthenticatedRequest,
         @Query('bonus') bonus?: string

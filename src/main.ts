@@ -97,6 +97,55 @@ async function bootstrap() {
         res.redirect(301, '/api/openapi-public.json');
     });
 
+    // Mobile app identifiers used by the deep-link association files below.
+    // Both values are public (they ship inside the association files themselves
+    // and inside the app binaries), so they live in source, not env.
+    const MOBILE_BUNDLE_ID = 'com.matthewdtowles.iwantmymtg';
+    const APPLE_TEAM_ID = '2D6GN2T587';
+
+    // Apple Universal Links: lets the iOS app claim the https verification link
+    // (/user/verify?token=...) so tapping it in the email opens the app instead
+    // of the browser. When the app isn't installed the same URL falls back to
+    // the server-rendered web verification page.
+    server.get('/.well-known/apple-app-site-association', (_req, res) => {
+        res.set('Content-Type', 'application/json');
+        res.json({
+            applinks: {
+                apps: [],
+                details: [
+                    {
+                        appID: `${APPLE_TEAM_ID}.${MOBILE_BUNDLE_ID}`,
+                        paths: ['/user/verify'],
+                    },
+                ],
+            },
+        });
+    });
+
+    // Android App Links: the equivalent of the AASA file. Verifies that the
+    // Android app may open https://iwantmymtg.net/user/verify links directly.
+    // The SHA-256 fingerprint(s) of the app's signing certificate come from
+    // `eas credentials` (or Play Console → App integrity → App signing), set as
+    // ANDROID_CERT_SHA256 (comma-separated for multiple). When unset the file is
+    // still served but empty, so Android falls back to opening the web page.
+    const androidCertSha256 = (process.env.ANDROID_CERT_SHA256 ?? '')
+        .split(',')
+        .map((fp) => fp.trim())
+        .filter(Boolean);
+    server.get('/.well-known/assetlinks.json', (_req, res) => {
+        res.set('Content-Type', 'application/json');
+        res.json([
+            {
+                relation: ['delegate_permission/common.handle_all_urls'],
+                target: {
+                    namespace: 'android_app',
+                    package_name: MOBILE_BUNDLE_ID,
+                    sha256_cert_fingerprints: androidCertSha256,
+                },
+            },
+        ]);
+    });
+
     if (process.env.NODE_ENV !== 'production') {
         SwaggerModule.setup('api/docs', app, openApiDocument);
     }

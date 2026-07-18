@@ -8,7 +8,7 @@ DO $$
 BEGIN
   IF EXISTS (
     SELECT 1 FROM information_schema.columns
-    WHERE table_name = 'card' AND column_name = 'layout' AND is_nullable = 'YES'
+    WHERE table_schema = 'public' AND table_name = 'card' AND column_name = 'layout' AND is_nullable = 'YES'
   ) THEN
     UPDATE card SET layout = 'normal' WHERE layout IS NULL;
     ALTER TABLE card

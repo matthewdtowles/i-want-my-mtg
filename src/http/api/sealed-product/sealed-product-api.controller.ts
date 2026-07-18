@@ -24,6 +24,7 @@ import { JwtAuthGuard } from 'src/http/auth/jwt.auth.guard';
 import { OptionalAuthOrApiKeyGuard } from 'src/http/api/shared/optional-auth-or-api-key.guard';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
 import { ApiResponseDto, PaginationMeta } from 'src/http/base/api-response.dto';
+import { ApiOkEnvelope } from '../shared/api-ok-envelope.decorator';
 import { ApiRateLimitGuard } from '../shared/api-rate-limit.guard';
 import {
     SealedInventoryDeleteRequestDto,
@@ -50,7 +51,10 @@ export class SealedProductApiController {
     })
     @ApiQuery({ name: 'page', required: false, type: Number })
     @ApiQuery({ name: 'limit', required: false, type: Number })
-    @ApiResponse({ status: 200, description: 'Sealed products for the set' })
+    @ApiOkEnvelope(SealedProductApiResponseDto, {
+        isArray: true,
+        description: 'Sealed products for the set',
+    })
     async findBySet(
         @Param('code') code: string,
         @Query() query: Record<string, string>,
@@ -86,7 +90,7 @@ export class SealedProductApiController {
     @Get('sealed-products/:uuid')
     @UseGuards(OptionalAuthOrApiKeyGuard, ApiRateLimitGuard)
     @ApiOperation({ operationId: 'getSealedProduct', summary: 'Get sealed product detail' })
-    @ApiResponse({ status: 200, description: 'Sealed product detail' })
+    @ApiOkEnvelope(SealedProductApiResponseDto, { description: 'Sealed product detail' })
     @ApiResponse({ status: 404, description: 'Not found' })
     async findByUuid(
         @Param('uuid') uuid: string
@@ -104,7 +108,10 @@ export class SealedProductApiController {
     @ApiOperation({ summary: 'List sealed product inventory' })
     @ApiQuery({ name: 'page', required: false, type: Number })
     @ApiQuery({ name: 'limit', required: false, type: Number })
-    @ApiResponse({ status: 200, description: 'Sealed inventory list' })
+    @ApiOkEnvelope(SealedProductInventoryApiDto, {
+        isArray: true,
+        description: 'Sealed inventory list',
+    })
     async findInventory(
         @Query() query: Record<string, string>,
         @Req() req: AuthenticatedRequest
@@ -126,7 +133,11 @@ export class SealedProductApiController {
     @ApiBearerAuth()
     @HttpCode(HttpStatus.CREATED)
     @ApiOperation({ summary: 'Add sealed product to inventory (Premium)' })
-    @ApiResponse({ status: 201, description: 'Item added' })
+    @ApiOkEnvelope(SealedProductInventoryApiDto, {
+        status: 201,
+        nullableData: true,
+        description: 'Item added',
+    })
     @ApiResponse({ status: 403, description: 'Premium subscription required' })
     async addToInventory(
         @Body() dto: SealedInventoryRequestDto,
@@ -148,7 +159,10 @@ export class SealedProductApiController {
     @RequiresSubscription()
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Update sealed product inventory quantity (Premium)' })
-    @ApiResponse({ status: 200, description: 'Item updated' })
+    @ApiOkEnvelope(SealedProductInventoryApiDto, {
+        nullableData: true,
+        description: 'Item updated',
+    })
     @ApiResponse({ status: 403, description: 'Premium subscription required' })
     async updateInventory(
         @Body() dto: SealedInventoryRequestDto,

@@ -63,4 +63,29 @@ describe('Auth API (e2e)', () => {
             expect(userRes.body.data).toHaveProperty('email', TEST_USER.email);
         });
     });
+
+    describe('POST /api/v1/auth/register', () => {
+        it('returns a uniform 202 acknowledgement for an already-registered email (non-enumeration)', async () => {
+            const res = await request(app.getHttpServer())
+                .post('/api/v1/auth/register')
+                .send({ email: TEST_USER.email, name: 'Integ User', password: 'TestPass1!' })
+                .expect(202);
+
+            expect(res.body.success).toBe(true);
+            expect(res.body.data).toHaveProperty('message');
+            expect(typeof res.body.data.message).toBe('string');
+        });
+    });
+
+    describe('POST /api/v1/auth/verify-email', () => {
+        it('returns 400 for an invalid/expired verification token', async () => {
+            const res = await request(app.getHttpServer())
+                .post('/api/v1/auth/verify-email')
+                .send({ token: 'not-a-real-token' })
+                .expect(400);
+
+            expect(res.body.success).toBe(false);
+            expect(res.body.error).toBeDefined();
+        });
+    });
 });

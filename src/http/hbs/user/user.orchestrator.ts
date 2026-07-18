@@ -83,14 +83,24 @@ export class UserOrchestrator {
         if (!result.success || !result.user) {
             return new VerificationResultDto({ success: false, message: result.message });
         }
-        // Issue the web session cookie token from the verified user.
-        const authToken = await this.authService.login(result.user);
-        return new VerificationResultDto({
-            success: true,
-            message: result.message,
-            token: authToken.access_token,
-            user: result.user,
-        });
+        // Issue the web session cookie token from the verified user. The email
+        // is already verified at this point, so a token-issuance failure must
+        // surface as a consistent verification error page, not a generic 500.
+        try {
+            const authToken = await this.authService.login(result.user);
+            return new VerificationResultDto({
+                success: true,
+                message: result.message,
+                token: authToken.access_token,
+                user: result.user,
+            });
+        } catch (error) {
+            this.LOGGER.error(`Failed to issue session after verifying ${result.user.email}: ${error}.`);
+            return new VerificationResultDto({
+                success: false,
+                message: 'Your email was verified, but we could not sign you in. Please log in.',
+            });
+        }
     }
 
     async findUser(req: AuthenticatedRequest): Promise<UserViewDto> {

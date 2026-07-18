@@ -20,6 +20,14 @@ else
   echo "Using POSTGRES_* vars for connection"
 fi
 
+# Fail fast if a migration can't acquire its locks (e.g. a stuck ingest holding
+# card in an idle-in-transaction session). Without this, a lock-blocked ALTER
+# queues an ACCESS EXCLUSIVE request in front of all live reads and takes the
+# site down until the deploy is killed. lock_timeout only aborts on lock
+# *acquisition*, so slow-but-running migrations (large index builds) still
+# complete.
+export PGOPTIONS="${PGOPTIONS:+$PGOPTIONS }-c lock_timeout=15000"
+
 MIGRATIONS_DIR="${MIGRATIONS_DIR:-/migrations}"
 echo "Running migrations from ${MIGRATIONS_DIR}"
 

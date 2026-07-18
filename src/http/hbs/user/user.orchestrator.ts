@@ -1,7 +1,6 @@
 import { HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { AuthService } from 'src/core/auth/auth.service';
-import { EmailService } from 'src/core/email/email.service';
-import { PendingUserService } from 'src/core/user/pending-user.service';
+import { SignupService } from 'src/core/user/signup.service';
 import { User } from 'src/core/user/user.entity';
 import { UserService } from 'src/core/user/user.service';
 import { ActionStatus } from 'src/http/base/action-status.enum';
@@ -55,11 +54,6 @@ const SET_TYPE_LABELS: Record<KnownSetType, string> = {
 export class UserOrchestrator {
     private readonly LOGGER = getLogger(UserOrchestrator.name);
 
-    /** Uniform signup acknowledgement — same for new, registered, and pending
-     * emails so the response can't be used to enumerate accounts (B10). */
-    private static readonly SIGNUP_ACK_MESSAGE =
-        'Please check your email to verify your account';
-
     private readonly breadCrumbs = [
         { label: 'Home', url: '/' },
         { label: 'User', url: '/user' },
@@ -67,9 +61,8 @@ export class UserOrchestrator {
 
     constructor(
         @Inject(UserService) private readonly userService: UserService,
-        @Inject(PendingUserService) private readonly pendingUserService: PendingUserService,
         @Inject(AuthService) private readonly authService: AuthService,
-        @Inject(EmailService) private readonly emailService: EmailService
+        @Inject(SignupService) private readonly signupService: SignupService
     ) {
         this.LOGGER.debug(`Initialized`);
     }
@@ -77,126 +70,35 @@ export class UserOrchestrator {
     async initiateSignup(
         createUserDto: CreateUserRequestDto
     ): Promise<{ success: boolean; message: string }> {
-        this.LOGGER.debug(`Initiating signup for email: ${createUserDto.email}.`);
-        try {
-            // Account enumeration defense (B10): every outcome that isn't a
-            // genuine server error returns the same acknowledgement, so a caller
-            // can't tell a registered/pending email from a fresh one.
-            const existingUser = await this.userService.findByEmail(createUserDto.email);
-            if (existingUser) {
-                this.LOGGER.debug(`Signup attempted for already-registered email.`);
-                return { success: true, message: UserOrchestrator.SIGNUP_ACK_MESSAGE };
-            }
-
-            // Check if there's already a pending registration
-            const existingPending = await this.pendingUserService.findByEmail(createUserDto.email);
-            if (existingPending && !existingPending.isExpired()) {
-                this.LOGGER.debug(
-                    `Pending registration already exists for ${createUserDto.email}.`
-                );
-                return { success: true, message: UserOrchestrator.SIGNUP_ACK_MESSAGE };
-            }
-
-            // Create pending user (handles hashing and token generation)
-            const pendingUser = await this.pendingUserService.createPendingUser(
-                createUserDto.email,
-                createUserDto.name,
-                createUserDto.password
-            );
-
-            // Send verification email
-            const emailSent = await this.emailService.sendVerificationEmail(
-                pendingUser.email,
-                pendingUser.verificationToken,
-                pendingUser.name
-            );
-
-            if (!emailSent) {
-                await this.pendingUserService.deleteByEmail(createUserDto.email);
-                throw new Error('Failed to send verification email');
-            }
-
-            return { success: true, message: UserOrchestrator.SIGNUP_ACK_MESSAGE };
-        } catch (error) {
-            this.LOGGER.debug(`Error initiating signup for email: ${createUserDto.email}.`);
-            throw error;
-        }
+        await this.signupService.initiateSignup(
+            createUserDto.email,
+            createUserDto.name,
+            createUserDto.password
+        );
+        return { success: true, message: SignupService.SIGNUP_ACK_MESSAGE };
     }
 
     async verifyEmail(token: string): Promise<VerificationResultDto> {
-        this.LOGGER.debug(`Verifying email with token.`);
+        const result = await this.signupService.verifyEmail(token);
+        if (!result.success || !result.user) {
+            return new VerificationResultDto({ success: false, message: result.message });
+        }
+        // Issue the web session cookie token from the verified user. The email
+        // is already verified at this point, so a token-issuance failure must
+        // surface as a consistent verification error page, not a generic 500.
         try {
-            const pendingUser = await this.pendingUserService.findByToken(token);
-
-            if (!pendingUser) {
-                return new VerificationResultDto({
-                    success: false,
-                    message: 'Invalid or expired verification link',
-                });
-            }
-
-            if (pendingUser.isExpired()) {
-                await this.pendingUserService.deleteByToken(token);
-                return new VerificationResultDto({
-                    success: false,
-                    message: 'Verification link has expired. Please sign up again.',
-                });
-            }
-
-            // Check if a user with this email already exists (race condition guard)
-            const existingUser = await this.userService.findByEmail(pendingUser.email);
-            if (existingUser) {
-                // Another request already verified this token - clean up and log the user in
-                await this.pendingUserService.deleteByToken(token);
-                this.LOGGER.warn(
-                    `User ${pendingUser.email} already exists. Likely duplicate verification request.`
-                );
-                const authToken = await this.authService.login(existingUser);
-                return new VerificationResultDto({
-                    success: true,
-                    message: 'Email verified successfully! Welcome to I Want My MTG.',
-                    token: authToken.access_token,
-                    user: existingUser,
-                });
-            }
-
-            // Create the actual user
-            const user = new User({
-                email: pendingUser.email,
-                name: pendingUser.name,
-                password: pendingUser.passwordHash, // Already hashed
-                role: UserRole.User,
-            });
-
-            const createdUser = await this.userService.createWithHashedPassword(user);
-
-            if (!createdUser) {
-                this.LOGGER.error(
-                    `Failed to create user for ${pendingUser.email}. Pending user preserved for retry.`
-                );
-                return new VerificationResultDto({
-                    success: false,
-                    message: 'An error occurred during verification. Please try again.',
-                });
-            }
-
-            // Delete pending user only after successful user creation
-            await this.pendingUserService.deleteByToken(token);
-
-            // Generate auth token
-            const authToken = await this.authService.login(createdUser);
-
+            const authToken = await this.authService.login(result.user);
             return new VerificationResultDto({
                 success: true,
-                message: 'Email verified successfully! Welcome to I Want My MTG.',
+                message: result.message,
                 token: authToken.access_token,
-                user: createdUser,
+                user: result.user,
             });
         } catch (error) {
-            this.LOGGER.error(`Error verifying email: ${error.message}`);
+            this.LOGGER.error(`Failed to issue session after verifying ${result.user.email}: ${error}.`);
             return new VerificationResultDto({
                 success: false,
-                message: 'An error occurred during verification. Please try again.',
+                message: 'Your email was verified, but we could not sign you in. Please log in.',
             });
         }
     }

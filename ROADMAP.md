@@ -71,7 +71,9 @@ Surface buylist (sell-to-vendor) prices so users see what their collection is wo
 - **6.9 Tier C: broaden vendor coverage** — ⏭️ skipped (#515): no viable free/legitimate multi-vendor source; proceed single-source, multi-vendor pieces stay gated.
 - **Follow-up** — JSON API for buylist/sell/optimizer shipped (#530); mirror via MCP still open ([iwantmymtg-mcp#9](https://github.com/matthewdtowles/iwantmymtg-mcp/issues/9)).
 
-### Phase 10: Architecture (shipped)
+### Phase 10: Architecture ✅
+
+10.1 (evaluate removing NestJS) was dropped — staying on NestJS. Everything else shipped.
 
 - **10.2 Portfolio breakdown by color** ✅ — `card.colors text[]` (migration 040), "By Color" membership/overlap tab + superset color filter, exposed on the API (`?colors=`) + MCP.
 - **10.3 Scry interactive mode** ✅ — interactive CLI menu (`cargo run -- interactive`) with target selection, prompts, dry-run (scry repo).
@@ -79,7 +81,10 @@ Surface buylist (sell-to-vendor) prices so users see what their collection is wo
 - **10.5 Portfolio analytics drill-down** ✅ — inline lazy-loaded card slices on `/portfolio/breakdown` (#535), no-JS fallback to `?expand=`.
 - **10.6 Deck building in-page card search** ✅ — name-grouped search (`groupBy=name`, newest printing) on the deck page, inline add to main/sideboard (#536).
 - **10.7 Import public decklists + buildability** ✅ — paste-text import, inventory gap/completeness, tournament catalog (`published_deck*`, migration 043, fbettega feed via Scry), browse + compare at `/published-decks` (#537). *(deferred: URL/per-site paste import, archetype enrichment, fuzzy matching)*
+- **10.8 Scry: ingestion performance regression** ✅ — the granular per-vendor price store was the cause; investigation concluded **cut, don't optimize** (`granular_price_history` was write-only; ~82% of `granular_price` rows were never-read retail; the MTGJSON CK buylist was 88% stale and fully covered by CK-direct). Executed in 10.10, which superseded/closed the tiered-optimization issues scry#24–#27/#31. The remaining sealed `AllPrintings` re-stream was then solved by a **single-pass tee** — one stream feeding both the card and sealed extractors instead of downloading + tokenizing the file twice (scry PR #33). Full ingest **~27 min → ~4.4 min**; scry#22 closed 2026-06-21.
+- **10.9 MCP: color breakdown + deck building parity** ✅ — regenerated API types, fixed the `get_portfolio_breakdown` dimensions (dropped the non-existent `format`, added `color` + the `colors` filter), added the 10-tool deck group (iwantmymtg-mcp#16).
 - **10.10 Cut granular price store → CK-direct-only buylist** ✅ — dropped `granular_price_history` + purged unread retail/stale rows (migration 042); price ingest ~18 min → ~1 min (scry#32 + #538, verified 2026-06-20).
+- **10.11 Scry: no-op batch concurrency** ✅ — `CONCURRENCY = 6` + a `Semaphore` + `tokio::spawn` added overhead with no benefit, since `save_card_batch` awaited the join handle immediately and `parse_stream` awaited `on_batch` before advancing. Took the simplify option: spawn/semaphore removed, batch work runs inline and the code now says so (scry PR #48). Genuine concurrency exists only where it pays — `buffer_unordered` on the fbettega deck fetches (scry PR #58).
 
 ### Phase 11: Cross-Repo Hardening ✅
 
@@ -228,39 +233,6 @@ The marketing push — community, launch events, analytics — split out from pl
 
 - [ ] Revisit subscription tiers to reflect multi-platform value (one account, everywhere)
 - [ ] Consider "Collector Pro" tier ($7.99–9.99/month) bundling premium app + Developer-tier API access
-
----
-
-## Phase 10: Architecture (remaining)
-
-Completed Phase 10 sub-sections (10.2–10.7, 10.10) are condensed under **Done**; 10.1 (evaluate removing NestJS) was dropped — staying on NestJS. The items below are the open architecture work.
-
-### 10.8 Scry: ingestion performance regression (scry#22)
-
-Full ingest regressed from **3–4 min → ~27 min**; price ingest alone **~20s → ~18min**. Root cause: the granular per-vendor price store (scry#14) — 4 DB writes/batch (vs 1), dominated by `granular_price_history` (281s) + `granular_price` (264s).
-
-**Investigation outcome (2026-06-18): don't optimize — cut.** Instrumentation (scry#23) + a prod-scale benchmark established that (a) plain INSERT is ~24× an `ON CONFLICT` upsert on the wide-key granular tables, but (b) the same trick is worthless on the narrow-key averaged tables (~10%). Then a usage audit + prod validation showed the granular store is mostly **dead weight**:
-
-- `granular_price_history` is **write-only** — nothing reads it (web app, API, scry).
-- ~82% of `granular_price` rows are **retail** (tcgplayer/CK/manapool) — **never read**; the web app only reads `granular_price` `WHERE price_type='buylist'`, vendor `cardkingdom`.
-- The MTGJSON CK buylist it does write is **88% stale** (prod: only ~12% of the 17.8k MTGJSON-only rows were refreshed today; the rest froze days/weeks ago) and is fully covered by **CK-direct** (Tier B, live, with `qty`).
-
-Decision: **go CK-direct-only for buylist; delete the rest.** Executed in §10.10. The tiered-optimization issues scry#24/#25/#26/#27/#31 are all **superseded/closed** by that cut. The one remaining ingest item was the ~3.5 min sealed `AllPrintings` re-stream (scry#28, originally scoped as a conditional-GET) - now solved by a **single pass** instead (below); scry#28 closed. Umbrella scry#22's price regression is resolved (granular cut verified 2026-06-20); it stays open only until the single-pass merges + deploys.
-
-**Single-pass card + sealed ingest (2026-06-20) - solves the sealed re-stream, closes out scry#22.** Card ingest and sealed ingest both stream the same `AllPrintings.json` and just extract different sub-trees (`cards[]` vs `sealedProduct[]`), so it was being downloaded + tokenized twice. Built a single-pass "tee" on scry branch `perf/single-pass-card-sealed-ingest`: one `CardSealedEventProcessor` forwards each JSON event to both extractors (each tracks its own depth/skip state), driven by one stream. **Wired into the pipeline** - the default `ingest` (and any run requesting both cards + sealed) now uses it; `-c` / `--sealed` alone still run standalone. Also a standalone `ingest-cards-sealed` command. Local benchmark (release, dev DB): two-pass cards (230s) + sealed (210s) = **440s** vs single pass **206s** (~3.9 min saved). Full `scry ingest` end-to-end now **~4.4 min** (was ~27 min at the regression peak): sets + single-pass cards/sealed (206s, e.g. `Sealed products: 3675 -> 3773, 98 saved`) + prices (`granular_price=0/0`, CK-direct 74.8k rows) + prune + updates, exit 0. 116 lib tests pass (incl. a tee test). **Remaining:** merge the scry PR + deploy.
-
-### 10.9 MCP: color breakdown + deck building parity (iwantmymtg-mcp#16)
-
-MCP `get_portfolio_breakdown` enum is stale (offers a non-existent `format`, missing `color` + the `colors` filter), and there are **no deck tools** (generated API types predate `/api/v1/decks`). Regenerate API types, fix the breakdown dimensions, add the deck tool group.
-
-### 10.11 Scry: card batch ingestion is serial despite Semaphore + spawn (scry#33 review)
-
-PR #33 review (Copilot) correctly identified that `CardService::save_card_batch` acquires a semaphore permit and then immediately `.await`s the spawned task's join handle before returning. `JsonStreamParser::parse_stream` likewise awaits `on_batch` before advancing the stream. Result: `CONCURRENCY = 6` and the `Semaphore` add overhead with no benefit — batches are processed one at a time. Two options when this is revisited:
-
-- **Simplify (recommended baseline):** remove the `tokio::spawn` + `Semaphore` entirely and run batch work inline. Equivalent behavior, honest code, no overhead.
-- **Real concurrency:** restructure `parse_stream` to collect task handles (JoinSet) as the stream advances and join them after the stream ends, giving up to `CONCURRENCY` concurrent DB writes.
-
-Not blocking the single-pass PR (#33) — the serial pattern predates it and throughput is acceptable post-10.10.
 
 ---
 

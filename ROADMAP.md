@@ -81,6 +81,16 @@ Surface buylist (sell-to-vendor) prices so users see what their collection is wo
 - **10.7 Import public decklists + buildability** ✅ — paste-text import, inventory gap/completeness, tournament catalog (`published_deck*`, migration 043, fbettega feed via Scry), browse + compare at `/published-decks` (#537). *(deferred: URL/per-site paste import, archetype enrichment, fuzzy matching)*
 - **10.10 Cut granular price store → CK-direct-only buylist** ✅ — dropped `granular_price_history` + purged unread retail/stale rows (migration 042); price ingest ~18 min → ~1 min (scry#32 + #538, verified 2026-06-20).
 
+### Phase 11: Cross-Repo Hardening ✅
+
+Four codebase analyses run **2026-07-07** produced 29 work packages across all four repos. Quality/hardening only (correctness, integrity, security, tooling, structure) — no new product surface. Executed in three waves 2026-07-09 → 2026-07-18; every work package and every carved-off remainder is closed. Findings with file/line refs: [`docs/codebase-analyses-2026-07/`](docs/codebase-analyses-2026-07/); sequencing rationale + work-package → issue mapping: [`docs/cross-repo-analysis-plan-2026-07.md`](docs/cross-repo-analysis-plan-2026-07.md).
+
+- **Wave 1 — correctness, integrity, security** (gated the Phase 8 push) — web: `ON DELETE CASCADE` migration (W9), domain-error boundary end to end (W1), transactional ledger/inventory writes + oversell row-lock (W2). scry: prune foreignness, delete/reset FK coverage, ingest robustness, `granular_price_history` retention (S1–S4). mcp: correctness bundle (M1). mobile: sign-out cache clear — a cross-account data leak — and CI spec-drift decoupling (MB1/MB2).
+- **Wave 2 — hardening + the OpenAPI spec chain** — web: OpenAPI fixes + delta-quantity endpoints (W8), query/input hardening (W3), security hardening (W4: no-leak ≥500s, signup enumeration/timing, sha256 token storage, Stripe status validation), performance (W5: anon set page, bulk import resolution, latest-price helper). scry: no-op concurrency + dead granular parsing removed (S5), thin `main.rs` + `IngestPipeline` + ports (S6), clippy/fmt CI gates + Docker hardening + schema-fixture sync (S8). mcp: generic `ToolDefinition` + auth invariant test (M2), Biome/NodeNext/Node 20 tooling (M4). mobile: behavior fixes, unread-count badge + inbox pagination, centralized query keys, ESLint + tests (MB3–MB6).
+- **Wave 3 — structure + consistency** — web: TypeScript strictness ratchet + type-aware lint + `quality` CI gate (W6), architecture cleanup (W7: dead code, read models, presenters, logging). scry: DRY/perf/transactionality (S7). mcp: consistency sweep (M3). mobile: shared UI + hooks layer (MB7).
+- **Remainders (all closed)** — web [#596](https://github.com/matthewdtowles/i-want-my-mtg/issues/596): set-price presenter (PR #598), repo-wide SEO/meta move (PR #599), OpenAPI response-schema backfill (PR #603), orchestrator-spec test backfill (PR #605). scry [#54](https://github.com/matthewdtowles/scry/issues/54)/[#57](https://github.com/matthewdtowles/scry/issues/57): SQL dedup, prune batching + bounded-concurrency fetches, `SubtreeCollector` parser unification, vestigial-command removal (PRs #55–#61). mcp [#29](https://github.com/matthewdtowles/iwantmymtg-mcp/issues/29): schema/query dedup + as-never sweep. mobile [#79](https://github.com/matthewdtowles/i-want-my-mtg-mobile/issues/79): component/hook extractions (PRs #80/#81).
+- **Cross-repo orderings, all satisfied** — X1 (W9 → S2), X2 (retention), X3/X4 (MB2 before W8, then client regen), X5 (scry fixture synced from the web schema), X6 (both clients verified against the post-W1 `{ success, error }` envelope).
+
 ---
 
 ## Catch-up / loose ends
@@ -251,94 +261,6 @@ PR #33 review (Copilot) correctly identified that `CardService::save_card_batch`
 - **Real concurrency:** restructure `parse_stream` to collect task handles (JoinSet) as the stream advances and join them after the stream ends, giving up to `CONCURRENCY` concurrent DB writes.
 
 Not blocking the single-pass PR (#33) — the serial pattern predates it and throughput is acceptable post-10.10.
-
----
-
-## Phase 11: Cross-Repo Hardening (July 2026 analysis)
-
-The four codebase analyses run **2026-07-07** produced 29 work-package issues spanning all four repos (web, scry, MCP, mobile). This section is the **execution tracker** — it mirrors those issues so the roadmap stays the single reference as we knock them out. It is quality/hardening work (correctness, integrity, security, tooling, structure), not new product surface.
-
-**Status (2026-07-15):** all three waves complete — every work package shipped its core. A handful of P3 items were consciously deferred as focused remainders, each tracked in its own follow-up issue (web #596, scry #54, mcp #29, mobile #79) rather than left buried in a closed issue.
-
-**Source material** (full detail lives outside this file, keep it there):
-- Per-repo findings with file/line refs: [`docs/codebase-analyses-2026-07/`](docs/codebase-analyses-2026-07/) — `web.md`, `scry.md`, `mcp.md`, `mobile.md`.
-- Cross-repo dependencies + sequencing rationale + the work-package → issue mapping: [`docs/cross-repo-analysis-plan-2026-07.md`](docs/cross-repo-analysis-plan-2026-07.md).
-
-**Wave 1 — complete (2026-07-09 → 2026-07-12).** All correctness / integrity / security items landed:
-
-- **web** — W9 (PR #578, `ON DELETE CASCADE` migration), W1 (PRs #579 + #580 + #581, domain-error boundary end to end), W2 (PRs #583 + #584 + #585, transactional ledger/inventory writes + oversell row-lock), W3 (PR #587, query/input hardening), W8 (PR #586, OpenAPI fixes + delta-quantity endpoint).
-- **scry** — S1 (#35, prune foreignness), S2 (PR #45, delete/reset FK coverage), S3 (PR #46, ingest robustness), S4 (PR #47, `granular_price_history` retention).
-- **mcp** — M1 (PR #23, correctness bundle; issue closed retroactively).
-- **mobile** — MB1 (PR #70, sign-out cache clear), MB2 (PR #71, CI spec-drift decoupling).
-- **cross-repo** — X6 verified both clients parse the post-W1 `{ success, error }` envelope (regression tests: MCP PR #24, mobile PR #73).
-
-**Wave 2 — complete (2026-07-13 → 2026-07-14).** All 14 items landed; two scry items shipped their core and carved off a focused remainder (tracked on the issues, below).
-
-- **web** — W3 (PR #587), W4 (PR #589), W5 (PR #590), W8 (PR #586).
-- **scry** — S5 (PR #48, remove no-op concurrency + dead granular parsing + count/date/config fixes), S6 (PR #49 + #51 = fully done: thin `main.rs` + `IngestPipeline` + `ConnectionPool` tightening, **plus §3.1 ports (CardDataSource/CardRepositoryPort, ingest_all unit test with fakes) + §3.2 cross-module orchestration out of `CardService`**), S8 (PR #50 + #52 = fully done: clippy/fmt CI gates + Docker hardening + X5 schema-fixture sync + docs, **plus portfolio/published-deck repository integration tests** — which caught + fixed a further fixture-inventory-shape drift).
-- **mcp** — M2 (PR #25, generic `ToolDefinition`/`defineTool` + `requiresAuth` + annotations + auth invariant test), M4 (PR #26 + follow-up #27, Biome lint/format + NodeNext + Node 20 matrix + server handler tests).
-- **mobile** — MB3 (PR #74, inset + silent-rollback alerts + stepper debounce/settle), MB4 (PR #75, badge via unread-count + inbox scroll pagination), MB5 (PR #76, centralized query keys + deck-owned re-key), MB6 (PR #77, ESLint + pure-module tests).
-
-Per-item detail lives in the linked issues/PRs and git history.
-
-### Cross-repo hard orderings (everything else is repo-local and parallelizable)
-
-- ~~**X1**~~ — **Done.** web **W9** migration → scry **S2** delete/reset cleanup (✅ done, scry PR #45).
-- ~~**X3 / X4**~~ — **Done.** mobile **MB2** landed before web **W8** (✅ done, PR #586), so the web deploy didn't break open mobile PRs. W8 now triggers the still-open client follow-ups: MCP **M3** `as never` sweep + mobile schema regen.
-- ~~**X2**~~ — **Done.** `granular_price_history` retention now runs (scry **S4**, PR #47), closing the unbounded-growth gap.
-- ~~**X5**~~ — **Done.** scry's integration-test schema fixture is synced from the web schema (scry **S8**, PR #50) — added the missing `transaction`/`portfolio_*`/`published_deck*` tables + `inventory.user_id` and fixed `portfolio_value_history`, validated against Postgres 18.
-- ~~**X6**~~ — **Done (2026-07-09).** Verified MCP `extractApiMessage` + mobile `errMessage` against the post-W1 `{ success, error }` error bodies; no defect. Regression tests: MCP PR #24, mobile PR #73.
-
-### Execution order
-
-**Wave 1 — Correctness, integrity, security (do these first; gates the Phase 8 go-to-market push).**
-
-| Issue | Repo | Title | Notes |
-|---|---|---|---|
-| ~~MB1~~ | mobile | Clear query cache on sign-out (cross-account data leak) | ✅ **done** (PR #70) |
-| ~~MB2~~ | mobile | Decouple CI spec-drift check from PR gating | ✅ **done** (PR #71); unblocked W8 (X3/X4) |
-| ~~[W1](https://github.com/matthewdtowles/i-want-my-mtg/issues/569)~~ | web | Error handling overhaul: domain errors end to end | **Done** (PRs #579 + #580 + #581); X6 verified the new error bodies (MCP PR #24, mobile PR #73) |
-| ~~[W2](https://github.com/matthewdtowles/i-want-my-mtg/issues/570)~~ | web | Inventory/ledger integrity: transactional writes, fix silent failures | ✅ **done** (PRs #583 + #584 + #585) |
-| ~~[S2](https://github.com/matthewdtowles/scry/issues/36)~~ | scry | Delete/reset FK coverage; remove fake CASCADE | ✅ **done** (scry PR #45); was unblocked by W9 (X1) |
-| ~~[S3](https://github.com/matthewdtowles/scry/issues/37)~~ | scry | Ingest robustness: stream failures, non-TTY prompts, batch/mapping bugs | ✅ **done** (scry PR #46) |
-| ~~[S4](https://github.com/matthewdtowles/scry/issues/38)~~ | scry | Implement `granular_price_history` retention | ✅ **done** (scry PR #47); closed the unbounded-growth gap (X2) |
-| ~~[M1](https://github.com/matthewdtowles/iwantmymtg-mcp/issues/19)~~ | mcp | Correctness bundle: undefined results, CSV passthrough, JSON Schema, empty patch | ✅ **done** (mcp PR #23) |
-
-**Wave 2 — Hardening + the OpenAPI spec chain (P2).**
-
-| Issue | Repo | Title | Notes |
-|---|---|---|---|
-| ~~[W8](https://github.com/matthewdtowles/i-want-my-mtg/issues/576)~~ | web | OpenAPI spec fixes + delta-quantity endpoint | ✅ **done** (PR #586); landed after MB2 (X3/X4); now triggers M3 + mobile regen |
-| ~~[W3](https://github.com/matthewdtowles/i-want-my-mtg/issues/571)~~ | web | Query/input hardening: filter charset, limit caps, pool config | ✅ **done** (PR #587) |
-| ~~[W4](https://github.com/matthewdtowles/i-want-my-mtg/issues/572)~~ | web | Security hardening: error leaks, enumeration, token hashing, Stripe sync | ✅ **done** (PR #589); B9 no-leak ≥500s, B10 signup enumeration/timing, C5 sha256 token storage, B13 Stripe status validation + re-fetch |
-| ~~[W5](https://github.com/matthewdtowles/i-want-my-mtg/issues/573)~~ | web | Performance: set page, batched imports, Promise.all, latest-price helper | ✅ **done** (PR #590); B12 anon set page, P1 bulk import resolution, A6 latest-price helper |
-| ~~[S5](https://github.com/matthewdtowles/scry/issues/39)~~ | scry | Remove no-op concurrency + dead granular parsing; fix misleading counts | ✅ **done** (scry PR #48) |
-| ~~[S6](https://github.com/matthewdtowles/scry/issues/40)~~ | scry | Structure: thin `main.rs`, extract `IngestPipeline`, add ports | ✅ **done** (scry PR #49 + #51: §3.5/§3.3/§3.4, plus §3.1 ports + §3.2 cross-module orchestration) |
-| ~~[S8](https://github.com/matthewdtowles/scry/issues/42)~~ | scry | Tooling: clippy/fmt CI gates, Docker hardening, schema fixture sync | X5; ✅ **done** (scry PR #50 + #52: gates/Docker/fixture-sync/docs, plus portfolio + published-deck integration tests) |
-| ~~[M2](https://github.com/matthewdtowles/iwantmymtg-mcp/issues/20)~~ | mcp | ToolDefinition refactor: generics, requiresAuth, annotations, auth invariant test | ✅ **done** (mcp PR #25) |
-| ~~[M4](https://github.com/matthewdtowles/iwantmymtg-mcp/issues/22)~~ | mcp | Tooling: linter in CI, NodeNext, Node 20 matrix, server handler tests | ✅ **done** (mcp PR #26 + #27) |
-| ~~[MB3](https://github.com/matthewdtowles/i-want-my-mtg-mobile/issues/65)~~ | mobile | Behavior fixes: double inset, silent rollbacks, stepper debounce + settle invalidation | ✅ **done** (mobile PR #74); X4 short-term (debounce) |
-| ~~[MB4](https://github.com/matthewdtowles/i-want-my-mtg-mobile/issues/66)~~ | mobile | Notification badge via unread-count; inbox paginates on scroll | ✅ **done** (mobile PR #75) |
-| ~~[MB5](https://github.com/matthewdtowles/i-want-my-mtg-mobile/issues/67)~~ | mobile | Centralize query keys; re-key deck-owned under inventory | ✅ **done** (mobile PR #76) |
-| ~~[MB6](https://github.com/matthewdtowles/i-want-my-mtg-mobile/issues/68)~~ | mobile | Test + lint infrastructure (ESLint + pure-module tests; jest-expo deferred) | ✅ **done** (mobile PR #77) |
-
-**Wave 3 — complete (2026-07-14 → 2026-07-15).** All five landed their high-value core; each carved off a focused remainder into a follow-up issue (linked below) rather than rush the lowest-leverage/highest-churn sub-items. W6 alone had nothing left to defer.
-
-| Issue | Repo | Title | Notes |
-|---|---|---|---|
-| ~~[W6](https://github.com/matthewdtowles/i-want-my-mtg/issues/574)~~ | web | TypeScript strictness + type-aware lint | ✅ **done** (PR #593). `tsconfig.strict.json` ratchet (errors/affiliate/query modules) + no-floating/misused-promises + `quality` CI gate. No remainder. |
-| ~~[W7](https://github.com/matthewdtowles/i-want-my-mtg/issues/575)~~ | web | Architecture cleanup: dead code, read models, presenters, logging | ✅ **done** (PR #594): A3/A4/B6/A5/A7/A10/B11/B14/C3/C4. Remainder [#596](https://github.com/matthewdtowles/i-want-my-mtg/issues/596): `createSetPriceDto`→presenter ✅ (PR #598), A8 repo-wide SEO move ✅ (PR #599), OpenAPI response-schema backfill ✅ (PR #603: sealed-product/optimizer/api-key endpoints → `ApiOkEnvelope`). **Still open:** orchestrator-spec test backfill (8 spec-less HBS orchestrators — analysis-doc C8, distinct from the OpenAPI item). |
-| ~~[S7](https://github.com/matthewdtowles/scry/issues/41)~~ | scry | DRY, perf, and transactionality cleanup | ✅ **done** (scry PR #53): §6 save_legalities tx, §5 save_deck tx + single-statement clean_up_prices, §10 byte-slice panic + dead Price.id. Remainder ([scry#54](https://github.com/matthewdtowles/scry/issues/54)→[scry#57](https://github.com/matthewdtowles/scry/issues/57)): §4.4 ✅ (PR #55), §4.2/4.3 SQL dedup + §7 `--set-cards` warn ✅ (PR #56), §5 prune batching + `buffer_unordered` fetches ✅ (PR #58). **§4.1 SubtreeCollector deferred** — maintainability-only now that the §1.8 skip-state landmine it guarded is independently fixed; its own fixture-backed PR. §7 IngestCardsSealed/destructive-flow = product decisions. |
-| ~~[M3](https://github.com/matthewdtowles/iwantmymtg-mcp/issues/21)~~ | mcp | Consistency sweep: shared schemas/enums, client memoization, `as never` sweep | ✅ **done** (mcp PR #28): A3 client memoize, I1 format enum, I3/I4 shared id/cardId, I7 refine. Remainder [mcp#29](https://github.com/matthewdtowles/iwantmymtg-mcp/issues/29): **I8 as-never sweep still gated on the spec-types sync** (X3), plus I2/I5/I6/I9/I10/A5/A6. |
-| ~~[MB7](https://github.com/matthewdtowles/i-want-my-mtg-mobile/issues/69)~~ | mobile | Shared UI + hooks layer: steppers, rows, chips, `useOptimisticMutation`, edit-by-id | ✅ **done** (mobile PR #78): 2.1/2.6 nextPage/mapPageItems, 3.5 dead code, post-W8 spec regen. Remainder [mobile#79](https://github.com/matthewdtowles/i-want-my-mtg-mobile/issues/79): 2.7/2.8 helpers ✅ (PR #80); component/hook extractions 2.2-2.5, 3.2-3.4 ✅ (PR #81, each swap verified on the iOS simulator against a local backend). **Closed — no remainder.** |
-
-**Wave 3 remainder closeout (2026-07-16).** All correctness/integrity/security/perf items across the 29 work packages have shipped. The remainders that stayed open are, by deliberate decision, the lowest-leverage/highest-churn slices:
-- **web #596 orchestrator-spec backfill** — 8 spec-less HBS orchestrators (analysis-doc C8). Pure test coverage; no product risk. (The separate OpenAPI response-schema backfill that #596 also labels "C8" shipped in PR #603.)
-- **scry §4.1** — the `SubtreeCollector` parser unification. Now maintainability-only (its §1.8 correctness landmine is already fixed), and it rewrites the ingest-critical streaming parser, so it wants its own fixture-backed PR rather than a rushed close-out.
-- **scry §7** — two product decisions (is `IngestCardsSealed` vestigial; destructive-flow confirmation convention).
-- ~~**mobile #79**~~ — ✅ closed 2026-07-16 (mobile PR #81): the component/hook extractions (`QuantityStepper`, `SegmentedControl`/`Chip`, `useOptimisticMutation`, `lib/hooks/*` layer, edit-by-id, inline error states) landed on the MacBook with the app running on the iOS simulator; every swap verified visually (light + dark) and every mutation verified against a local backend.
-
-**Sequencing note:** Wave 1 is correctness/integrity/security and should land **before the Phase 8 go-to-market push** — MB1 alone (cross-account data leak) is a hard blocker on marketing the mobile app. Waves 2–3 can interleave with Phase 8/9 as capacity allows.
 
 ---
 

@@ -181,13 +181,21 @@ The orchestrator layer sits between controllers and services. It handles present
 ### API error strings are an App Store surface (Guideline 3.1.1)
 
 The iOS app renders `/api/v1` error messages verbatim as native alerts, so a
-`4xx` body written here becomes on-screen text in a submitted app. **No
-`/api/v1` error message may contain "Premium", "Upgrade", "Free plan", a tier
-name, or a pricing URL** — state the limit neutrally (see
+`4xx` body written here becomes on-screen text in a submitted app. **No error
+body on a path the mobile app can reach may contain "Premium", "Upgrade",
+"Free plan", a tier name, or a pricing URL** — state the limit neutrally (see
 `price-alert.service.ts`) and let each client present it. The web frontend does
-its own upgrade steering through its own UI; `src/mcp/` is exempt (separate
-developer product, never shipped through an app store). Violating this got the
-iOS app rejected four times; details in the mobile repo's `GO-LIVE.md` §3H.
+its own upgrade steering through its own UI. Violating this got the iOS app
+rejected four times; details in the mobile repo's `GO-LIVE.md` §3H.
+
+Exempt, because the mobile app cannot reach them:
+
+- **API-key (developer-tier) traffic.** `ApiRateLimitGuard.checkApiKeyTier`
+  returns a 429 naming the tier and an `upgrade: '/developer/pricing'` field.
+  That branch requires `isApiKeyAuth`; the app authenticates with a bearer JWT
+  and falls through to `checkBurst`, which has no tier wording. Keep the
+  developer-facing message as-is — it is the right UX for that audience.
+- **`src/mcp/`** — separate developer product, never shipped through an app store.
 
 ### Authentication
 

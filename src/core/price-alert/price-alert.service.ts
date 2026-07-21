@@ -66,13 +66,13 @@ export class PriceAlertService {
         if (!subscribed) {
             if (alert.increasePct != null && alert.decreasePct != null) {
                 throw new DomainValidationError(
-                    'Multi-threshold alerts (increase AND decrease on the same card) are a Premium feature. Upgrade at /pricing to enable.'
+                    'Only one threshold direction (increase or decrease) can be set per alert on this account.'
                 );
             }
             const existingCount = await this.alertRepo.countActiveByUser(alert.userId);
             if (existingCount >= FREE_ALERT_LIMIT) {
                 throw new DomainValidationError(
-                    `Free plan is limited to ${FREE_ALERT_LIMIT} active price alerts. Upgrade at /pricing for unlimited alerts.`
+                    `This account is limited to ${FREE_ALERT_LIMIT} active price alerts.`
                 );
             }
         }
@@ -131,7 +131,7 @@ export class PriceAlertService {
             const subscribed = await this.subscriptionService.isUserSubscribed(userId);
             if (!subscribed) {
                 throw new DomainValidationError(
-                    'Multi-threshold alerts (increase AND decrease on the same card) are a Premium feature. Upgrade at /pricing to enable.'
+                    'Only one threshold direction (increase or decrease) can be set per alert on this account.'
                 );
             }
         }

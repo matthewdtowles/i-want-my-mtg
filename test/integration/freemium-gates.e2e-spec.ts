@@ -237,7 +237,7 @@ describe('Freemium gates (e2e)', () => {
                 .send({ cardId: TEST_CARD_ID, increasePct: 10, decreasePct: 10 });
 
             expect(res.status).toBe(400);
-            expect(String(res.body.error || '')).toMatch(/Premium/);
+            expect(String(res.body.error || '')).toMatch(/Only one threshold direction/);
         });
 
         it('rejects the 6th alert for free users', async () => {
@@ -268,7 +268,7 @@ describe('Freemium gates (e2e)', () => {
                     .send({ cardId: sixthCardId, increasePct: 15 });
 
                 expect(res.status).toBe(400);
-                expect(String(res.body.error || '')).toMatch(/Free plan is limited|5/);
+                expect(String(res.body.error || '')).toMatch(/limited to 5 active price alerts/);
             } finally {
                 await ds.query('DELETE FROM price_alert WHERE user_id = $1 AND card_id = $2', [
                     userId,

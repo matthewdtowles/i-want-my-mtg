@@ -178,6 +178,17 @@ The orchestrator layer sits between controllers and services. It handles present
 - **`PriceCalculationPolicy`** (`src/core/pricing/`) — All pricing logic: card value calculation (normal price with foil fallback), inventory valuation, set price tiers (base_price, total_price, base_price_all, total_price_all)
 - **`AffiliateLinkPolicy`** (`src/core/affiliate/`) — Wraps TCGPlayer product URLs in our Impact partner shortlink (hardcoded constant `TCGPLAYER_AFFILIATE_BASE`). Same value is used in all environments since the shortlink is public (visible in every buy button's href) and doesn't differ between dev and prod. Called from card + sealed-product presenters. Raw product IDs come from Scry (MTGJSON `tcgplayerProductId` / `tcgplayerEtchedProductId`); URLs are never stored in affiliate-wrapped form.
 
+### API error strings are an App Store surface (Guideline 3.1.1)
+
+The iOS app renders `/api/v1` error messages verbatim as native alerts, so a
+`4xx` body written here becomes on-screen text in a submitted app. **No
+`/api/v1` error message may contain "Premium", "Upgrade", "Free plan", a tier
+name, or a pricing URL** — state the limit neutrally (see
+`price-alert.service.ts`) and let each client present it. The web frontend does
+its own upgrade steering through its own UI; `src/mcp/` is exempt (separate
+developer product, never shipped through an app store). Violating this got the
+iOS app rejected four times; details in the mobile repo's `GO-LIVE.md` §3H.
+
 ### Authentication
 
 JWT-based auth using Passport.js. Guards: `JwtAuthGuard`, `LocalAuthGuard`, `OptionalJwtAuthGuard`. Tokens stored in HTTP cookies. New user registration uses a `pending_user` table for email verification with expiring tokens.

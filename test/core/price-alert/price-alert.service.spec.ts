@@ -138,7 +138,7 @@ describe('PriceAlertService', () => {
                 increasePct: 10,
                 decreasePct: 10,
             });
-            await expect(service.create(alert)).rejects.toThrow(/Premium/);
+            await expect(service.create(alert)).rejects.toThrow(/Only one threshold direction/);
         });
 
         it('should allow multi-threshold alert for subscribed user', async () => {
@@ -158,7 +158,7 @@ describe('PriceAlertService', () => {
             mockSubscriptionService.isUserSubscribed.mockResolvedValue(false);
             alertRepo.countActiveByUser.mockResolvedValue(FREE_ALERT_LIMIT);
             const alert = new PriceAlert({ userId: 1, cardId: 'card-1', increasePct: 10 });
-            await expect(service.create(alert)).rejects.toThrow(/Free plan is limited/);
+            await expect(service.create(alert)).rejects.toThrow(/limited to 5 active price alerts/);
             expect(alertRepo.create).not.toHaveBeenCalled();
         });
 
@@ -225,7 +225,7 @@ describe('PriceAlertService', () => {
             alertRepo.findById.mockResolvedValue(existing);
             await expect(
                 service.update(1, 1, { decreasePct: 10 })
-            ).rejects.toThrow(/Premium/);
+            ).rejects.toThrow(/Only one threshold direction/);
         });
     });
 

@@ -3,34 +3,39 @@ SHELL=/bin/bash
 HOME=/home/ubuntu
 PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
-# Where cron mails job output. Every job below redirects stdout to its own log,
-# so the only thing that ever reaches this address is a job writing to stderr -
-# i.e. a failure. Requires a working local MTA.
+# Where cron mails job output.
+#
+# Every job below redirects stdout - and only stdout - to its own log. scry
+# sends its whole report there via tracing and writes command failures to
+# stderr, so the only thing that ever reaches this address is a failure: a
+# non-zero exit, a run killed by its timeout, or a run skipped because the
+# previous one is still holding the lock. Successful runs mail nothing.
+#
+# Do not add `2>&1` to these lines - that is what silenced two days of failed
+# ingests. Requires a working local MTA.
 MAILTO=legal@iwantmymtg.net
 
 # Scryfall data ingestion (daily at 2 AM)
-0 2 * * * ubuntu /opt/scripts/scry.sh >> /var/log/i-want-my-mtg/ingestion.log 2>&1
+0 2 * * * ubuntu /opt/scripts/scry.sh >> /var/log/i-want-my-mtg/ingestion.log
 
 # Price history retention cleanup (weekly, Sunday at 3 AM)
-0 3 * * 0 ubuntu /opt/scripts/scry.sh retention >> /var/log/i-want-my-mtg/retention.log 2>&1
+0 3 * * 0 ubuntu /opt/scripts/scry.sh retention >> /var/log/i-want-my-mtg/retention.log
 
 # Published tournament-deck ingest (daily at 3:30 AM; fetches the prior 2 days)
-30 3 * * * ubuntu /opt/scripts/scry.sh ingest-decks --days 2 >> /var/log/i-want-my-mtg/decks.log 2>&1
+30 3 * * * ubuntu /opt/scripts/scry.sh ingest-decks --days 2 >> /var/log/i-want-my-mtg/decks.log
 
 # Price alert processing (daily at 2:15 AM, after ingestion completes)
-15 2 * * * ubuntu curl -Sf -X POST -H "x-api-key: $(grep '^INTERNAL_API_KEY=' /home/ubuntu/.env | cut -d= -f2- | sed 's/^"//;s/"$//')" http://localhost/api/v1/price-alerts/process >> /var/log/i-want-my-mtg/price-alerts.log 2>&1
+15 2 * * * ubuntu curl -Sf -X POST -H "x-api-key: $(grep '^INTERNAL_API_KEY=' /home/ubuntu/.env | cut -d= -f2- | sed 's/^"//;s/"$//')" http://localhost/api/v1/price-alerts/process >> /var/log/i-want-my-mtg/price-alerts.log
 
 # Portfolio summary refresh (daily at 2:30 AM, 30 min after ingestion)
-30 2 * * * ubuntu /opt/scripts/scry.sh portfolio-summary >> /var/log/i-want-my-mtg/portfolio.log 2>&1
+30 2 * * * ubuntu /opt/scripts/scry.sh portfolio-summary >> /var/log/i-want-my-mtg/portfolio.log
 
 # Data freshness check (daily at 6 AM, well after the ingest window).
 # `scry health` exits non-zero when the newest price row is more than a day
-# old, which is the only signal that an ingest silently stopped completing.
-# Note the missing `2>&1`: the report goes to health.log, but scry writes its
-# failure to stderr, so a stale catalog - and only a stale catalog - reaches
-# MAILTO.
+# old. Prices carry MTGJSON's file date, not the ingest date, so a healthy
+# catalog checked at 06:00 is one day old - two days means a run was missed.
 0 6 * * * ubuntu /opt/scripts/scry.sh health >> /var/log/i-want-my-mtg/health.log
 
 # Log cleanup (weekly, Sunday at 4 AM)
-0 4 * * 0 ubuntu /opt/scripts/clean_logs.sh >> /var/log/i-want-my-mtg/cleanup.log 2>&1
+0 4 * * 0 ubuntu /opt/scripts/clean_logs.sh >> /var/log/i-want-my-mtg/cleanup.log
 

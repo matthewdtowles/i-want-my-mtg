@@ -92,7 +92,9 @@ Note that `docker-compose.prod.yml`'s `etl` service exists but is gated behind `
 
 ### Checking Scry ingest on the production server
 
-The nightly ingest runs from cron, not `docker compose`. `/etc/cron.d/i-want-my-mtg` (installed from `cron/i-want-my-mtg`) runs `/opt/scripts/scry.sh` at **02:00 UTC daily**, appending to `/var/log/i-want-my-mtg/ingestion.log`. Sibling jobs: retention (Sun 03:00 UTC -> `retention.log`), published-deck ingest (daily 03:30 UTC, `ingest-decks --days 2` -> `decks.log`), price-alert processing (02:15 UTC -> `price-alerts.log`), portfolio-summary refresh (02:30 UTC -> `portfolio.log`), log cleanup (Sun 04:00 UTC -> `cleanup.log`). All times UTC; all jobs run as user `ubuntu`.
+The nightly ingest runs from cron, not `docker compose`. `/etc/cron.d/i-want-my-mtg` (installed from `cron/i-want-my-mtg`) runs `/opt/scripts/scry.sh` at **02:00 UTC daily**, appending to `/var/log/i-want-my-mtg/ingestion.log`. Sibling jobs: retention (Sun 03:00 UTC -> `retention.log`), published-deck ingest (daily 03:30 UTC, `ingest-decks --days 2` -> `decks.log`), price-alert processing (02:15 UTC -> `price-alerts.log`), portfolio-summary refresh (02:30 UTC -> `portfolio.log`), data-freshness check (06:00 UTC -> `health.log`), log cleanup (Sun 04:00 UTC -> `cleanup.log`). All times UTC; all jobs run as user `ubuntu`.
+
+`MAILTO=legal@iwantmymtg.net` is set in the crontab and each job redirects **stdout only**. scry writes its report to stdout and failures to stderr, so cron mails you on failure and stays silent on success. Never add `2>&1` to those lines - that is what silenced two days of failed ingests.
 
 `scry.sh` sources `/home/ubuntu/.env` (which sets `DATABASE_URL`) then runs `/opt/scripts/scry <args>` (default `ingest`). **Always go through the wrapper**, never the bare `/opt/scripts/scry`, or `DATABASE_URL` is unset and it fails.
 
@@ -108,9 +110,10 @@ grep "Starting scry.sh" /var/log/i-want-my-mtg/ingestion.log | tail -5    # rece
 #    "... write totals (ms/calls): price=.../... price_history=.../... granular_price=.../..."
 grep "write totals" /var/log/i-want-my-mtg/ingestion.log | tail -5
 
-# 3. Data-integrity health check (through the wrapper so DATABASE_URL is set):
+# 3. Data-integrity health check (through the wrapper so DATABASE_URL is set).
+#    `health` alone exits non-zero if the newest price row is >1 day old.
+/opt/scripts/scry.sh health
 /opt/scripts/scry.sh health --detailed
-/opt/scripts/scry.sh health --price-history
 
 # 4. Confirm cron is installed and the daemon is up:
 cat /etc/cron.d/i-want-my-mtg
@@ -224,7 +227,7 @@ Test suites: `test/integration/*.e2e-spec.ts`. Seed data: `test/integration/seed
 
 **Local dev**: PostgreSQL 18 via Docker (docker-compose.yml). Migrations run via `docker compose run --rm migrate`.
 
-Schema defined in `docker/postgres/init/001_complete_schema.sql`. Migrations in `migrations/` (numbered sequentially). Core tables: `card`, `set`, `price`, `price_history`, `legality`, `inventory`, `user`, `pending_user`, `set_price`, `set_price_history`, `granular_price`, `granular_price_history`, `deck`, `deck_card`, `published_deck`, `published_deck_card`. The `published_deck*` tables are a read-only tournament-deck catalog written by Scry's `ingest-decks` command (fbettega feed); the web app only reads them.
+Schema defined in `docker/postgres/init/001_complete_schema.sql`. Migrations in `migrations/` (numbered sequentially). Core tables: `card`, `set`, `price`, `price_history`, `legality`, `inventory`, `user`, `pending_user`, `set_price`, `set_price_history`, `granular_price`, `deck`, `deck_card`, `published_deck`, `published_deck_card`, `buy_list`, `refresh_token`, `notification_device`. (`granular_price_history` was dropped in migration 042 - see ROADMAP §10.10.) The `published_deck*` tables are a read-only tournament-deck catalog written by Scry's `ingest-decks` command (fbettega feed); the web app only reads them.
 
 ### Price History
 

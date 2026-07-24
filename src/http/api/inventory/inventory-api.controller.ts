@@ -33,7 +33,7 @@ import { InventoryImportService } from 'src/core/inventory/import/inventory-impo
 import { Inventory } from 'src/core/inventory/inventory.entity';
 import { InventoryService } from 'src/core/inventory/inventory.service';
 import { parseCardImport } from 'src/core/import/parsers/card-import-dispatch';
-import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
+import { FINISH_VALUES, SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
 import { INVENTORY_SORTS } from 'src/core/query/sort-options.enum';
 import { JwtOrApiKeyGuard } from 'src/http/api/shared/jwt-or-api-key.guard';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
@@ -70,6 +70,12 @@ export class InventoryApiController {
     @ApiQuery({ name: 'sort', required: false, type: String })
     @ApiQuery({ name: 'ascend', required: false, type: Boolean })
     @ApiQuery({ name: 'filter', required: false, type: String })
+    @ApiQuery({
+        name: 'finish',
+        required: false,
+        enum: FINISH_VALUES,
+        description: 'Only holdings of this finish (normal or foil).',
+    })
     @ApiOkEnvelope(InventoryItemApiDto, { isArray: true, description: 'Inventory list' })
     @ApiResponse({
         status: 400,
@@ -80,7 +86,7 @@ export class InventoryApiController {
         @Query() query: Record<string, string>,
         @Req() req: AuthenticatedRequest
     ): Promise<ApiResponseDto<InventoryItemApiDto[]>> {
-        validateApiQuery(query, { sort: INVENTORY_SORTS });
+        validateApiQuery(query, { sort: INVENTORY_SORTS, finish: true });
         const options = new SafeQueryOptions(query);
         const [items, total] = await Promise.all([
             this.inventoryService.findAllForUser(req.user.id, options),

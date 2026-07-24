@@ -39,6 +39,17 @@ export function safeFormat(value: unknown): Format | undefined {
     return Object.values(Format).includes(lower) ? lower : undefined;
 }
 
+// Card finish filter (inventory list). Exported like rarity/format so the API
+// validator and the OpenAPI enum document the same accepted values.
+export const FINISH_VALUES = ['normal', 'foil'] as const;
+export type Finish = (typeof FINISH_VALUES)[number];
+
+export function safeFinish(value: unknown): Finish | undefined {
+    if (typeof value !== 'string') return undefined;
+    const lower = value.toLowerCase() as Finish;
+    return FINISH_VALUES.includes(lower) ? lower : undefined;
+}
+
 function safeLegality(value: unknown, format: Format | undefined): LegalityStatus | undefined {
     if (!format) return undefined;
     if (typeof value !== 'string' || value === '') return LegalityStatus.Legal;
@@ -50,6 +61,7 @@ export interface RawQueryOptions {
     ascend?: string;
     baseOnly?: string;
     filter?: string;
+    finish?: string;
     format?: string;
     legality?: string;
     limit?: string;
@@ -65,6 +77,7 @@ export interface QueryOptionsData {
     readonly ascend?: boolean;
     readonly baseOnly: boolean;
     readonly filter?: string;
+    readonly finish?: Finish;
     readonly format?: Format;
     readonly includedSetTypes?: string[] | null;
     readonly legality?: LegalityStatus;
@@ -81,6 +94,7 @@ export class SafeQueryOptions implements QueryOptionsData {
     readonly ascend?: boolean;
     readonly baseOnly: boolean;
     readonly filter?: string;
+    readonly finish?: Finish;
     readonly format?: Format;
     readonly includedSetTypes?: string[] | null;
     readonly legality?: LegalityStatus;
@@ -96,6 +110,7 @@ export class SafeQueryOptions implements QueryOptionsData {
         this.ascend = safeBoolean(init.ascend);
         this.baseOnly = safeBoolean(init.baseOnly);
         this.filter = safeSearchTerm(init.filter);
+        this.finish = safeFinish(init.finish);
         this.format = safeFormat(init.format);
         this.legality = safeLegality(init.legality, this.format);
         this.limit = sanitizeInt(init.limit, 25, MAX_PAGE_LIMIT);
@@ -113,6 +128,7 @@ export class SafeQueryOptions implements QueryOptionsData {
                 ascend: this.ascend !== undefined ? String(this.ascend) : undefined,
                 baseOnly: String(baseOnly),
                 filter: this.filter,
+                finish: this.finish,
                 format: this.format,
                 legality: this.legality,
                 limit: String(this.limit),
@@ -132,6 +148,7 @@ export class SafeQueryOptions implements QueryOptionsData {
                 ascend: this.ascend !== undefined ? String(this.ascend) : undefined,
                 baseOnly: String(this.baseOnly),
                 filter: this.filter,
+                finish: this.finish,
                 format: this.format,
                 legality: this.legality,
                 limit: String(this.limit),

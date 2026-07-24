@@ -1,7 +1,13 @@
 import { BadRequestException } from '@nestjs/common';
 import { Format } from 'src/core/card/format.enum';
 import { LegalityStatus } from 'src/core/card/legality.status.enum';
-import { PUBLIC_RARITIES, safeFormat, safeRarity } from 'src/core/query/safe-query-options.dto';
+import {
+    FINISH_VALUES,
+    PUBLIC_RARITIES,
+    safeFinish,
+    safeFormat,
+    safeRarity,
+} from 'src/core/query/safe-query-options.dto';
 import { SortOptions } from 'src/core/query/sort-options.enum';
 import { TRANSACTION_TYPES, parseTransactionType } from 'src/core/transaction/transaction.entity';
 
@@ -69,6 +75,8 @@ export interface StrictQueryFlags {
      */
     sort?: readonly SortOptions[];
     rarity?: boolean;
+    /** Validate `finish` against {@link FINISH_VALUES} (inventory list). */
+    finish?: boolean;
     format?: boolean;
     legality?: boolean;
     setCode?: boolean;
@@ -131,6 +139,12 @@ export function validateApiQuery(query: Record<string, unknown>, flags: StrictQu
         const value = readParam(query, 'rarity');
         if (value !== undefined && safeRarity(value) === undefined) {
             throw enumError('rarity', value, RARITY_VALUES);
+        }
+    }
+    if (flags.finish) {
+        const value = readParam(query, 'finish');
+        if (value !== undefined && safeFinish(value) === undefined) {
+            throw enumError('finish', value, FINISH_VALUES);
         }
     }
     if (flags.format) {

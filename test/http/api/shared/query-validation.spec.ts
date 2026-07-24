@@ -4,6 +4,7 @@ import { InvalidQueryParamException, validateApiQuery } from 'src/http/api/share
 const ALL_FLAGS = {
     sort: SET_CARD_SORTS,
     rarity: true,
+    finish: true,
     format: true,
     legality: true,
     setCode: true,
@@ -19,6 +20,7 @@ describe('validateApiQuery', () => {
                     {
                         sort: SortOptions.CARD,
                         rarity: 'rare',
+                        finish: 'foil',
                         format: 'modern',
                         legality: 'banned',
                         setCode: 'mh3',
@@ -44,6 +46,7 @@ describe('validateApiQuery', () => {
                 validateApiQuery(
                     {
                         rarity: 'COMMON',
+                        finish: 'Foil',
                         format: 'Standard',
                         legality: 'Legal',
                         type: 'sell',
@@ -71,6 +74,19 @@ describe('validateApiQuery', () => {
                 expect(err.allowedValues).toEqual(['common', 'uncommon', 'rare', 'mythic']);
                 expect(err.message).toContain("Invalid value 'foobar'");
                 expect(err.message).toContain('common, uncommon, rare, mythic');
+            }
+        });
+
+        it('rejects an unknown finish', () => {
+            try {
+                validateApiQuery({ finish: 'etched' }, ALL_FLAGS);
+                fail('expected throw');
+            } catch (e) {
+                expect(e).toBeInstanceOf(InvalidQueryParamException);
+                const err = e as InvalidQueryParamException;
+                expect(err.getStatus()).toBe(400);
+                expect(err.param).toBe('finish');
+                expect(err.allowedValues).toEqual(['normal', 'foil']);
             }
         });
 

@@ -116,6 +116,9 @@ export class InventoryRepository implements InventoryRepositoryPort {
         if (options.baseOnly) {
             qb.andWhere('card.inMain = :inMain', { inMain: true });
         }
+        if (options.finish) {
+            qb.andWhere(`${this.TABLE}.isFoil = :isFoil`, { isFoil: options.finish === 'foil' });
+        }
 
         this.queryHelper.applyOptions(qb, options);
         const results = await qb.getMany();
@@ -132,6 +135,10 @@ export class InventoryRepository implements InventoryRepositoryPort {
 
         if (options.baseOnly) {
             qb.andWhere('card.inMain = :inMain', { inMain: true });
+        }
+        // Mirror findByUser's finish clause so meta.total matches the rows served.
+        if (options.finish) {
+            qb.andWhere(`${this.TABLE}.isFoil = :isFoil`, { isFoil: options.finish === 'foil' });
         }
 
         this.queryHelper.applyFilters(qb, options.filter);

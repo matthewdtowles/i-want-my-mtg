@@ -111,6 +111,21 @@ describe('SafeQueryOptions — public catalog filters', () => {
         });
     });
 
+    describe('finish', () => {
+        it('accepts normal and foil, lowercasing input', () => {
+            expect(new SafeQueryOptions({ finish: 'foil' }).finish).toBe('foil');
+            expect(new SafeQueryOptions({ finish: 'Normal' }).finish).toBe('normal');
+        });
+
+        it('drops unknown values', () => {
+            expect(new SafeQueryOptions({ finish: 'etched' }).finish).toBeUndefined();
+        });
+
+        it('is undefined when not provided', () => {
+            expect(new SafeQueryOptions({}).finish).toBeUndefined();
+        });
+    });
+
     describe('limit', () => {
         it('defaults to 25 when absent', () => {
             expect(new SafeQueryOptions({}).limit).toBe(25);

@@ -69,15 +69,34 @@
         });
     }
 
+    /**
+     * A top-down fade of the line's own color, for the area under the curve.
+     * Scriptable because the chart area has no height until the first layout.
+     */
+    function areaGradient(color) {
+        return function (context) {
+            var area = context.chart.chartArea;
+            if (!area) return 'transparent';
+            var gradient = context.chart.ctx.createLinearGradient(0, area.top, 0, area.bottom);
+            gradient.addColorStop(0, color + '59');
+            gradient.addColorStop(1, color + '05');
+            return gradient;
+        };
+    }
+
+    // Only the active line is filled: stacking translucent areas for every
+    // series turns the plot to mud and hides the line the user is reading.
     function applyActiveDatasetStyles() {
         if (!chart) return;
         chart.data.datasets.forEach(function (d, j) {
             if (j === activeDatasetIndex) {
                 d.borderColor = d._fullColor;
                 d.borderWidth = 3;
+                d.fill = 'origin';
             } else {
                 d.borderColor = d._fullColor + '80';
                 d.borderWidth = 1.5;
+                d.fill = false;
             }
         });
     }
@@ -431,7 +450,7 @@
                 label: 'Base Set',
                 data: basePricePoints,
                 borderColor: colors.basePrice,
-                backgroundColor: colors.basePrice + '20',
+                backgroundColor: areaGradient(colors.basePrice),
                 borderWidth: 3,
                 pointRadius: pointRadius,
                 tension: 0.3,
@@ -443,7 +462,7 @@
                 label: 'All Cards',
                 data: totalPricePoints,
                 borderColor: colors.totalPrice + '80',
-                backgroundColor: colors.totalPrice + '20',
+                backgroundColor: areaGradient(colors.totalPrice),
                 borderWidth: 1.5,
                 pointRadius: pointRadius,
                 tension: 0.3,
@@ -455,7 +474,7 @@
                 label: 'Base + Foils',
                 data: basePriceAllPoints,
                 borderColor: colors.basePriceAll + '80',
-                backgroundColor: colors.basePriceAll + '20',
+                backgroundColor: areaGradient(colors.basePriceAll),
                 borderWidth: 1.5,
                 pointRadius: pointRadius,
                 tension: 0.3,
@@ -471,7 +490,7 @@
                 label: 'All + Foils',
                 data: totalPriceAllPoints,
                 borderColor: colors.totalPriceAll + '80',
-                backgroundColor: colors.totalPriceAll + '20',
+                backgroundColor: areaGradient(colors.totalPriceAll),
                 borderWidth: 1.5,
                 pointRadius: pointRadius,
                 tension: 0.3,
@@ -495,9 +514,11 @@
             if (i === activeDatasetIndex) {
                 ds.borderColor = ds._fullColor;
                 ds.borderWidth = 3;
+                ds.fill = 'origin';
             } else {
                 ds.borderColor = ds._fullColor + '80';
                 ds.borderWidth = 1.5;
+                ds.fill = false;
             }
         });
 

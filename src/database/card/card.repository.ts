@@ -7,6 +7,7 @@ import { SET_CARD_SORTS, SortOptions } from 'src/core/query/sort-options.enum';
 import { latestPriceCondition } from 'src/database/query/latest-price.sql';
 import { QueryBuilderHelper } from 'src/database/query/query-builder.helper';
 import { getLogger } from 'src/logger/global-app-logger';
+import { buildScryfallImagePath } from 'src/shared/utils/scryfall-image.util';
 import { Repository, SelectQueryBuilder } from 'typeorm';
 import { CardMapper } from './card.mapper';
 import { CardOrmEntity } from './card.orm-entity';
@@ -333,18 +334,25 @@ export class CardRepository implements CardRepositoryPort {
         if (setCodes.length === 0) return new Map();
         this.LOGGER.debug(`Finding cover images for ${setCodes.length} sets.`);
         // One query for the whole page of sets, not one per set. DISTINCT ON
-        // takes the first row per set_code under the ORDER BY, which is the same
-        // card `findBySet` returns first (default sort: sort_number ascending) —
-        // so the cover matches the set's opening card.
-        const rows: { set_code: string; img_src: string }[] = await this.repository.query(
-            `SELECT DISTINCT ON (set_code) set_code, img_src
-               FROM ${this.TABLE}
-              WHERE set_code = ANY($1) AND img_src IS NOT NULL
-              ORDER BY set_code, sort_number ASC`,
-            [setCodes]
-        );
+        // takes the first row per set under the ORDER BY, which is the same card
+        // `findBySet` returns first (default sort: sortNumber ascending) — so the
+        // cover matches the set's opening card.
+        //
+        // Built through the query builder rather than raw SQL so the column names
+        // come from the entity metadata. There is no `img_src` column to select:
+        // migration 038 dropped it, and `imgSrc` is now derived from `scryfallId`
+        // the same way CardMapper does it.
+        const rows = await this.repository
+            .createQueryBuilder(this.TABLE)
+            .select([`${this.TABLE}.setCode`, `${this.TABLE}.scryfallId`])
+            .distinctOn([`${this.TABLE}.setCode`])
+            .where(`${this.TABLE}.setCode IN (:...setCodes)`, { setCodes })
+            .andWhere(`${this.TABLE}.scryfallId IS NOT NULL`)
+            .orderBy(`${this.TABLE}.setCode`, 'ASC')
+            .addOrderBy(`${this.TABLE}.sortNumber`, 'ASC')
+            .getMany();
         this.LOGGER.debug(`Found ${rows.length} cover images.`);
-        return new Map(rows.map((r) => [r.set_code, r.img_src]));
+        return new Map(rows.map((r) => [r.setCode, buildScryfallImagePath(r.scryfallId)]));
     }
 
     async findBySetCodeAndNumbers(

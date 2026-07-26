@@ -183,8 +183,8 @@ describe('SetApiController', () => {
             const result = await controller.findAll(makeReq(), {});
 
             expect(result.data[0].coverImgSrc).toBe('a/b/cover.jpg');
-            // One call for every set on the page — the whole point is that this
-            // does not become one request per set (#612).
+            // One call for the whole page — the whole point is that this does
+            // not become one request per set (#612).
             expect(cardService.coverImagesForSets).toHaveBeenCalledTimes(1);
             expect(cardService.coverImagesForSets).toHaveBeenCalledWith(['mkm']);
         });

@@ -51,10 +51,17 @@ export class CardService {
         return cards;
     }
 
-    /** Cover art tails keyed by set code; see the port for why this is batched. */
+    /**
+     * Cover art tails keyed by set code; see the port for why this is batched.
+     * Codes are normalized the same way {@link findBySetCodeAndNumber} does —
+     * they are stored lowercase and the repository query is case-sensitive, so a
+     * caller passing "MKM" would otherwise silently get no row back. Keys in the
+     * returned map are the normalized codes.
+     */
     async coverImagesForSets(setCodes: string[]): Promise<Map<string, string>> {
-        this.LOGGER.debug(`Find cover images for ${setCodes.length} sets.`);
-        return await this.repository.findCoverImagesForSets(setCodes);
+        const normalized = setCodes.map((c) => c?.trim().toLowerCase()).filter(Boolean);
+        this.LOGGER.debug(`Find cover images for ${normalized.length} sets.`);
+        return await this.repository.findCoverImagesForSets(normalized);
     }
 
     async findBySetCodeAndNumber(code: string, number: string): Promise<Card | null> {

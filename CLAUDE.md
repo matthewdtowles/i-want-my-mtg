@@ -189,7 +189,7 @@ body on a path the mobile app can reach may contain "Premium", "Upgrade",
 "Free plan", a tier name, or a pricing URL** — state the limit neutrally (see
 `price-alert.service.ts`) and let each client present it. The web frontend does
 its own upgrade steering through its own UI. Violating this got the iOS app
-rejected four times; details in the mobile repo's `GO-LIVE.md` §3H.
+rejected four times; details under Phase 7.1 in `ROADMAP.md`.
 
 Exempt, because the mobile app cannot reach them:
 

@@ -134,7 +134,7 @@ Shipped end to end. Betas first (iOS TestFlight 2026-06-24, Android Play closed
 testing 2026-07-02), then both **public** store releases: the App Store went live
 with **0.20.2** (2026-07-21) and Google Play production was submitted and approved.
 Ongoing work is now ordinary versioning — 0.26.0 is the current build. Full feature
-inventory in the mobile repo's `HANDOFF.md`; release mechanics in its `GO-LIVE.md`.
+inventory and release mechanics in the mobile repo's `HANDOFF.md`.
 
 - **The iOS 3.1.1 rejection (resolved)** — builds through 0.2.0 were rejected **four
   times** under Guideline 3.1.1. Root cause was ours: the backend returned price-alert
@@ -209,7 +209,10 @@ Two facts that keep biting, kept here because they are easy to forget:
   avoids that.
 
 Release runbook: the mobile repo's
-[`GO-LIVE.md`](https://github.com/matthewdtowles/i-want-my-mtg-mobile/blob/main/GO-LIVE.md).
+[`HANDOFF.md`](https://github.com/matthewdtowles/i-want-my-mtg-mobile/blob/main/HANDOFF.md)
+(Conventions → Releasing) and [`docs/playstore-release.md`](https://github.com/matthewdtowles/i-want-my-mtg-mobile/blob/main/docs/playstore-release.md)
+for the Play Console side. The pre-launch `GO-LIVE.md` checklist was deleted once
+both stores went live.
 Cross-repo progress rolls up on the "I Want My MTG" GitHub project
 (`PVT_kwHOAP2Yos4A4tP0`).
 

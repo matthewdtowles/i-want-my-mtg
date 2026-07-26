@@ -51,6 +51,7 @@ function makeReq(userId?: number): AuthenticatedRequest {
 describe('SetApiController', () => {
     let controller: SetApiController;
     let setService: jest.Mocked<SetService>;
+    let cardService: jest.Mocked<CardService>;
     let inventoryService: jest.Mocked<InventoryService>;
     let subscriptionService: jest.Mocked<SubscriptionService>;
 
@@ -78,6 +79,7 @@ describe('SetApiController', () => {
                     useValue: {
                         findBySet: jest.fn(),
                         totalInSet: jest.fn(),
+                        coverImagesForSets: jest.fn().mockResolvedValue(new Map()),
                     },
                 },
                 {
@@ -107,6 +109,7 @@ describe('SetApiController', () => {
 
         controller = module.get(SetApiController);
         setService = module.get(SetService) as jest.Mocked<SetService>;
+        cardService = module.get(CardService) as jest.Mocked<CardService>;
         inventoryService = module.get(InventoryService) as jest.Mocked<InventoryService>;
         subscriptionService = module.get(SubscriptionService) as jest.Mocked<SubscriptionService>;
     });
@@ -169,6 +172,31 @@ describe('SetApiController', () => {
             expect(result.data[0].ownedTotal).toBe(50);
             expect(result.data[0].ownedValue).toBe(75.25);
             expect(result.data[0].completionRate).toBeUndefined();
+        });
+
+        it('should attach the cover image in one batched lookup for the page', async () => {
+            const sets = [createSet()];
+            setService.findSets.mockResolvedValue(sets);
+            setService.totalSetsCount.mockResolvedValue(1);
+            cardService.coverImagesForSets.mockResolvedValue(new Map([['mkm', 'a/b/cover.jpg']]));
+
+            const result = await controller.findAll(makeReq(), {});
+
+            expect(result.data[0].coverImgSrc).toBe('a/b/cover.jpg');
+            // One call for the whole page — the whole point is that this does
+            // not become one request per set (#612).
+            expect(cardService.coverImagesForSets).toHaveBeenCalledTimes(1);
+            expect(cardService.coverImagesForSets).toHaveBeenCalledWith(['mkm']);
+        });
+
+        it('should leave coverImgSrc undefined for a set with no card image', async () => {
+            setService.findSets.mockResolvedValue([createSet()]);
+            setService.totalSetsCount.mockResolvedValue(1);
+            cardService.coverImagesForSets.mockResolvedValue(new Map());
+
+            const result = await controller.findAll(makeReq(), {});
+
+            expect(result.data[0].coverImgSrc).toBeUndefined();
         });
 
         it('should not include owned data when unauthenticated', async () => {

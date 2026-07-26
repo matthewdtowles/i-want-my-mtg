@@ -1,6 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
 import { getLogger } from 'src/logger/global-app-logger';
+import { normalizeSetCode } from 'src/shared/utils/set-code.util';
 import { Card } from './card.entity';
 import { GranularPrice } from './granular-price.entity';
 import { CardRepositoryPort } from './ports/card.repository.port';
@@ -45,16 +46,25 @@ export class CardService {
     }
 
     async findBySet(code: string, query: SafeQueryOptions): Promise<Card[]> {
+        code = normalizeSetCode(code);
         this.LOGGER.debug(`Find cards in set ${code}.`);
         const cards = await this.repository.findBySet(code, query);
         this.LOGGER.debug(`Found ${cards?.length} in set ${code}.`);
         return cards;
     }
 
+    /**
+     * Cover art tails keyed by set code; see the port for why this is batched.
+     * Keys in the returned map are the normalized (lowercase) codes.
+     */
+    async coverImagesForSets(setCodes: string[]): Promise<Map<string, string>> {
+        const normalized = setCodes.map(normalizeSetCode).filter(Boolean);
+        this.LOGGER.debug(`Find cover images for ${normalized.length} sets.`);
+        return await this.repository.findCoverImagesForSets(normalized);
+    }
+
     async findBySetCodeAndNumber(code: string, number: string): Promise<Card | null> {
-        // Set codes are stored lowercase and the repo query is case-sensitive,
-        // so normalize here (one place for every caller — REST/MCP/HBS).
-        code = code?.trim().toLowerCase();
+        code = normalizeSetCode(code);
         this.LOGGER.debug(`Find card no. ${number} in set ${code}.`);
         const card = await this.repository.findBySetCodeAndNumber(code, number, [
             'set',
@@ -93,6 +103,7 @@ export class CardService {
     }
 
     async totalInSet(code: string, options: SafeQueryOptions): Promise<number> {
+        code = normalizeSetCode(code);
         this.LOGGER.debug(
             `Find total number of cards in set ${code}, options: ${JSON.stringify(options)}.`
         );

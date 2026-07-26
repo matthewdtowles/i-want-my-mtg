@@ -55,6 +55,19 @@ export interface CardRepositoryPort {
     findBySetCodeAndNumbers(pairs: { setCode: string; number: string }[]): Promise<Card[]>;
 
     /**
+     * Cover art tail (`img_src`) for each of the given sets, as a
+     * setCode -> imgSrc map. The cover is the set's opening card — the same one
+     * {@link findBySet} returns first — and sets with no card image are simply
+     * absent from the map.
+     *
+     * One query for the whole batch. It exists so a set list can carry its
+     * artwork inline instead of every client fetching one card per set, which
+     * turned a single list request into ~50 (see #612).
+     * @param setCodes Set codes to look up.
+     */
+    findCoverImagesForSets(setCodes: string[]): Promise<Map<string, string>>;
+
+    /**
      * Batched form of {@link findByNameAndSetCode}: resolves many (name, set
      * code) pairs in a handful of queries. Matching is case-insensitive on name.
      * Loads the latest price row per card. Callers group results by

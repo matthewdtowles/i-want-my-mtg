@@ -118,22 +118,30 @@ export class SetApiController {
             meta = new PaginationMeta(options.page, options.limit, total);
         }
 
+        const setCodes = sets.map((s) => s.code);
         const userId = req.user?.id;
         let totalsMap = new Map<string, number>();
         let valuesMap = new Map<string, number>();
         let subscribed = false;
 
+        // The cover lookup is one batched query for the whole page — without it
+        // every client has to fetch a card per set just to draw artwork, turning
+        // one list request into ~50 (#612). It is independent of the owned-data
+        // lookups, so it shares their round-trip rather than adding one in front.
+        let coverMap: Map<string, string>;
         if (userId) {
-            const setCodes = sets.map((s) => s.code);
-            [totalsMap, valuesMap, subscribed] = await Promise.all([
+            [coverMap, totalsMap, valuesMap, subscribed] = await Promise.all([
+                this.cardService.coverImagesForSets(setCodes),
                 this.inventoryService.inventoryTotalsForSets(userId, setCodes),
                 this.inventoryService.ownedValuesForSets(userId, setCodes),
                 this.subscriptionService.isUserSubscribed(userId),
             ]);
+        } else {
+            coverMap = await this.cardService.coverImagesForSets(setCodes);
         }
 
         const data = sets.map((s) => {
-            const dto = SetApiPresenter.toSetApiResponse(s);
+            const dto = SetApiPresenter.toSetApiResponse(s, coverMap.get(s.code));
             if (!userId) return dto;
 
             const ownedTotal = totalsMap.get(s.code) ?? 0;
@@ -161,7 +169,8 @@ export class SetApiController {
         if (!set) {
             throw new NotFoundException('Set not found');
         }
-        return ApiResponseDto.ok(SetApiPresenter.toSetApiResponse(set));
+        const coverMap = await this.cardService.coverImagesForSets([set.code]);
+        return ApiResponseDto.ok(SetApiPresenter.toSetApiResponse(set, coverMap.get(set.code)));
     }
 
     @Get(':code/cards')

@@ -42,6 +42,14 @@ export class SetApiResponseDto {
     @ApiProperty()
     readonly keyruneCode: string;
 
+    @ApiPropertyOptional({
+        description:
+            "Cover art tail for the set's opening card, in the same form as a card's `imgSrc`. " +
+            'Lets a client render set artwork from the list response instead of fetching a ' +
+            'card per set. Absent when the set has no card image.',
+    })
+    readonly coverImgSrc?: string;
+
     @ApiPropertyOptional()
     readonly block?: string;
 

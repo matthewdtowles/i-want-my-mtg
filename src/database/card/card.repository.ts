@@ -7,6 +7,7 @@ import { SET_CARD_SORTS, SortOptions } from 'src/core/query/sort-options.enum';
 import { latestPriceCondition } from 'src/database/query/latest-price.sql';
 import { QueryBuilderHelper } from 'src/database/query/query-builder.helper';
 import { getLogger } from 'src/logger/global-app-logger';
+import { buildScryfallImagePath } from 'src/shared/utils/scryfall-image.util';
 import { Repository, SelectQueryBuilder } from 'typeorm';
 import { CardMapper } from './card.mapper';
 import { CardOrmEntity } from './card.orm-entity';
@@ -327,6 +328,31 @@ export class CardRepository implements CardRepositoryPort {
         const cards = ormCards.map(CardMapper.toCore);
         this.LOGGER.debug(`Found ${cards.length} cards for name "${name}" in set ${setCode}.`);
         return cards;
+    }
+
+    async findCoverImagesForSets(setCodes: string[]): Promise<Map<string, string>> {
+        if (setCodes.length === 0) return new Map();
+        this.LOGGER.debug(`Finding cover images for ${setCodes.length} sets.`);
+        // One query for the whole page of sets, not one per set. DISTINCT ON
+        // takes the first row per set under the ORDER BY, which is the same card
+        // `findBySet` returns first (default sort: sortNumber ascending) — so the
+        // cover matches the set's opening card.
+        //
+        // Built through the query builder rather than raw SQL so the column names
+        // come from the entity metadata. There is no `img_src` column to select:
+        // migration 038 dropped it, and `imgSrc` is now derived from `scryfallId`
+        // the same way CardMapper does it.
+        const rows = await this.repository
+            .createQueryBuilder(this.TABLE)
+            .select([`${this.TABLE}.setCode`, `${this.TABLE}.scryfallId`])
+            .distinctOn([`${this.TABLE}.setCode`])
+            .where(`${this.TABLE}.setCode IN (:...setCodes)`, { setCodes })
+            .andWhere(`${this.TABLE}.scryfallId IS NOT NULL`)
+            .orderBy(`${this.TABLE}.setCode`, 'ASC')
+            .addOrderBy(`${this.TABLE}.sortNumber`, 'ASC')
+            .getMany();
+        this.LOGGER.debug(`Found ${rows.length} cover images.`);
+        return new Map(rows.map((r) => [r.setCode, buildScryfallImagePath(r.scryfallId)]));
     }
 
     async findBySetCodeAndNumbers(

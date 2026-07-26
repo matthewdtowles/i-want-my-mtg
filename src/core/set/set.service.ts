@@ -1,6 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
 import { getLogger } from 'src/logger/global-app-logger';
+import { normalizeSetCode } from 'src/shared/utils/set-code.util';
 import { SetPriceHistory } from './set-price-history.entity';
 import { SetPriceHistoryRepositoryPort } from './ports/set-price-history.repository.port';
 import { Set } from './set.entity';
@@ -47,6 +48,7 @@ export class SetService {
     }
 
     async findByCode(setCode: string): Promise<Set | null> {
+        setCode = normalizeSetCode(setCode);
         this.LOGGER.debug(`Calling findByCode(${setCode})`);
         return await this.repository.findByCode(setCode);
     }
@@ -91,6 +93,7 @@ export class SetService {
     }
 
     async findSetPriceHistory(setCode: string, days?: number): Promise<SetPriceHistory[]> {
+        setCode = normalizeSetCode(setCode);
         this.LOGGER.debug(`Find set price history for set ${setCode}, days=${days}.`);
         const prices = await this.priceHistoryRepository.findBySetCode(setCode, days);
         this.LOGGER.debug(`Found ${prices?.length} set price history records for set ${setCode}.`);

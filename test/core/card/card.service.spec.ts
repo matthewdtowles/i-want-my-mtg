@@ -130,7 +130,7 @@ describe('CardService', () => {
 
             const result = await service.findBySet('TST', mockQueryOptions);
 
-            expect(repository.findBySet).toHaveBeenCalledWith('TST', mockQueryOptions);
+            expect(repository.findBySet).toHaveBeenCalledWith('tst', mockQueryOptions);
             expect(result).toEqual(cards);
         });
 
@@ -139,7 +139,7 @@ describe('CardService', () => {
 
             const result = await service.findBySet('EMPTY', mockQueryOptions);
 
-            expect(repository.findBySet).toHaveBeenCalledWith('EMPTY', mockQueryOptions);
+            expect(repository.findBySet).toHaveBeenCalledWith('empty', mockQueryOptions);
             expect(result).toEqual([]);
         });
 
@@ -223,7 +223,7 @@ describe('CardService', () => {
 
             const result = await service.totalInSet('TST', mockQueryOptions);
 
-            expect(repository.totalInSet).toHaveBeenCalledWith('TST', mockQueryOptions);
+            expect(repository.totalInSet).toHaveBeenCalledWith('tst', mockQueryOptions);
             expect(result).toBe(250);
         });
 

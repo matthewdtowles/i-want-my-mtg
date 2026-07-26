@@ -79,6 +79,25 @@ describe('Sets API (e2e)', () => {
             expect(res.body.success).toBe(false);
             expect(res.body.error).toBeDefined();
         });
+
+        // Codes are stored lowercase but are conventionally written uppercase,
+        // so an uppercase URL used to 404 (#617).
+        it('resolves an uppercase set code to the same set', async () => {
+            const res = await request(app.getHttpServer())
+                .get(`/api/v1/sets/${TEST_SET_CODE.toUpperCase()}`)
+                .expect(200);
+
+            expect(res.body.data).toHaveProperty('code', TEST_SET_CODE);
+        });
+
+        it('resolves an uppercase set code for the cards route', async () => {
+            const res = await request(app.getHttpServer())
+                .get(`/api/v1/sets/${TEST_SET_CODE.toUpperCase()}/cards`)
+                .expect(200);
+
+            expect(Array.isArray(res.body.data)).toBe(true);
+            expect(res.body.data.length).toBeGreaterThan(0);
+        });
     });
 
     describe('GET /api/v1/sets/:code/cards', () => {

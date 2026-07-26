@@ -88,7 +88,8 @@ describe('SetService', () => {
             const foundSetWithCards: Set = await service.findByCode(mockSetCode);
 
             expect(repository.findByCode).toHaveBeenCalledTimes(1);
-            expect(repository.findByCode).toHaveBeenCalledWith(mockSetCode);
+            // Normalized before the (case-sensitive) repository lookup.
+            expect(repository.findByCode).toHaveBeenCalledWith(mockSetCode.toLowerCase());
             expect(foundSetWithCards.code).toBe(mockSetCode);
             expect(foundSetWithCards.cards).toBeDefined();
         });
@@ -98,8 +99,24 @@ describe('SetService', () => {
 
             const result = await service.findByCode('NONEXISTENT');
 
-            expect(repository.findByCode).toHaveBeenCalledWith('NONEXISTENT');
+            // Normalized before the (case-sensitive) repository lookup.
+            expect(repository.findByCode).toHaveBeenCalledWith('nonexistent');
             expect(result).toBeNull();
+        });
+
+        // Codes are stored lowercase and the repository compares exactly, so an
+        // uppercase code — the conventional way set codes are written — used to
+        // 404 (#617).
+        it.each([
+            ['uppercase', 'MKM'],
+            ['mixed case', 'MkM'],
+            ['surrounding whitespace', '  mkm  '],
+        ])('should normalize a set code with %s', async (_label, input) => {
+            repository.findByCode.mockResolvedValue(mockSets[0]);
+
+            await service.findByCode(input);
+
+            expect(repository.findByCode).toHaveBeenCalledWith('mkm');
         });
     });
 
@@ -397,7 +414,7 @@ describe('SetService', () => {
 
             const result = await service.findSetPriceHistory('SET');
 
-            expect(priceHistoryRepository.findBySetCode).toHaveBeenCalledWith('SET', undefined);
+            expect(priceHistoryRepository.findBySetCode).toHaveBeenCalledWith('set', undefined);
             expect(result).toEqual(mockPriceHistory);
             expect(result.length).toBe(2);
         });
@@ -407,7 +424,7 @@ describe('SetService', () => {
 
             await service.findSetPriceHistory('SET', 30);
 
-            expect(priceHistoryRepository.findBySetCode).toHaveBeenCalledWith('SET', 30);
+            expect(priceHistoryRepository.findBySetCode).toHaveBeenCalledWith('set', 30);
         });
 
         it('should return empty array when no history exists', async () => {

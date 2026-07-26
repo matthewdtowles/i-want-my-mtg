@@ -329,6 +329,24 @@ export class CardRepository implements CardRepositoryPort {
         return cards;
     }
 
+    async findCoverImagesForSets(setCodes: string[]): Promise<Map<string, string>> {
+        if (setCodes.length === 0) return new Map();
+        this.LOGGER.debug(`Finding cover images for ${setCodes.length} sets.`);
+        // One query for the whole page of sets, not one per set. DISTINCT ON
+        // takes the first row per set_code under the ORDER BY, which is the same
+        // card `findBySet` returns first (default sort: sort_number ascending) —
+        // so the cover matches the set's opening card.
+        const rows: { set_code: string; img_src: string }[] = await this.repository.query(
+            `SELECT DISTINCT ON (set_code) set_code, img_src
+               FROM ${this.TABLE}
+              WHERE set_code = ANY($1) AND img_src IS NOT NULL
+              ORDER BY set_code, sort_number ASC`,
+            [setCodes]
+        );
+        this.LOGGER.debug(`Found ${rows.length} cover images.`);
+        return new Map(rows.map((r) => [r.set_code, r.img_src]));
+    }
+
     async findBySetCodeAndNumbers(
         pairs: { setCode: string; number: string }[]
     ): Promise<Card[]> {

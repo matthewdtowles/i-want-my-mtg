@@ -3,8 +3,9 @@ import { SetTypeMapper } from 'src/http/base/set-type.mapper';
 import { SetApiResponseDto } from './dto/set-response.dto';
 
 export class SetApiPresenter {
-    static toSetApiResponse(set: Set): SetApiResponseDto {
+    static toSetApiResponse(set: Set, coverImgSrc?: string): SetApiResponseDto {
         return {
+            coverImgSrc,
             code: set.code,
             name: set.name,
             type: set.type,

@@ -51,6 +51,12 @@ export class CardService {
         return cards;
     }
 
+    /** Cover art tails keyed by set code; see the port for why this is batched. */
+    async coverImagesForSets(setCodes: string[]): Promise<Map<string, string>> {
+        this.LOGGER.debug(`Find cover images for ${setCodes.length} sets.`);
+        return await this.repository.findCoverImagesForSets(setCodes);
+    }
+
     async findBySetCodeAndNumber(code: string, number: string): Promise<Card | null> {
         // Set codes are stored lowercase and the repo query is case-sensitive,
         // so normalize here (one place for every caller — REST/MCP/HBS).

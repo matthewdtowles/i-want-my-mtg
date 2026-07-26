@@ -118,6 +118,11 @@ export class SetApiController {
             meta = new PaginationMeta(options.page, options.limit, total);
         }
 
+        // One batched lookup for the whole page. Without it every client has to
+        // fetch a card per set just to draw artwork, turning one list request
+        // into ~50 (#612).
+        const coverMap = await this.cardService.coverImagesForSets(sets.map((s) => s.code));
+
         const userId = req.user?.id;
         let totalsMap = new Map<string, number>();
         let valuesMap = new Map<string, number>();
@@ -133,7 +138,7 @@ export class SetApiController {
         }
 
         const data = sets.map((s) => {
-            const dto = SetApiPresenter.toSetApiResponse(s);
+            const dto = SetApiPresenter.toSetApiResponse(s, coverMap.get(s.code));
             if (!userId) return dto;
 
             const ownedTotal = totalsMap.get(s.code) ?? 0;
@@ -161,7 +166,8 @@ export class SetApiController {
         if (!set) {
             throw new NotFoundException('Set not found');
         }
-        return ApiResponseDto.ok(SetApiPresenter.toSetApiResponse(set));
+        const coverMap = await this.cardService.coverImagesForSets([set.code]);
+        return ApiResponseDto.ok(SetApiPresenter.toSetApiResponse(set, coverMap.get(set.code)));
     }
 
     @Get(':code/cards')

@@ -11,6 +11,10 @@ export interface FormatOptionView {
 export interface DeckListItemView {
     id: number;
     name: string;
+    /** Art-crop URL of the deck's representative card; absent for an empty deck. */
+    coverImgSrc?: string;
+    /** That card's name, for the image's alt text. */
+    coverCardName?: string;
     formatLabel: string;
     cardCount: number;
     estimatedValue: string;

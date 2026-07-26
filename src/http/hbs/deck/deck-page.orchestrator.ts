@@ -1,8 +1,10 @@
 import { Inject, Injectable } from '@nestjs/common';
+import { CardImgType } from 'src/core/card/card.img.type.enum';
 import { Format } from 'src/core/card/format.enum';
 import { DomainNotFoundError } from 'src/core/errors/domain.errors';
 import { DeckBuildabilityService } from 'src/core/deck/deck-buildability.service';
 import { DeckCard } from 'src/core/deck/deck-card.entity';
+import { DeckCoverPolicy } from 'src/core/deck/deck-cover.policy';
 import { DeckCardGap, DeckGapSummary } from 'src/core/deck/deck-gap.policy';
 import { DeckImportService } from 'src/core/deck/deck-import.service';
 import { DeckLegalityPolicy } from 'src/core/deck/deck-legality.policy';
@@ -10,7 +12,7 @@ import { DeckSummaryPolicy } from 'src/core/deck/deck-summary.policy';
 import { Deck } from 'src/core/deck/deck.entity';
 import { DeckService } from 'src/core/deck/deck.service';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
-import { buildCardUrl } from 'src/http/base/http.util';
+import { BASE_IMAGE_URL, buildCardUrl } from 'src/http/base/http.util';
 import { HttpErrorHandler } from 'src/http/http.error.handler';
 import { getLogger } from 'src/logger/global-app-logger';
 import { primaryType, TYPE_ORDER, TYPE_PLURAL } from './deck-grouping';
@@ -182,9 +184,16 @@ export class DeckPageOrchestrator {
 
     private toListItem(deck: Deck, gap?: DeckGapSummary) {
         const cards = deck.cards ?? [];
+        // Art crop of the deck's representative card (see DeckCoverPolicy).
+        // Undefined for an empty deck, which the template renders as a plain tile.
+        const cover = DeckCoverPolicy.pick(deck, cards);
         return {
             id: deck.id!,
             name: deck.name,
+            coverImgSrc: cover
+                ? `${BASE_IMAGE_URL}/${CardImgType.ART_CROP}/front/${cover.imgSrc}`
+                : undefined,
+            coverCardName: cover?.name,
             formatLabel: deck.format ? this.capitalize(deck.format) : 'No format',
             cardCount: DeckSummaryPolicy.cardCount(cards),
             estimatedValue: this.formatCurrency(DeckSummaryPolicy.estimatedValue(cards)),

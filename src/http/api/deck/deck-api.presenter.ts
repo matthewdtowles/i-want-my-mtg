@@ -1,5 +1,7 @@
 import { Format } from 'src/core/card/format.enum';
+import { CardImgType } from 'src/core/card/card.img.type.enum';
 import { DeckCard } from 'src/core/deck/deck-card.entity';
+import { DeckCoverPolicy } from 'src/core/deck/deck-cover.policy';
 import { DeckLegalityPolicy } from 'src/core/deck/deck-legality.policy';
 import { DeckSummaryPolicy } from 'src/core/deck/deck-summary.policy';
 import { Deck } from 'src/core/deck/deck.entity';
@@ -9,10 +11,15 @@ import { DeckCardApiDto, DeckDetailApiDto, DeckSummaryApiDto } from './dto/deck-
 export class DeckApiPresenter {
     static toSummary(deck: Deck): DeckSummaryApiDto {
         const cards = deck.cards ?? [];
+        const cover = DeckCoverPolicy.pick(deck, cards);
         return {
             id: deck.id!,
             name: deck.name,
             format: deck.format ?? null,
+            coverImgSrc: cover
+                ? `${BASE_IMAGE_URL}/${CardImgType.ART_CROP}/front/${cover.imgSrc}`
+                : undefined,
+            coverCardName: cover?.name,
             cardCount: DeckSummaryPolicy.cardCount(cards),
             estimatedValue: round2(DeckSummaryPolicy.estimatedValue(cards)),
             createdAt: deck.createdAt?.toISOString() ?? '',

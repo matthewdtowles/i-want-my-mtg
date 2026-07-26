@@ -9,35 +9,33 @@ in git.
 
 ## Now
 
-Three open threads. Two are the public store releases (Phase 7.1's only remaining
-scope); one is a production break found 2026-07-22.
+**The app is public on both stores.** Phase 7.1 is closed out: the iOS App Store
+release went live with **0.20.2** (2026-07-21), and Google Play production was
+submitted and approved. Both store-release threads that sat here, plus the scry
+retention break, are done — see **Done** below. Mobile is now in ordinary
+version-over-version improvement, currently **0.26.0** on TestFlight and the Play
+internal track.
 
-**1. iOS App Store — clear the Guideline 3.1.1 rejection.** Builds through 0.2.0 (7)
-were rejected **four times** under 3.1.1. Root cause was ours: the backend returned
-price-alert error strings naming "Premium" and `/pricing`, and the app rendered them
-verbatim as native alerts, so App Review read the app as steering users to an external
-purchase. Fixed in web [#607](https://github.com/matthewdtowles/i-want-my-mtg/pull/607)
-+ mobile [#83](https://github.com/matthewdtowles/i-want-my-mtg-mobile/pull/83); build
-0.2.1 is on TestFlight and verified. Remaining: post the Resolution Center reply and
-submit. Runbook: [mobile #84](https://github.com/matthewdtowles/i-want-my-mtg-mobile/issues/84).
+One open thread, and it is a live production problem:
 
-> **Standing rule this produced:** no `4xx` body on a path the mobile app can reach may
-> contain "Premium", "Upgrade", "Free plan", a tier name, or a pricing URL. State the
-> limit neutrally and let each client steer. Enforced in `CLAUDE.md`; exemptions
-> (API-key traffic, `src/mcp/`) are listed there.
+**1. The API intermittently 503s under load.** `GET /api/v1/sets` fails often enough
+that the mobile app frequently can't load its Browse screen — the server side of the
+"we keep hitting rate limits" symptom. This is the highest-value thing on the board:
+it degrades the app that was just shipped to both stores, so every new install can
+hit it.
+[#612](https://github.com/matthewdtowles/i-want-my-mtg/issues/612).
 
-**2. Android → Play production.** The 12-tester / 14-day closed test is served and
-production access has been applied for. Remaining: promote the tested build, submit,
-roll out. Tracker: [mobile #60](https://github.com/matthewdtowles/i-want-my-mtg-mobile/issues/60).
+> **Standing rule from the 3.1.1 saga:** no `4xx` body on a path the mobile app can
+> reach may contain "Premium", "Upgrade", "Free plan", a tier name, or a pricing URL.
+> State the limit neutrally and let each client steer. Enforced in `CLAUDE.md`;
+> exemptions (API-key traffic, `src/mcp/`) are listed there.
 
-**3. `scry retention` is failing in production.** It prunes `granular_price_history`,
-which migration 042 dropped in §10.10. The error aborts the run before the
-set-price-history and portfolio retention steps, so **neither has been pruned since
-the S4 change shipped (~2026-07-09)**. Fix is a deletion.
-[scry #63](https://github.com/matthewdtowles/scry/issues/63).
-
-After these three, the next substantive product work is **7.3 card scanning** — the
-load-bearing premium pitch that is still unbuilt (see Appendix).
+After #612, the two candidates are **7.3 card scanning**
+([#301](https://github.com/matthewdtowles/i-want-my-mtg/issues/301)) — the
+load-bearing premium pitch that is still unbuilt (see Appendix) — and **color
+filtering on card search**
+([#609](https://github.com/matthewdtowles/i-want-my-mtg/issues/609)), the largest
+remaining gap in the catalog API.
 
 ---
 
@@ -124,18 +122,28 @@ Surface buylist (sell-to-vendor) prices so users see what their collection is wo
 
 Four codebase analyses run **2026-07-07** produced 29 work packages across all four repos. Quality/hardening only (correctness, integrity, security, tooling, structure) — no new product surface. Executed in three waves 2026-07-09 → 2026-07-18; every work package and every carved-off remainder is closed. Findings with file/line refs: [`docs/codebase-analyses-2026-07/`](docs/codebase-analyses-2026-07/); sequencing rationale + work-package → issue mapping: [`docs/cross-repo-analysis-plan-2026-07.md`](docs/cross-repo-analysis-plan-2026-07.md).
 
-- **Wave 1 — correctness, integrity, security** (gated the Phase 8 push) — web: `ON DELETE CASCADE` migration (W9), domain-error boundary end to end (W1), transactional ledger/inventory writes + oversell row-lock (W2). scry: prune foreignness, delete/reset FK coverage, ingest robustness, `granular_price_history` retention (S1–S4 — **S4 was wrong**: it added retention for a table 10.10 had already dropped, breaking the whole retention command; see **Now** #3). mcp: correctness bundle (M1). mobile: sign-out cache clear — a cross-account data leak — and CI spec-drift decoupling (MB1/MB2).
+- **Wave 1 — correctness, integrity, security** (gated the Phase 8 push) — web: `ON DELETE CASCADE` migration (W9), domain-error boundary end to end (W1), transactional ledger/inventory writes + oversell row-lock (W2). scry: prune foreignness, delete/reset FK coverage, ingest robustness, `granular_price_history` retention (S1–S4 — **S4 was wrong**: it added retention for a table 10.10 had already dropped, breaking the whole retention command and silently stopping set-price-history and portfolio pruning from ~2026-07-09 until the fix; [scry #63](https://github.com/matthewdtowles/scry/issues/63), closed). mcp: correctness bundle (M1). mobile: sign-out cache clear — a cross-account data leak — and CI spec-drift decoupling (MB1/MB2).
 - **Wave 2 — hardening + the OpenAPI spec chain** — web: OpenAPI fixes + delta-quantity endpoints (W8), query/input hardening (W3), security hardening (W4: no-leak ≥500s, signup enumeration/timing, sha256 token storage, Stripe status validation), performance (W5: anon set page, bulk import resolution, latest-price helper). scry: no-op concurrency + dead granular parsing removed (S5), thin `main.rs` + `IngestPipeline` + ports (S6), clippy/fmt CI gates + Docker hardening + schema-fixture sync (S8). mcp: generic `ToolDefinition` + auth invariant test (M2), Biome/NodeNext/Node 20 tooling (M4). mobile: behavior fixes, unread-count badge + inbox pagination, centralized query keys, ESLint + tests (MB3–MB6).
 - **Wave 3 — structure + consistency** — web: TypeScript strictness ratchet + type-aware lint + `quality` CI gate (W6), architecture cleanup (W7: dead code, read models, presenters, logging). scry: DRY/perf/transactionality (S7). mcp: consistency sweep (M3). mobile: shared UI + hooks layer (MB7).
 - **Remainders (all closed)** — web [#596](https://github.com/matthewdtowles/i-want-my-mtg/issues/596): set-price presenter (PR #598), repo-wide SEO/meta move (PR #599), OpenAPI response-schema backfill (PR #603), orchestrator-spec test backfill (PR #605). scry [#54](https://github.com/matthewdtowles/scry/issues/54)/[#57](https://github.com/matthewdtowles/scry/issues/57): SQL dedup, prune batching + bounded-concurrency fetches, `SubtreeCollector` parser unification, vestigial-command removal (PRs #55–#61). mcp [#29](https://github.com/matthewdtowles/iwantmymtg-mcp/issues/29): schema/query dedup + as-never sweep. mobile [#79](https://github.com/matthewdtowles/i-want-my-mtg-mobile/issues/79): component/hook extractions (PRs #80/#81).
 - **Cross-repo orderings, all satisfied** — X1 (W9 → S2), X2 (retention), X3/X4 (MB2 before W8, then client regen), X5 (scry fixture synced from the web schema), X6 (both clients verified against the post-W1 `{ success, error }` envelope).
 
-### Phase 7.1: Mobile app — build ✅
+### Phase 7.1: Mobile app — built and publicly released ✅
 
-All feature work is shipped and live in both beta channels (iOS TestFlight 2026-06-24,
-Android Play closed testing 2026-07-02). Only the two **public** store releases remain,
-and they are in **Now** above. Full inventory in the mobile repo's `HANDOFF.md`;
-remaining release steps in its `GO-LIVE.md`.
+Shipped end to end. Betas first (iOS TestFlight 2026-06-24, Android Play closed
+testing 2026-07-02), then both **public** store releases: the App Store went live
+with **0.20.2** (2026-07-21) and Google Play production was submitted and approved.
+Ongoing work is now ordinary versioning — 0.26.0 is the current build. Full feature
+inventory and release mechanics in the mobile repo's `HANDOFF.md`.
+
+- **The iOS 3.1.1 rejection (resolved)** — builds through 0.2.0 were rejected **four
+  times** under Guideline 3.1.1. Root cause was ours: the backend returned price-alert
+  error strings naming "Premium" and `/pricing`, and the app rendered them verbatim as
+  native alerts, so App Review read the app as steering users to an external purchase.
+  Fixed in web [#607](https://github.com/matthewdtowles/i-want-my-mtg/pull/607) +
+  mobile [#83](https://github.com/matthewdtowles/i-want-my-mtg-mobile/pull/83), and
+  approved on the 0.20.x line — the "0.2.1" this file used to promise was never
+  tagged. It produced the standing no-tier-names-in-4xx rule quoted in **Now**.
 
 - **Stack (decided 2026-06-22)** — React Native + Expo (managed), TypeScript, expo-router,
   TanStack Query, EAS Build/Submit. Chosen over Flutter and bare RN for one language across
@@ -177,17 +185,17 @@ Small leftover items from otherwise-shipped sections (Phases 1–4.3). Mostly ma
 
 Extend the product's surface area so newcomers can use it where they expect to — phone first. Recurring feedback is that people expect a mobile app to try the product at all, so platform expansion is sequenced ahead of the go-to-market push (Phase 8): drive adoption onto surfaces newcomers can actually use before the marketing spend lands.
 
-### 7.1 Mobile App — public store releases
+### 7.1 Mobile App — public store releases ✅
 
-The build is done (see **Phase 7.1** under Done). What is left is two store
-submissions, both tracked in **Now** at the top of this file:
+Both shipped; see **Phase 7.1** under Done for the detail.
 
-- [ ] **iOS App Store** — clear the Guideline 3.1.1 rejection and ship 0.2.1
+- [x] **iOS App Store** — live, first public release **0.20.2** (2026-07-21), after
+      clearing the Guideline 3.1.1 rejection
       ([mobile #84](https://github.com/matthewdtowles/i-want-my-mtg-mobile/issues/84),
-      superseding the older checklist in
       [#20](https://github.com/matthewdtowles/i-want-my-mtg-mobile/issues/20))
-- [ ] **Google Play production** — promote the tested build and roll out
-      ([mobile #60](https://github.com/matthewdtowles/i-want-my-mtg-mobile/issues/60))
+- [x] **Google Play production** — submitted and approved
+      ([mobile #60](https://github.com/matthewdtowles/i-want-my-mtg-mobile/issues/60),
+      [#8](https://github.com/matthewdtowles/i-want-my-mtg-mobile/issues/8))
 
 Two facts that keep biting, kept here because they are easy to forget:
 
@@ -200,8 +208,11 @@ Two facts that keep biting, kept here because they are easy to forget:
   social provider forces Sign in with Apple alongside it; plain email/password
   avoids that.
 
-Ordered runbook for both: the mobile repo's
-[`GO-LIVE.md`](https://github.com/matthewdtowles/i-want-my-mtg-mobile/blob/main/GO-LIVE.md).
+Release runbook: the mobile repo's
+[`HANDOFF.md`](https://github.com/matthewdtowles/i-want-my-mtg-mobile/blob/main/HANDOFF.md)
+(Conventions → Releasing) and [`docs/playstore-release.md`](https://github.com/matthewdtowles/i-want-my-mtg-mobile/blob/main/docs/playstore-release.md)
+for the Play Console side. The pre-launch `GO-LIVE.md` checklist was deleted once
+both stores went live.
 Cross-repo progress rolls up on the "I Want My MTG" GitHub project
 (`PVT_kwHOAP2Yos4A4tP0`).
 

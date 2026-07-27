@@ -85,6 +85,20 @@ describe('DeckCoverPolicy', () => {
         expect(pick.name).toBe('Shivan Devastator');
     });
 
+    it('finds a namesake match after an earlier partial-token hit', () => {
+        // "ring" appears inside "Bring" first; scanning must continue to the
+        // real whole-word match at the end.
+        const ring = card({ name: 'Ring', type: 'Artifact', value: 1 });
+        const other = card({ name: 'Frodo Baggins', value: 40 });
+
+        const pick = DeckCoverPolicy.pick({ name: 'Bring the Ring', format: Format.Modern }, [
+            entry(other),
+            entry(ring),
+        ]);
+
+        expect(pick.name).toBe('Ring');
+    });
+
     it('prefers the longest namesake match', () => {
         const short = card({ name: 'Ur-Dragon', value: 50 });
         const long = card({ name: 'The Ur-Dragon, Hidden', value: 1 });

@@ -97,14 +97,25 @@ export class DeckCoverPolicy {
         return best;
     }
 
-    /** Whole-word containment, so "dragon" does not match "dragons" mid-token. */
+    /**
+     * Whole-word containment, so "dragon" does not match "dragons" mid-token.
+     *
+     * Every occurrence is checked, not just the first: in "bring the ring" the
+     * leading hit is inside "bring", and stopping there would miss the real
+     * match at the end.
+     */
     private static containsWord(haystack: string, needle: string): boolean {
-        const index = haystack.indexOf(needle);
-        if (index === -1) return false;
-        const before = index === 0 ? ' ' : haystack[index - 1];
-        const after =
-            index + needle.length >= haystack.length ? ' ' : haystack[index + needle.length];
-        return !/[a-z0-9]/.test(before) && !/[a-z0-9]/.test(after);
+        for (
+            let index = haystack.indexOf(needle);
+            index !== -1;
+            index = haystack.indexOf(needle, index + 1)
+        ) {
+            const before = index === 0 ? ' ' : haystack[index - 1];
+            const after =
+                index + needle.length >= haystack.length ? ' ' : haystack[index + needle.length];
+            if (!/[a-z0-9]/.test(before) && !/[a-z0-9]/.test(after)) return true;
+        }
+        return false;
     }
 
     private static mostValuable(

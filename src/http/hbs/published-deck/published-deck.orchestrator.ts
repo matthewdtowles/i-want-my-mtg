@@ -1,5 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
+import { CardImgType } from 'src/core/card/card.img.type.enum';
 import { DeckBuildabilityService } from 'src/core/deck/deck-buildability.service';
+import { DeckCoverPolicy } from 'src/core/deck/deck-cover.policy';
 import { DomainNotFoundError } from 'src/core/errors/domain.errors';
 import { DeckCard } from 'src/core/deck/deck-card.entity';
 import { DeckGapPolicy, DeckCardGap } from 'src/core/deck/deck-gap.policy';
@@ -8,7 +10,7 @@ import { DeckSummaryPolicy } from 'src/core/deck/deck-summary.policy';
 import { PublishedDeck } from 'src/core/published-deck/published-deck.entity';
 import { PublishedDeckService } from 'src/core/published-deck/published-deck.service';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
-import { buildCardUrl } from 'src/http/base/http.util';
+import { BASE_IMAGE_URL, buildCardUrl } from 'src/http/base/http.util';
 import { HttpErrorHandler } from 'src/http/http.error.handler';
 import { getLogger } from 'src/logger/global-app-logger';
 import { primaryType, TYPE_ORDER, TYPE_PLURAL } from '../deck/deck-grouping';
@@ -207,9 +209,15 @@ export class PublishedDeckOrchestrator {
 
     private toListItem(deck: PublishedDeck) {
         const cards = deck.cards ?? [];
+        // Same representative-card rule the user's own decks use, so a deck
+        // looks the same wherever it is listed.
+        const cover = DeckCoverPolicy.pick({ name: this.deckTitle(deck), format: deck.format }, cards);
         return {
             id: deck.id!,
             title: this.deckTitle(deck),
+            coverImgSrc: cover
+                ? `${BASE_IMAGE_URL}/${CardImgType.ART_CROP}/front/${cover.imgSrc}`
+                : undefined,
             formatLabel: deck.format ? this.capitalize(deck.format) : 'Unknown',
             tournamentName: deck.tournamentName ?? '',
             date: this.formatDate(deck.tournamentDate),

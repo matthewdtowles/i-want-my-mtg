@@ -61,6 +61,17 @@ export class DeckSummaryApiDto {
     @ApiPropertyOptional({ nullable: true })
     readonly format?: string | null;
 
+    @ApiPropertyOptional({
+        description:
+            "Art-crop URL of the deck's representative card — its commander, the card it is " +
+            'named after, or its most valuable creature. Ready to render as-is. Absent for an ' +
+            'empty deck.',
+    })
+    readonly coverImgSrc?: string;
+
+    @ApiPropertyOptional({ description: "The cover card's name, for alt text." })
+    readonly coverCardName?: string;
+
     @ApiProperty({ description: 'Total card count (sum of quantities, main + side).' })
     readonly cardCount: number;
 

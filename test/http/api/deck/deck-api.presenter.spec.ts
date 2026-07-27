@@ -71,3 +71,34 @@ describe('DeckApiPresenter.toDetail', () => {
         expect(dto.illegalCount).toBe(0);
     });
 });
+
+describe('DeckApiPresenter.toSummary cover art', () => {
+    function deckWith(cards: DeckCard[], format: Format | null = Format.Modern): Deck {
+        return new Deck({
+            id: 1,
+            userId: 7,
+            name: 'Sheoldred Midrange',
+            format,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            cards,
+        });
+    }
+
+    it('exposes the cover as a ready-to-render art crop', () => {
+        const cover = card('Sheoldred', 'Legendary Creature — Praetor', 90);
+        const summary = DeckApiPresenter.toSummary(
+            deckWith([new DeckCard({ cardId: 'Sheoldred', quantity: 1, isSideboard: false, card: cover })])
+        );
+
+        expect(summary.coverImgSrc).toBe('https://cards.scryfall.io/art_crop/front/a/b/c.jpg');
+        expect(summary.coverCardName).toBe('Sheoldred');
+    });
+
+    it('omits the cover for an empty deck', () => {
+        const summary = DeckApiPresenter.toSummary(deckWith([]));
+
+        expect(summary.coverImgSrc).toBeUndefined();
+        expect(summary.coverCardName).toBeUndefined();
+    });
+});

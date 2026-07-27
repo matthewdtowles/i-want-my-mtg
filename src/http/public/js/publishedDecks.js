@@ -1,17 +1,21 @@
 /**
- * Published tournament decks: one horizontally-scrolling row per format. Each
- * row lazy-loads older decks (newest-first) as it's scrolled toward the end,
- * and "View all formats" pulls in the rows for non-primary formats on demand.
+ * Published tournament decks: one grid section per format, newest first. Each
+ * section appends its next batch when "Load more" is pressed, and "View all
+ * formats" pulls in the sections for non-primary formats on demand.
  *
- * The card/row markup here mirrors the publishedDeckCard.hbs / publishedDeckRow.hbs
- * partials - keep them in sync.
+ * Loading is explicit rather than scroll-triggered: a horizontal track that
+ * fetched as you neared its end made both the page length and the number of
+ * decks unpredictable, and left keyboard users no way to reach the rest.
+ *
+ * The card/section markup here mirrors the publishedDeckCard.hbs /
+ * publishedDeckRow.hbs partials - keep them in sync.
  */
 (function () {
     var ROWS_ENDPOINT = '/published-decks/rows';
     var BATCH = 12;
 
     document.addEventListener('DOMContentLoaded', function () {
-        document.querySelectorAll('.deck-row').forEach(setupRow);
+        document.querySelectorAll('.deck-section').forEach(setupSection);
 
         var viewAllBtn = document.getElementById('view-all-formats');
         if (viewAllBtn) {
@@ -22,13 +26,11 @@
         }
     });
 
-    /** Wire up a row's lazy side-scroll loading. */
-    function setupRow(section) {
-        var track = section.querySelector('.deck-row-track');
-        var sentinel = section.querySelector('.deck-row-sentinel');
-        if (!track || !sentinel) return;
-
-        setupScrollButtons(section, track);
+    /** Wire a section's "Load more" button. */
+    function setupSection(section) {
+        var grid = section.querySelector('.deck-section-grid');
+        var button = section.querySelector('.deck-section-more');
+        if (!grid || !button) return;
 
         var state = {
             format: section.getAttribute('data-format'),
@@ -36,66 +38,18 @@
             hasMore: section.getAttribute('data-has-more') === 'true',
             loading: false,
         };
-        if (!state.hasMore) return;
 
-        if (typeof IntersectionObserver === 'undefined') {
-            // No observer support: load the next batch whenever the track scrolls.
-            track.addEventListener(
-                'scroll',
-                function () {
-                    loadMore(track, sentinel, state);
-                },
-                { passive: true }
-            );
-            return;
-        }
-
-        var observer = new IntersectionObserver(
-            function (entries) {
-                if (entries[0].isIntersecting) loadMore(track, sentinel, state, observer);
-            },
-            // root is the scroll container; prefetch a bit before the end is reached.
-            { root: track, rootMargin: '0px 300px 0px 0px' }
-        );
-        observer.observe(sentinel);
+        button.addEventListener('click', function () {
+            loadMore(grid, button, state);
+        });
     }
 
-    /** Wire a row's left/right buttons and toggle their visibility by scroll position. */
-    function setupScrollButtons(section, track) {
-        var left = section.querySelector('.deck-row-nav-left');
-        var right = section.querySelector('.deck-row-nav-right');
-        if (!left || !right) return;
-
-        function scrollByPage(dir) {
-            track.scrollBy({ left: dir * Math.round(track.clientWidth * 0.8), behavior: 'smooth' });
-        }
-        left.addEventListener('click', function () {
-            scrollByPage(-1);
-        });
-        right.addEventListener('click', function () {
-            scrollByPage(1);
-        });
-
-        function updateNav() {
-            // Slack absorbs the track's px-1 padding and sub-pixel rounding so a
-            // button isn't left stuck visible at either end.
-            var SLACK = 8;
-            var atStart = track.scrollLeft <= SLACK;
-            var atEnd = track.scrollLeft + track.clientWidth >= track.scrollWidth - SLACK;
-            var overflowing = track.scrollWidth > track.clientWidth + SLACK;
-            left.hidden = atStart || !overflowing;
-            right.hidden = atEnd || !overflowing;
-        }
-        track.addEventListener('scroll', updateNav, { passive: true });
-        window.addEventListener('resize', updateNav);
-        // Expose so loadMore can refresh button state after appending cards.
-        track._updateNav = updateNav;
-        updateNav();
-    }
-
-    function loadMore(track, sentinel, state, observer) {
+    function loadMore(grid, button, state) {
         if (state.loading || !state.hasMore) return;
         state.loading = true;
+        button.disabled = true;
+        var label = button.textContent;
+        button.textContent = 'Loading...';
 
         var url =
             ROWS_ENDPOINT +
@@ -113,24 +67,41 @@
             .then(function (json) {
                 state.loading = false;
                 if (!json || !json.success || !json.data) {
-                    state.hasMore = false;
-                    if (observer) observer.disconnect();
+                    removeButton(button);
                     return;
                 }
                 var data = json.data;
+                var first = null;
                 (data.items || []).forEach(function (item) {
-                    track.insertBefore(buildCard(item), sentinel);
+                    var card = buildCard(item);
+                    if (!first) first = card;
+                    grid.appendChild(card);
                 });
                 state.nextOffset = data.nextOffset;
                 state.hasMore = !!data.hasMore;
-                if (track._updateNav) track._updateNav();
-                if (!state.hasMore && observer) observer.disconnect();
+
+                if (state.hasMore) {
+                    button.disabled = false;
+                    button.textContent = label;
+                } else {
+                    removeButton(button);
+                }
+                // Land focus on the first new card, so keyboard and screen-reader
+                // users are taken to what appeared rather than left on a button
+                // that just moved down the page. No preventScroll: the point is
+                // for the browser to bring the new content into view.
+                if (first) first.focus();
             })
             .catch(function () {
                 state.loading = false;
-                state.hasMore = false;
-                if (observer) observer.disconnect();
+                removeButton(button);
             });
+    }
+
+    /** Drop the button (and its centering wrapper) once there is nothing left. */
+    function removeButton(button) {
+        var footer = button.closest ? button.closest('.deck-section-footer') : null;
+        (footer || button).remove();
     }
 
     /** Fetch and render the first batch for each non-primary format. */
@@ -150,7 +121,11 @@
         Promise.all(
             formats.map(function (format) {
                 return fetch(
-                    ROWS_ENDPOINT + '?format=' + encodeURIComponent(format) + '&offset=0&limit=' + BATCH,
+                    ROWS_ENDPOINT +
+                        '?format=' +
+                        encodeURIComponent(format) +
+                        '&offset=0&limit=' +
+                        BATCH,
                     { credentials: 'same-origin' }
                 )
                     .then(function (res) {
@@ -166,94 +141,99 @@
         ).then(function (results) {
             results.forEach(function (r) {
                 if (!r.data || !r.data.items || r.data.items.length === 0) return;
-                var section = buildRow(r.format, r.data);
+                var section = buildSection(r.format, r.data);
                 container.appendChild(section);
-                setupRow(section);
+                setupSection(section);
             });
             btn.remove();
         });
     }
 
-    /** Build a row <section> matching publishedDeckRow.hbs, then fill its cards. */
-    function buildRow(format, data) {
+    /** Build a section matching publishedDeckRow.hbs, then fill its grid. */
+    function buildSection(format, data) {
         var section = document.createElement('section');
-        section.className = 'deck-row';
+        section.className = 'deck-section';
         section.setAttribute('data-format', format);
         section.setAttribute('data-next-offset', String(data.nextOffset));
         section.setAttribute('data-has-more', data.hasMore ? 'true' : 'false');
 
         var label = capitalize(format);
         var heading = document.createElement('h2');
-        heading.className =
-            'font-display font-semibold text-lg text-gray-900 dark:text-white mb-3';
+        heading.className = 'font-display font-semibold text-lg text-gray-900 dark:text-white mb-3';
         heading.textContent = label;
         section.appendChild(heading);
 
-        var scroller = document.createElement('div');
-        scroller.className = 'deck-row-scroller';
-
-        var track = document.createElement('div');
-        track.className = 'deck-row-track flex gap-4 overflow-x-auto pb-3 -mx-1 px-1 snap-x';
-
-        var sentinel = document.createElement('div');
-        sentinel.className = 'deck-row-sentinel shrink-0 w-px';
-        sentinel.setAttribute('aria-hidden', 'true');
-
+        var grid = document.createElement('div');
+        grid.className =
+            'deck-section-grid grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4';
         (data.items || []).forEach(function (item) {
-            track.appendChild(buildCard(item));
+            grid.appendChild(buildCard(item));
         });
-        track.appendChild(sentinel);
+        section.appendChild(grid);
 
-        scroller.appendChild(navButton('left', label));
-        scroller.appendChild(track);
-        scroller.appendChild(navButton('right', label));
-        section.appendChild(scroller);
+        if (data.hasMore) {
+            var footer = document.createElement('div');
+            footer.className = 'deck-section-footer mt-4 flex justify-center';
+            var button = document.createElement('button');
+            button.type = 'button';
+            button.className = 'deck-section-more btn btn-secondary text-sm';
+            button.textContent = 'Load more ' + label + ' decks';
+            footer.appendChild(button);
+            section.appendChild(footer);
+        }
         return section;
-    }
-
-    /** A row scroll button mirroring the markup in publishedDeckRow.hbs. */
-    function navButton(dir, label) {
-        var btn = document.createElement('button');
-        btn.type = 'button';
-        btn.className = 'deck-row-nav deck-row-nav-' + dir;
-        btn.setAttribute('aria-label', 'Scroll ' + label + ' decks ' + dir);
-        btn.hidden = true;
-        var d = dir === 'left' ? 'M15 18l-6-6 6-6' : 'M9 18l6-6-6-6';
-        btn.innerHTML =
-            '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" ' +
-            'stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
-            '<path d="' + d + '"/></svg>';
-        return btn;
     }
 
     /** Build one deck card, mirroring publishedDeckCard.hbs. */
     function buildCard(item) {
-        var wrap = document.createElement('div');
-        wrap.className = 'deck-row-item snap-start shrink-0 w-64';
-
         var a = document.createElement('a');
         a.href = item.url;
         a.className =
-            'published-deck-card section-container block h-full hover:border-teal-400 dark:hover:border-teal-500 transition-colors';
+            'published-deck-card section-container !p-0 overflow-hidden flex flex-col h-full ' +
+            'hover:border-teal-400 dark:hover:border-teal-500 transition-colors group';
 
+        var art = document.createElement('span');
+        art.className = 'relative block h-24 bg-gray-200 dark:bg-midnight-700 shrink-0';
+        if (item.coverImgSrc) {
+            var img = document.createElement('img');
+            img.src = item.coverImgSrc;
+            // Decorative: the title over the scrim already names the deck.
+            img.alt = '';
+            img.setAttribute('aria-hidden', 'true');
+            img.loading = 'lazy';
+            img.decoding = 'async';
+            img.width = 626;
+            img.height = 457;
+            img.className =
+                'absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-105';
+            art.appendChild(img);
+        }
+        var scrim = document.createElement('span');
+        scrim.className =
+            'absolute inset-x-0 bottom-0 block bg-gradient-to-t from-black/80 to-transparent px-3 pt-8 pb-2';
         var title = document.createElement('span');
-        title.className = 'block font-display font-semibold text-base text-gray-900 dark:text-white';
+        title.className = 'block font-display font-semibold text-base text-white drop-shadow';
         title.textContent = item.title;
-        a.appendChild(title);
+        scrim.appendChild(title);
+        art.appendChild(scrim);
+        a.appendChild(art);
+
+        var body = document.createElement('span');
+        body.className = 'flex flex-col flex-1 p-3';
 
         var pips = buildPips(item.colors);
-        if (pips) a.appendChild(pips);
+        if (pips) body.appendChild(pips);
 
         if (item.tournamentName) {
-            var tourney = document.createElement('div');
-            tourney.className = 'mt-1 text-sm text-gray-600 dark:text-gray-400 truncate';
+            var tourney = document.createElement('span');
+            tourney.className = 'mt-1 block text-sm text-gray-600 dark:text-gray-400 truncate';
             tourney.textContent = item.tournamentName;
-            a.appendChild(tourney);
+            body.appendChild(tourney);
         }
 
-        var meta = document.createElement('div');
+        var meta = document.createElement('span');
         meta.className =
-            'mt-3 flex items-center justify-between text-sm text-gray-600 dark:text-gray-400';
+            'mt-auto pt-3 flex items-center justify-between text-sm text-gray-600 dark:text-gray-400';
         var left = document.createElement('span');
         left.textContent = item.result ? item.result : item.cardCount + ' cards';
         var right = document.createElement('span');
@@ -261,28 +241,29 @@
         right.textContent = item.estimatedValue;
         meta.appendChild(left);
         meta.appendChild(right);
-        a.appendChild(meta);
+        body.appendChild(meta);
 
         if (item.date) {
-            var date = document.createElement('div');
-            date.className = 'mt-1 text-xs text-gray-400';
+            var date = document.createElement('span');
+            date.className = 'mt-1 block text-xs text-gray-400';
             date.textContent = item.date;
-            a.appendChild(date);
+            body.appendChild(date);
         }
 
-        wrap.appendChild(a);
-        return wrap;
+        a.appendChild(body);
+        return a;
     }
 
     /** Build the deck-colors pip span, mirroring deckColors.hbs. */
     function buildPips(colors) {
         if (!colors || colors.length === 0) return null;
         var span = document.createElement('span');
-        span.className = 'deck-colors mt-2 inline-flex';
+        span.className = 'deck-colors inline-flex';
         span.title = 'Colors in this deck';
         colors.forEach(function (pip) {
             var i = document.createElement('i');
-            i.className = 'ms ms-cost ms-shadow ms-' + pip.symbol + (pip.small ? ' deck-pip-sm' : '');
+            i.className =
+                'ms ms-cost ms-shadow ms-' + pip.symbol + (pip.small ? ' deck-pip-sm' : '');
             span.appendChild(i);
         });
         return span;

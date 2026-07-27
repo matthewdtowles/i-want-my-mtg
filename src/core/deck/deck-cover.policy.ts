@@ -3,8 +3,12 @@ import { Format } from 'src/core/card/format.enum';
 import { DeckCard } from './deck-card.entity';
 import { DeckSummaryPolicy } from './deck-summary.policy';
 
-/** Formats built around a commander, where a legendary creature is the deck's face. */
-const COMMANDER_FORMATS: ReadonlySet<Format> = new Set([
+/**
+ * Formats built around a commander, where a legendary creature is the deck's
+ * face. Typed as strings because published decks carry their format as a plain
+ * string rather than the enum.
+ */
+const COMMANDER_FORMATS: ReadonlySet<string> = new Set<string>([
     Format.Commander,
     Format.Brawl,
     Format.Oathbreaker,
@@ -29,7 +33,7 @@ const COMMANDER_FORMATS: ReadonlySet<Format> = new Set([
  */
 export class DeckCoverPolicy {
     static pick(
-        deck: { name?: string; format?: Format | null },
+        deck: { name?: string; format?: Format | string | null },
         cards: DeckCard[] = []
     ): Card | undefined {
         // The sideboard is not what a deck looks like.
@@ -56,7 +60,7 @@ export class DeckCoverPolicy {
         return (card.type ?? '').toLowerCase().includes('creature');
     }
 
-    private static commander(pool: Card[], format?: Format | null): Card | undefined {
+    private static commander(pool: Card[], format?: Format | string | null): Card | undefined {
         if (!format || !COMMANDER_FORMATS.has(format)) return undefined;
         return DeckCoverPolicy.mostValuable(pool, (c) => {
             const type = (c.type ?? '').toLowerCase();

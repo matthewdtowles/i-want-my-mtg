@@ -10,6 +10,8 @@ export interface PublishedFormatOptionView {
 export interface PublishedDeckListItemView {
     id: number;
     title: string;
+    /** Art-crop URL of the deck's representative card; absent when it has none. */
+    coverImgSrc?: string;
     formatLabel: string;
     tournamentName: string;
     date: string;
@@ -20,7 +22,7 @@ export interface PublishedDeckListItemView {
     colors: DeckColorPip[];
 }
 
-/** One format's horizontally-scrolling row of decks (newest first). */
+/** One format's grid of decks (newest first). */
 export interface PublishedDeckRowView {
     format: string;
     label: string;

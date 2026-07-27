@@ -115,6 +115,21 @@ describe('publishedDecks "Load more"', function () {
         expect(global.fetch.mock.calls[1][0]).toContain('offset=24');
     });
 
+    it('moves focus to the first newly loaded card', async function () {
+        var els = section({});
+        respondWith({
+            success: true,
+            data: { items: [item(), item({ id: 2 })], nextOffset: 24, hasMore: true },
+        });
+        load();
+
+        els.button.click();
+        await flush();
+
+        var cards = els.grid.querySelectorAll('.published-deck-card');
+        expect(document.activeElement).toBe(cards[0]);
+    });
+
     it('renders the cover art, and omits the img when there is none', async function () {
         var els = section({});
         respondWith({

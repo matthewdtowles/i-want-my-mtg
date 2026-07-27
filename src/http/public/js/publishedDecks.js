@@ -88,8 +88,9 @@
                 }
                 // Land focus on the first new card, so keyboard and screen-reader
                 // users are taken to what appeared rather than left on a button
-                // that just moved down the page.
-                if (first) first.focus({ preventScroll: true });
+                // that just moved down the page. No preventScroll: the point is
+                // for the browser to bring the new content into view.
+                if (first) first.focus();
             })
             .catch(function () {
                 state.loading = false;

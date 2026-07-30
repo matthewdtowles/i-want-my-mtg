@@ -16,21 +16,83 @@ retention break, are done — see **Done** below. Mobile is now in ordinary
 version-over-version improvement, currently **0.26.0** on TestFlight and the Play
 internal track.
 
-One open thread, and it is a live production problem:
+The live production problem is **[#612](https://github.com/matthewdtowles/i-want-my-mtg/issues/612):
+the API intermittently 503s under load**, badly enough that the mobile app often
+can't load Browse. #612 is now an **umbrella**; the three fixes under it are filed
+separately and are listed below in the order they should be done. Close #612 when
+the 503s actually stop, not when the children merge.
 
-**1. The API intermittently 503s under load.** `GET /api/v1/sets` fails often enough
-that the mobile app frequently can't load its Browse screen — the server side of the
-"we keep hitting rate limits" symptom. This is the highest-value thing on the board:
-it degrades the app that was just shipped to both stores, so every new install can
-hit it.
-[#612](https://github.com/matthewdtowles/i-want-my-mtg/issues/612).
+### Order of work
+
+Web = this repo, Mobile = `i-want-my-mtg-mobile`. Each line has its own verification.
+
+1. **Mobile [#101](https://github.com/matthewdtowles/i-want-my-mtg-mobile/issues/101)
+   — adopt `coverImgSrc`.** *(client-only, ~1h)* `SetTile.tsx` still runs a
+   `useQuery` per tile against `/sets/{code}/cards?limit=1`, so one Browse screen
+   costs **51 requests**. The server half ([#615](https://github.com/matthewdtowles/i-want-my-mtg/issues/615))
+   is already live. Biggest load reduction available and it needs no infra work.
+   → verify: cold Browse load issues **1** catalog request.
+2. **Web [#621](https://github.com/matthewdtowles/i-want-my-mtg/issues/621) —
+   CloudFront caches nothing on `/api/*`.** *(infra only, ~1–2h in the AWS console)*
+   Six identical `/api/v1/sets` requests all returned `Miss`, so every catalog
+   request reaches the single Lightsail container. There is **no IaC for the
+   distribution anywhere in this repo** — the recipe and its cache-key hazard live
+   in the issue. → verify: `x-cache: Hit from cloudfront` on a repeat request, and a
+   signed-in caller still gets its own `ownedTotal`.
+3. **Web [#622](https://github.com/matthewdtowles/i-want-my-mtg/issues/622) — set
+   `trust proxy`.** *(small diff, security-sensitive, ~2h)* `request.ip` is a
+   CloudFront edge IP, so the 60/min anonymous bucket is shared per POP. Scope note:
+   signed-in callers are keyed on `user.id` at 200/min, so this only affects
+   **anonymous** traffic — which is exactly what public Browse uses. Do not use
+   `trust proxy: true` (spoofable). → verify: two client IPs get independent
+   budgets; a forged `X-Forwarded-For` does not.
+4. **Web [#620](https://github.com/matthewdtowles/i-want-my-mtg/issues/620) — CI
+   green.** *(~1h)* `api-user` rewrites `mutation@test.com`'s password and the seed's
+   `ON CONFLICT DO NOTHING` cannot repair it, so integration runs pass or fail on
+   Jest's suite order. Do this before or alongside the above so their PRs land on a
+   trustworthy suite. → verify: `./scripts/test-integ.sh` green twice in a row, and
+   green with `--runInBand`.
+5. **Web [#623](https://github.com/matthewdtowles/i-want-my-mtg/issues/623) — look
+   at the deck pages in a browser.** *(~1h review, plus work if it finds any)* #618
+   and #619 shipped on tests alone. The decision it surfaced — deck *detail* pages
+   have no cover art — is split out as
+   [#624](https://github.com/matthewdtowles/i-want-my-mtg/issues/624) (thumbnail
+   beside the `<h1>`, not a hero band), so this closes on the review alone.
+6. **Web [#616](https://github.com/matthewdtowles/i-want-my-mtg/issues/616) — CORS
+   on `/api/v1`.** *(~3h)* Preflight 404s, so no browser-based third-party client
+   can use the paid API tiers. Not a 503 contributor — sequenced after them because
+   it unblocks a paid product, not a live outage. Must be `credentials: false`;
+   `/api/v1` also accepts the session cookie, so credentialed CORS would be a CSRF
+   hole. Do it after #621 so the new `OPTIONS` behavior is added against the final
+   cache config.
+7. **Mobile Browse polish** — [#96](https://github.com/matthewdtowles/i-want-my-mtg-mobile/issues/96)
+   sort by set value *(~1h, no backend work: `SET_SORTS` already has
+   `SortOptions.SET_BASE_PRICE`)*, then [#95](https://github.com/matthewdtowles/i-want-my-mtg-mobile/issues/95)
+   group by block *(~half a day, `?group=block` already exists)*. **They interact:**
+   the API disables block grouping whenever `sort` is set, so the UI has to treat
+   grouping and sorting as mutually exclusive.
+
+**Also open, unsequenced:**
+[#625](https://github.com/matthewdtowles/i-want-my-mtg/issues/625) — there is no
+health-check monitoring on the web tier, which is why #612 was found by using the
+app rather than by an alert. It was the one checkbox in #612 no child covers. The
+data pipeline is already monitored (scry's cron `MAILTO` + `health` exit code); the
+tier serving that data is not. Do it whenever, but not never — the fixes above
+reduce the load that caused the 503s without making the next occurrence visible.
+
+**Deferred, deliberately:** mobile
+[#97](https://github.com/matthewdtowles/i-want-my-mtg-mobile/issues/97) (filter
+Browse to owned sets) is the only mobile item needing backend work — `ownedTotal`
+is computed *after* pagination, so filtering on it has to move into the query. Its
+own issue calls it "worth doing only if the set list actually feels unwieldy".
+Revisit after #95/#96 land; file the backend half here first if it goes ahead.
 
 > **Standing rule from the 3.1.1 saga:** no `4xx` body on a path the mobile app can
 > reach may contain "Premium", "Upgrade", "Free plan", a tier name, or a pricing URL.
 > State the limit neutrally and let each client steer. Enforced in `CLAUDE.md`;
 > exemptions (API-key traffic, `src/mcp/`) are listed there.
 
-After #612, the two candidates are **7.3 card scanning**
+After the board above, the two candidates are **7.3 card scanning**
 ([#301](https://github.com/matthewdtowles/i-want-my-mtg/issues/301)) — the
 load-bearing premium pitch that is still unbuilt (see Appendix) — and **color
 filtering on card search**

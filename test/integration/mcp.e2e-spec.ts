@@ -79,7 +79,7 @@ describe('MCP endpoint (e2e)', () => {
     });
 
     describe('tools/list', () => {
-        it('returns the full 33-tool surface with snake_case names and descriptions', async () => {
+        it('returns the full 34-tool surface with snake_case names and descriptions', async () => {
             const res = await mcp({
                 jsonrpc: '2.0',
                 id: 1,
@@ -92,7 +92,7 @@ describe('MCP endpoint (e2e)', () => {
                 inputSchema: { type: string };
             }[];
 
-            expect(tools).toHaveLength(33);
+            expect(tools).toHaveLength(34);
             for (const tool of tools) {
                 expect(tool.name).toMatch(/^[a-z][a-z0-9_]*$/);
                 expect(typeof tool.description).toBe('string');

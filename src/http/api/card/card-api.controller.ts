@@ -10,6 +10,7 @@ import {
 import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ApiOkEnvelope } from '../shared/api-ok-envelope.decorator';
 import { CardService } from 'src/core/card/card.service';
+import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
 import { SearchQueryOptions } from 'src/core/query/search-query-options.dto';
 import { CardPresenter } from 'src/http/hbs/card/card.presenter';
 import { parseDaysParam } from 'src/http/base/query.util';
@@ -247,6 +248,47 @@ export class CardApiController {
             throw new NotFoundException('Card not found');
         }
         return this.getPriceHistoryForCard(card.id, days);
+    }
+
+    @Get(':setCode/:setNumber/printings')
+    @ApiOperation({
+        operationId: 'getCardPrintings',
+        summary: 'List every printing of this card, most valuable first',
+    })
+    @ApiQuery({ name: 'page', required: false, type: Number })
+    @ApiQuery({ name: 'limit', required: false, type: Number })
+    @ApiOkEnvelope(CardApiResponseDto, {
+        isArray: true,
+        description:
+            'Printings of the card, including the one addressed by the path (clients that want "other printings" filter it out; the total counts every printing)',
+    })
+    @ApiResponse({ status: 404, description: 'Card not found' })
+    async getPrintings(
+        @Param('setCode') setCode: string,
+        @Param('setNumber') setNumber: string,
+        @Query() query: Record<string, string>
+    ): Promise<ApiResponseDto<CardApiResponseDto[]>> {
+        const card = await this.cardService.findBySetCodeAndNumber(setCode, setNumber);
+        if (!card) {
+            throw new NotFoundException('Card not found');
+        }
+        // Only paging is taken from the query: `sort` and `ascend` are dropped so
+        // the price-desc order is the contract rather than a default a caller can
+        // flip. `ascend` has to be passed explicitly - SafeQueryOptions defaults
+        // it to true, which would order the cheapest printing first.
+        const options = new SafeQueryOptions({
+            page: query.page,
+            limit: query.limit,
+            ascend: 'false',
+        });
+        const [printings, total] = await Promise.all([
+            this.cardService.findWithName(card.name, options),
+            this.cardService.totalWithName(card.name),
+        ]);
+        return ApiResponseDto.ok(
+            printings.map((c) => CardApiPresenter.toCardApiResponse(c)),
+            new PaginationMeta(options.page, options.limit, total)
+        );
     }
 
     @Get(':setCode/:setNumber')

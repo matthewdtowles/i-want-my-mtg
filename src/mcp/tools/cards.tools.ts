@@ -99,6 +99,25 @@ export class CardMcpTools {
                 annotations: READ_ONLY,
                 handler: async (args) => this.getCardPriceHistory(args),
             },
+            {
+                name: 'get_card_printings',
+                description:
+                    'List every printing of the card at this set code and collector number, most valuable first. Use this to compare what the same card costs across sets, or to find a cheaper printing. Prefer it over search_cards for that: search_cards matches names by substring, so it also returns unrelated cards whose names merely contain the term.',
+                inputSchema: z.object({
+                    ...cardKeySchema,
+                    page: z.number().int().min(1).optional().describe('1-based page index.'),
+                    limit: z
+                        .number()
+                        .int()
+                        .min(1)
+                        .max(100)
+                        .optional()
+                        .describe('Page size (max 100).'),
+                }),
+                requiresAuth: false,
+                annotations: READ_ONLY,
+                handler: async (args) => this.getCardPrintings(args),
+            },
         ];
     }
 
@@ -156,6 +175,28 @@ export class CardMcpTools {
         }
         const prices = await this.cardService.findPriceHistory(card.id, parseDaysParam(undefined));
         return ApiResponseDto.ok(prices.map(CardPresenter.toPriceHistoryPoint));
+    }
+
+    private async getCardPrintings(args: Record<string, unknown>): Promise<unknown> {
+        const setCode = String(args.setCode).trim().toLowerCase();
+        const card = await this.cardService.findBySetCodeAndNumber(setCode, String(args.setNumber));
+        if (!card) {
+            throw new NotFoundException('Card not found');
+        }
+        // Only paging is read: setCode/setNumber are the card's address here, not
+        // filters on the list. `ascend: false` pins the price-desc order the tool
+        // advertises - SearchQueryOptions defaults ascend to true, which would put
+        // the cheapest printing first.
+        const { page, limit } = this.toQuery(args);
+        const options = new SearchQueryOptions({ page, limit, ascend: 'false' });
+        const [printings, total] = await Promise.all([
+            this.cardService.findWithName(card.name, options),
+            this.cardService.totalWithName(card.name),
+        ]);
+        return ApiResponseDto.ok(
+            printings.map((c) => CardApiPresenter.toCardApiResponse(c)),
+            new PaginationMeta(options.page, options.limit, total)
+        );
     }
 
     private toQuery(args: Record<string, unknown>): Record<string, string> {

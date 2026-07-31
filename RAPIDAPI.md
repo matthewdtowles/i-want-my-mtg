@@ -57,6 +57,7 @@ from the public surface.
 | `GET /api/v1/cards/{setCode}/{setNumber}` | `lea/161` (Lightning Bolt) |
 | `GET /api/v1/cards/{setCode}/{setNumber}/prices` | `lea/161` |
 | `GET /api/v1/cards/{setCode}/{setNumber}/price-history` | `lea/161` |
+| `GET /api/v1/cards/{setCode}/{setNumber}/printings` | `lea/161` (every printing of Lightning Bolt) |
 | `GET /api/v1/sets` | `?limit=10` |
 | `GET /api/v1/sets/{code}` | `lea` |
 | `GET /api/v1/sets/{code}/cards` | code `lea`, query `?limit=10` |

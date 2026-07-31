@@ -105,6 +105,9 @@ export class CardRepository implements CardRepositoryPort {
                 'prices',
                 latestPriceCondition('prices', 'card')
             )
+            // The set is joined so callers can name the printing's set, not just
+            // its code — the API's printings list has no set context of its own.
+            .leftJoinAndSelect(`${this.TABLE}.set`, 'set')
             .where(`${this.TABLE}.name = :name`, { name });
 
         // Use price-desc helper for "other printings" sorted by value

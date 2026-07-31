@@ -55,6 +55,8 @@ describe('CardApiController', () => {
                         findByIdsWithPrices: jest.fn(),
                         findBySetCodeAndNumber: jest.fn(),
                         findPriceHistory: jest.fn(),
+                        findWithName: jest.fn(),
+                        totalWithName: jest.fn(),
                     },
                 },
                 {
@@ -214,6 +216,50 @@ describe('CardApiController', () => {
                 controller.getPriceHistoryBySetCodeAndNumber('lea', '999', '30')
             ).rejects.toBeInstanceOf(NotFoundException);
             expect(cardService.findPriceHistory).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('getPrintings', () => {
+        it('pages every printing of the addressed card name', async () => {
+            cardService.findBySetCodeAndNumber.mockResolvedValue(createCard());
+            cardService.findWithName.mockResolvedValue([
+                createCard({ prices: [createPrice()] }),
+                createCard({ id: 'card-2', setCode: 'm10', number: '146' }),
+            ]);
+            cardService.totalWithName.mockResolvedValue(42);
+
+            const result = await controller.getPrintings('lea', '161', { page: '2', limit: '10' });
+
+            expect(cardService.findBySetCodeAndNumber).toHaveBeenCalledWith('lea', '161');
+            expect(cardService.findWithName).toHaveBeenCalledWith(
+                'Lightning Bolt',
+                expect.objectContaining({ page: 2, limit: 10 })
+            );
+            expect(cardService.totalWithName).toHaveBeenCalledWith('Lightning Bolt');
+            expect(result.data.map((c) => c.id)).toEqual(['card-1', 'card-2']);
+            expect(result.meta).toEqual({ page: 2, limit: 10, total: 42, totalPages: 5 });
+        });
+
+        // The addressed printing stays in the page so the total stays honest;
+        // "other printings" is the caller's filter, not the API's.
+        it('keeps the addressed printing in the results', async () => {
+            cardService.findBySetCodeAndNumber.mockResolvedValue(createCard());
+            cardService.findWithName.mockResolvedValue([createCard()]);
+            cardService.totalWithName.mockResolvedValue(1);
+
+            const result = await controller.getPrintings('lea', '161', {});
+
+            expect(result.data).toHaveLength(1);
+            expect(result.data[0].setCode).toBe('lea');
+        });
+
+        it('throws when the card cannot be found', async () => {
+            cardService.findBySetCodeAndNumber.mockResolvedValue(null);
+
+            await expect(controller.getPrintings('lea', '999', {})).rejects.toBeInstanceOf(
+                NotFoundException
+            );
+            expect(cardService.findWithName).not.toHaveBeenCalled();
         });
     });
 });

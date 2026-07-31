@@ -1,0 +1,25 @@
+{{~!--
+  Sort controls for a list with no table headers to click - the set grid. Built
+  from the same TableHeadersRowView the table renders, so both layouts offer and
+  highlight exactly the same sorts. Static headers (no href) are skipped.
+
+  Carries `sort-btn` so the AJAX sort interceptor picks these up like a header.
+
+  Parameters:
+    tableHeadersRow.headers - array of { text, href?, active?, ascend? }
+--~}}
+<div class="sort-chips" role="group" aria-label="Sort sets">
+    {{#each tableHeadersRow.headers as |header|}}
+    {{#if header.href}}
+    <a href="{{header.href}}" class="sort-chip sort-btn{{#if header.active}} sort-chip-active{{/if}}">
+        {{header.text}}
+        {{#if header.active}}
+        {{~!-- Same arrow the table header shows: the direction the next click applies. --~}}
+        <span class="sort-icon">
+            {{#if header.ascend}}{{>uparrow}}{{else}}{{>downarrow}}{{/if}}
+        </span>
+        {{/if}}
+    </a>
+    {{/if}}
+    {{/each}}
+</div>

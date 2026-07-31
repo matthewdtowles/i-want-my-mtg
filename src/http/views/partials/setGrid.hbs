@@ -1,0 +1,18 @@
+{{~!--
+  Grid of set art tiles - the default view of every set list. One continuous
+  grid: block names span the full width and so start a new row, which keeps a
+  block's sets together without breaking the column rhythm.
+
+  Parameters:
+    blockGroups - array of { blockName, isMultiSet, sets: array }
+--~}}
+<div class="set-grid">
+    {{#each blockGroups}}
+        {{#if this.isMultiSet}}
+            <h3 class="set-grid-label">{{this.blockName}}</h3>
+        {{/if}}
+        {{#each this.sets}}
+            {{>setTile}}
+        {{/each}}
+    {{/each}}
+</div>

@@ -3,7 +3,7 @@ import { test, expect } from './fixtures/auth.fixture';
 test.describe('Set detail (authenticated)', () => {
     test('shows collection action card', async ({ authedPage: page }) => {
         await page.goto('/sets');
-        const setHref = (await page.locator('.table-row a').first().getAttribute('href'))!;
+        const setHref = (await page.locator('a.set-tile').first().getAttribute('href'))!;
         await page.goto(setHref);
         await expect(page.locator('h1')).toBeVisible();
         // Authenticated users see the "Add All Cards" form
@@ -13,7 +13,7 @@ test.describe('Set detail (authenticated)', () => {
 
     test('shows My Binder link', async ({ authedPage: page }) => {
         await page.goto('/sets');
-        const setHref = (await page.locator('.table-row a').first().getAttribute('href'))!;
+        const setHref = (await page.locator('a.set-tile').first().getAttribute('href'))!;
         const setCode = setHref.split('/').pop()!;
         await page.goto(setHref);
         await expect(page.locator(`a[href="/inventory/sets/${setCode}"]`)).toBeVisible();
@@ -48,7 +48,7 @@ test.describe('Inventory page (authenticated)', () => {
 test.describe('Inventory binder (authenticated)', () => {
     test('renders binder for first set', async ({ authedPage: page }) => {
         await page.goto('/sets');
-        const setHref = (await page.locator('.table-row a').first().getAttribute('href'))!;
+        const setHref = (await page.locator('a.set-tile').first().getAttribute('href'))!;
         const setCode = setHref.split('/').pop()!;
         await page.goto(`/inventory/sets/${setCode}`);
         await expect(page.locator('h1')).toContainText('Binder');
@@ -57,7 +57,7 @@ test.describe('Inventory binder (authenticated)', () => {
 
     test('shows owned-only toggle', async ({ authedPage: page }) => {
         await page.goto('/sets');
-        const setHref = (await page.locator('.table-row a').first().getAttribute('href'))!;
+        const setHref = (await page.locator('a.set-tile').first().getAttribute('href'))!;
         const setCode = setHref.split('/').pop()!;
         await page.goto(`/inventory/sets/${setCode}`);
         await expect(page.locator('#owned-only-toggle')).toBeAttached();

@@ -18,7 +18,7 @@ import { Set } from 'src/core/set/set.entity';
 import { SetService } from 'src/core/set/set.service';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
 import { Breadcrumb } from 'src/http/base/breadcrumb';
-import { completionRate, isAuthenticated, toDollar } from 'src/http/base/http.util';
+import { BASE_IMAGE_URL, completionRate, isAuthenticated, toDollar } from 'src/http/base/http.util';
 import { CardPresenter } from 'src/http/hbs/card/card.presenter';
 import { HttpErrorHandler } from 'src/http/http.error.handler';
 import { ImportResultDto } from 'src/http/hbs/import/import-result.dto';
@@ -131,6 +131,7 @@ export class SetOrchestrator {
             pagination: new PaginationView(options, baseUrl, currentCount),
             filter: new FilterView(options, baseUrl),
             tableHeadersRow: this.buildSetListTableHeaders(options, isAuthenticated(req)),
+            view: this.selectedView(req),
         });
     }
 
@@ -172,7 +173,17 @@ export class SetOrchestrator {
             pagination: new PaginationView(options, baseUrl, totalGroups),
             filter: new FilterView(options, baseUrl),
             tableHeadersRow: this.buildSetListTableHeaders(options, isAuthenticated(req)),
+            view: this.selectedView(req),
         });
+    }
+
+    /**
+     * Which set-list layout to render. Art tiles unless the visitor asked for
+     * the table with `?view=table` — the toggle writes that param, so a shared
+     * or reloaded URL comes back in the same layout.
+     */
+    private selectedView(req: AuthenticatedRequest): 'grid' | 'table' {
+        return req.query?.view === 'table' ? 'table' : 'grid';
     }
 
     async findSpoilersList(
@@ -530,19 +541,29 @@ export class SetOrchestrator {
         const setCodes = sets.map((s) => s.code);
         let totalsMap = new Map<string, number>();
         let valuesMap = new Map<string, number>();
+        let coverMap = new Map<string, string>();
 
+        // Covers are public, so they load for anonymous visitors too — one
+        // batched query for the whole page, the same call the API makes.
         if (userId) {
-            [totalsMap, valuesMap] = await Promise.all([
+            [coverMap, totalsMap, valuesMap] = await Promise.all([
+                this.cardService.coverImagesForSets(setCodes),
                 this.inventoryService.inventoryTotalsForSets(userId, setCodes),
                 this.inventoryService.ownedValuesForSets(userId, setCodes),
             ]);
+        } else {
+            coverMap = await this.cardService.coverImagesForSets(setCodes);
         }
 
         return sets.map((set) => {
             const ownedTotal = totalsMap.get(set.code) ?? 0;
             const ownedValue = valuesMap.get(set.code) ?? 0;
+            const cover = coverMap.get(set.code);
 
             return new SetMetaResponseDto({
+                coverImgSrc: cover
+                    ? `${BASE_IMAGE_URL}/${CardImgType.ART_CROP}/front/${cover}`
+                    : undefined,
                 baseSize: set.baseSize,
                 block: set.block ?? set.name,
                 code: set.code,

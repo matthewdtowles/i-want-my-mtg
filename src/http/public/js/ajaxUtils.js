@@ -5,6 +5,10 @@
 var AjaxUtils = (function () {
     var prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
+    // Layouts a page can ask for by `?view=`. 'grid' is the set list's default,
+    // so it is written into state but kept out of the URL.
+    var NAMED_VIEWS = ['binder', 'grid', 'table'];
+
     function smoothScroll(el, block) {
         el.scrollIntoView({
             behavior: prefersReducedMotion.matches ? 'auto' : 'smooth',
@@ -440,8 +444,12 @@ var AjaxUtils = (function () {
      * @param {object} opts.state - State object with .view, .page
      * @param {function} opts.fetchFn - Function to call: fetchFn(historyMethod)
      * @param {function} [opts.onToggle] - Called after state.view changes with new view value
+     * @param {string} [opts.storageKey] - localStorage key for the remembered view.
+     *   Defaults to the set page's key; pass your own so two toggles don't overwrite
+     *   each other's preference.
      */
     function setupViewToggleInterceptor(opts) {
+        var storageKey = opts.storageKey || 'setViewPreference';
         opts.container.addEventListener('click', function (e) {
             var btn = e.target.closest('.view-toggle-btn');
             if (!btn) return;
@@ -450,7 +458,7 @@ var AjaxUtils = (function () {
             if (!newView || newView === opts.state.view) return;
             opts.state.view = newView;
             opts.state.page = 1;
-            localStorage.setItem('setViewPreference', newView);
+            localStorage.setItem(storageKey, newView);
             if (opts.onToggle) opts.onToggle(newView);
             opts.fetchFn('pushState');
         });
@@ -485,7 +493,9 @@ var AjaxUtils = (function () {
             ascend: params.get('ascend') === 'true',
             filter: params.get('filter') || '',
             baseOnly: params.has('baseOnly') ? params.get('baseOnly') !== 'false' : true,
-            view: params.get('view') === 'binder' ? 'binder' : 'list',
+            // 'binder' belongs to the set page, 'grid'/'table' to the set list.
+            // Anything else is the plain list every other page renders.
+            view: NAMED_VIEWS.indexOf(params.get('view')) !== -1 ? params.get('view') : 'list',
         };
         if (extraKeys) {
             for (var i = 0; i < extraKeys.length; i++) {
@@ -528,7 +538,9 @@ var AjaxUtils = (function () {
         }
         if (state.filter) params.set('filter', state.filter);
         if (state.baseOnly === false) params.set('baseOnly', 'false');
-        if (state.view && state.view !== 'list') params.set('view', state.view);
+        if (state.view && state.view !== 'list' && state.view !== 'grid') {
+            params.set('view', state.view);
+        }
         var qs = params.toString();
         return basePath + (qs ? '?' + qs : '');
     }
@@ -955,8 +967,10 @@ var AjaxUtils = (function () {
             setupFilterInterceptor({ state: state, fetchFn: fetchAndRender });
         }
 
+        // Any sort control inside the container, not just table headers: the set
+        // grid sorts through a chip row instead of a <thead>.
         setupSortInterceptor({
-            selector: '#' + containerId + ' thead a.sort-btn',
+            selector: '#' + containerId + ' a.sort-btn',
             state: state,
             fetchFn: fetchAndRender,
         });

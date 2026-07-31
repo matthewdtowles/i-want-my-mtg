@@ -1,0 +1,45 @@
+{{~!--
+  One set as an art tile: the art crop of the set's most valuable card as the
+  background, with the expansion symbol, name and set value over a bottom scrim.
+  Mirrors the mobile app's SetTile (i-want-my-mtg-mobile/components/SetTile.tsx).
+
+  The art is decorative - the set name sits right beside it - so it carries an
+  empty alt.
+
+  Parameters: a SetMetaResponseDto (url, name, keyruneCode, coverImgSrc,
+  releaseYear, effectiveSize, prices, ownedValue, ownedTotal, completionRate,
+  tags). setListAjax.js mirrors this markup for AJAX-loaded pages - keep the two
+  in sync.
+--~}}
+<a href="{{url}}" class="set-tile group">
+    {{#if coverImgSrc}}
+        <img src="{{coverImgSrc}}" alt="" aria-hidden="true" loading="lazy" decoding="async"
+            width="626" height="457" class="set-tile-art" />
+    {{/if}}
+    {{#if tags.length}}
+        <span class="set-tile-tags">{{>tags item=this}}</span>
+    {{/if}}
+    {{#if @root.authenticated}}{{#if ownedTotal}}
+        <span class="set-tile-owned">{{ownedValue}} owned</span>
+    {{/if}}{{/if}}
+    <span class="set-tile-scrim">
+        <i class="ss ss-{{keyruneCode}} set-tile-symbol" aria-hidden="true"></i>
+        <span class="set-tile-body">
+            <span class="set-tile-name">{{name}}</span>
+            <span class="set-tile-sub">{{releaseYear}} &middot; {{effectiveSize}} cards</span>
+        </span>
+        <span class="set-tile-price">
+            {{prices.defaultPrice}}
+            {{#if prices.defaultPriceChangeWeekly}}
+                <span class="set-tile-change set-tile-change-{{prices.defaultPriceChangeWeeklySign}}">{{prices.defaultPriceChangeWeekly}}</span>
+            {{/if}}
+        </span>
+    </span>
+    {{~!-- Completion is a Premium view everywhere else, so the tile only draws
+           the bar for subscribers rather than putting a lock over the art. --~}}
+    {{#if @root.subscribed}}{{#if completionRate}}
+        <span class="set-tile-progress" aria-hidden="true">
+            <span class="set-tile-progress-fill" style="width: {{completionRate}}%"></span>
+        </span>
+    {{/if}}{{/if}}
+</a>

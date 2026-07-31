@@ -1,11 +1,17 @@
 {{~!--
-  Set list page content - filter, base-only toggle, and block-grouped set table.
+  Set list page content - filter, base-only toggle, grid/table view toggle, and
+  the block-grouped set list itself.
+
+  Two layouts share this partial: art tiles (default, mirrors the mobile app)
+  and the sortable table. `isTableView` picks one; setListAjax.js renders the
+  matching layout for AJAX-loaded pages.
 
   Parameters:
     filter          - filter partial params (baseUrl, searchTerm, etc.)
     baseOnlyToggle  - { visible, url, isBaseOnly, text }
     blockGroups     - array of { blockName, isMultiSet, sets: array }
     authenticated   - boolean, controls owned-column visibility
+    isTableView     - boolean, false renders the art-tile grid
     assetVersion    - cache-busting version
 --~}}
 <div class="content-wrapper">
@@ -21,9 +27,29 @@
             {{baseOnlyToggle.text}}
         </a>
         {{/if}}
+        {{#if showViewToggle}}
+        <div class="flex items-center gap-1 flex-shrink-0 mb-4" id="set-view-toggle">
+            <a href="{{filter.baseUrl}}" class="view-toggle-btn {{#if isTableView}}view-toggle-inactive{{else}}view-toggle-active{{/if}}"
+               data-view="grid" aria-label="Grid view">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <rect x="3" y="4" width="8" height="7" rx="1" />
+                    <rect x="13" y="4" width="8" height="7" rx="1" />
+                    <rect x="3" y="13" width="8" height="7" rx="1" />
+                    <rect x="13" y="13" width="8" height="7" rx="1" />
+                </svg>
+            </a>
+            <a href="{{filter.baseUrl}}?view=table" class="view-toggle-btn {{#if isTableView}}view-toggle-active{{else}}view-toggle-inactive{{/if}}"
+               data-view="table" aria-label="Table view">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+            </a>
+        </div>
+        {{/if}}
     </div>
     <div id="filter-results">
         {{#if blockGroups.length}}
+        {{#if isTableView}}
         <div class="table-wrapper">
         <table class="min-w-full table-container">
             <thead>{{>tableHeadersRow}}</thead>
@@ -60,6 +86,10 @@
             </tbody>
         </table>
         </div>
+        {{else}}
+        {{>sortChips}}
+        {{>setGrid}}
+        {{/if}}
         {{else}}
         {{>emptyState icon="search" message="No sets match your search" hint="Try a different search term or clear your filter." buttonHref="/sets" buttonText="Show All Sets"}}
         {{/if}}

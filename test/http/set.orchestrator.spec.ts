@@ -103,6 +103,7 @@ describe('SetOrchestrator', () => {
                     useValue: {
                         findBySet: jest.fn(),
                         totalInSet: jest.fn(),
+                        coverImagesForSets: jest.fn(),
                     },
                 },
                 {
@@ -143,6 +144,7 @@ describe('SetOrchestrator', () => {
         // Default: sealed product service returns nothing so existing tests are unaffected
         sealedProductService.findBySetCode.mockResolvedValue([]);
         sealedProductService.findInventoryQuantitiesForUser.mockResolvedValue(new Map());
+        cardService.coverImagesForSets.mockResolvedValue(new Map());
     });
 
     describe('findSetList', () => {
@@ -194,6 +196,99 @@ describe('SetOrchestrator', () => {
             expect(result.blockGroups.length).toBe(0);
             expect(result.setList.length).toBe(0);
             expect(result.toast).toBeUndefined();
+        });
+
+        // The art tiles need a full art_crop URL, not the `a/b/id.jpg` tail the
+        // repository returns (#628).
+        it('puts each set’s cover art on its DTO', async () => {
+            setService.totalBlockGroups.mockResolvedValue(1);
+            setService.findBlockGroupKeys.mockResolvedValue(['TST']);
+            setService.findSetsByBlockKeys.mockResolvedValue([mockSet]);
+            setService.findMultiSetBlockKeys.mockResolvedValue([]);
+            inventoryService.inventoryTotalsForSets.mockResolvedValue(new Map());
+            inventoryService.ownedValuesForSets.mockResolvedValue(new Map());
+            cardService.coverImagesForSets.mockResolvedValue(new Map([['TST', 'a/b/cover.jpg']]));
+
+            const result = await orchestrator.findSetList(
+                mockAuthenticatedRequest,
+                [],
+                mockQueryOptions
+            );
+
+            expect(cardService.coverImagesForSets).toHaveBeenCalledWith(['TST']);
+            expect(result.setList[0].coverImgSrc).toBe(
+                'https://cards.scryfall.io/art_crop/front/a/b/cover.jpg'
+            );
+        });
+
+        // A set with no priced cards (or no cards at all) still renders — the
+        // tile just falls back to a plain background.
+        it('leaves coverImgSrc undefined when a set has no cover', async () => {
+            setService.totalBlockGroups.mockResolvedValue(1);
+            setService.findBlockGroupKeys.mockResolvedValue(['TST']);
+            setService.findSetsByBlockKeys.mockResolvedValue([mockSet]);
+            setService.findMultiSetBlockKeys.mockResolvedValue([]);
+            inventoryService.inventoryTotalsForSets.mockResolvedValue(new Map());
+            inventoryService.ownedValuesForSets.mockResolvedValue(new Map());
+
+            const result = await orchestrator.findSetList(
+                mockAuthenticatedRequest,
+                [],
+                mockQueryOptions
+            );
+
+            expect(result.setList[0].coverImgSrc).toBeUndefined();
+        });
+
+        // Covers are public: an anonymous visitor sees art too, even though
+        // every inventory read is skipped for them.
+        it('fetches covers for anonymous visitors', async () => {
+            setService.totalBlockGroups.mockResolvedValue(1);
+            setService.findBlockGroupKeys.mockResolvedValue(['TST']);
+            setService.findSetsByBlockKeys.mockResolvedValue([mockSet]);
+            setService.findMultiSetBlockKeys.mockResolvedValue([]);
+            cardService.coverImagesForSets.mockResolvedValue(new Map([['TST', 'a/b/cover.jpg']]));
+
+            const result = await orchestrator.findSetList(
+                { isAuthenticated: () => false } as AuthenticatedRequest,
+                [],
+                mockQueryOptions
+            );
+
+            expect(result.setList[0].coverImgSrc).toBe(
+                'https://cards.scryfall.io/art_crop/front/a/b/cover.jpg'
+            );
+            expect(inventoryService.inventoryTotalsForSets).not.toHaveBeenCalled();
+        });
+
+        // Art tiles are the default layout; the table is opt-in and server-rendered
+        // so it survives a reload (#628).
+        it('renders art tiles unless ?view=table asks for the table', async () => {
+            setService.totalBlockGroups.mockResolvedValue(1);
+            setService.findBlockGroupKeys.mockResolvedValue(['TST']);
+            setService.findSetsByBlockKeys.mockResolvedValue([mockSet]);
+            setService.findMultiSetBlockKeys.mockResolvedValue([]);
+            inventoryService.inventoryTotalsForSets.mockResolvedValue(new Map());
+            inventoryService.ownedValuesForSets.mockResolvedValue(new Map());
+
+            const grid = await orchestrator.findSetList(
+                mockAuthenticatedRequest,
+                [],
+                mockQueryOptions
+            );
+            const table = await orchestrator.findSetList(
+                {
+                    ...mockAuthenticatedRequest,
+                    query: { view: 'table' },
+                } as unknown as AuthenticatedRequest,
+                [],
+                mockQueryOptions
+            );
+
+            expect(grid.view).toBe('grid');
+            expect(grid.isTableView).toBe(false);
+            expect(table.view).toBe('table');
+            expect(table.isTableView).toBe(true);
         });
 
         it('uses flat set pagination when sort is specified', async () => {

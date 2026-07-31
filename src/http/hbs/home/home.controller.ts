@@ -49,6 +49,9 @@ export class HomeController {
         );
         return Object.assign(setListView, {
             latestBlogPosts: allPosts.slice(0, HOME_BLOG_POSTS_LIMIT),
+            // Art tiles only here: home loads no list JS, so a toggle could only
+            // bounce the visitor to /sets.
+            showViewToggle: false,
         });
     }
 

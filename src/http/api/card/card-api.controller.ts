@@ -272,9 +272,15 @@ export class CardApiController {
         if (!card) {
             throw new NotFoundException('Card not found');
         }
-        // Printings have a fixed price-desc order (findWithName ignores `sort`),
-        // so only page/limit are read off the query.
-        const options = new SafeQueryOptions(query);
+        // Only paging is taken from the query: `sort` and `ascend` are dropped so
+        // the price-desc order is the contract rather than a default a caller can
+        // flip. `ascend` has to be passed explicitly - SafeQueryOptions defaults
+        // it to true, which would order the cheapest printing first.
+        const options = new SafeQueryOptions({
+            page: query.page,
+            limit: query.limit,
+            ascend: 'false',
+        });
         const [printings, total] = await Promise.all([
             this.cardService.findWithName(card.name, options),
             this.cardService.totalWithName(card.name),

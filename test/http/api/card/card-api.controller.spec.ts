@@ -240,6 +240,34 @@ describe('CardApiController', () => {
             expect(result.meta).toEqual({ page: 2, limit: 10, total: 42, totalPages: 5 });
         });
 
+        // The price-desc order is the endpoint's contract, so a caller must not be
+        // able to flip it. `ascend` is the sharp edge: SafeQueryOptions defaults it
+        // to true, so it has to be pinned false or the cheapest printing leads.
+        it('ignores caller sort/ascend and pins the price-desc order', async () => {
+            cardService.findBySetCodeAndNumber.mockResolvedValue(createCard());
+            cardService.findWithName.mockResolvedValue([createCard()]);
+            cardService.totalWithName.mockResolvedValue(1);
+
+            await controller.getPrintings('lea', '161', {
+                sort: 'card.name',
+                ascend: 'true',
+            });
+
+            const options = cardService.findWithName.mock.calls[0][1];
+            expect(options.sort).toBeUndefined();
+            expect(options.ascend).toBe(false);
+        });
+
+        it('pins the price-desc order when the query is empty too', async () => {
+            cardService.findBySetCodeAndNumber.mockResolvedValue(createCard());
+            cardService.findWithName.mockResolvedValue([createCard()]);
+            cardService.totalWithName.mockResolvedValue(1);
+
+            await controller.getPrintings('lea', '161', {});
+
+            expect(cardService.findWithName.mock.calls[0][1].ascend).toBe(false);
+        });
+
         // The addressed printing stays in the page so the total stays honest;
         // "other printings" is the caller's filter, not the API's.
         it('keeps the addressed printing in the results', async () => {

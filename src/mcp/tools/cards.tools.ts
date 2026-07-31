@@ -183,10 +183,12 @@ export class CardMcpTools {
         if (!card) {
             throw new NotFoundException('Card not found');
         }
-        // Only paging is read: findWithName has a fixed price-desc order, and
-        // setCode/setNumber are the card's address here, not filters on the list.
+        // Only paging is read: setCode/setNumber are the card's address here, not
+        // filters on the list. `ascend: false` pins the price-desc order the tool
+        // advertises - SearchQueryOptions defaults ascend to true, which would put
+        // the cheapest printing first.
         const { page, limit } = this.toQuery(args);
-        const options = new SearchQueryOptions({ page, limit });
+        const options = new SearchQueryOptions({ page, limit, ascend: 'false' });
         const [printings, total] = await Promise.all([
             this.cardService.findWithName(card.name, options),
             this.cardService.totalWithName(card.name),

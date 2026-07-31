@@ -237,6 +237,7 @@ export const outputSchemaByName: Record<string, z.ZodTypeAny> = {
     get_card: ok(card),
     get_card_prices: ok(card),
     get_card_price_history: ok(z.array(pricePoint)),
+    get_card_printings: okPaginated(card),
     // sets
     search_sets: okPaginated(set),
     get_set: ok(set),

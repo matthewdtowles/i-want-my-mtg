@@ -359,4 +359,43 @@ describe('Cards API (e2e)', () => {
             expect(Array.isArray(res.body.data)).toBe(true);
         });
     });
+
+    describe('GET /api/v1/cards/:setCode/:setNumber/printings', () => {
+        // The seed has one printing per name, so these assert the contract and
+        // the routing - that the three-segment path resolves here and not to
+        // `:setCode/:setNumber`, which would 404 on a `printings` collector
+        // number.
+        it('returns the addressed printing with paging meta', async () => {
+            const res = await request(app.getHttpServer())
+                .get(`/api/v1/cards/${TEST_CARD_SET_CODE}/${TEST_CARD_NUMBER}/printings`)
+                .expect(200);
+
+            expect(res.body.success).toBe(true);
+            expect(res.body.data).toHaveLength(1);
+            expect(res.body.data[0]).toHaveProperty('id', TEST_CARD_ID);
+            // The set join is what lets a printings row name its set.
+            expect(res.body.data[0]).toHaveProperty('setName', 'Test Set');
+            expect(res.body.meta).toMatchObject({ page: 1, total: 1, totalPages: 1 });
+        });
+
+        it('honours page and limit', async () => {
+            const res = await request(app.getHttpServer())
+                .get(
+                    `/api/v1/cards/${TEST_CARD_SET_CODE}/${TEST_CARD_NUMBER}/printings?page=2&limit=1`
+                )
+                .expect(200);
+
+            expect(res.body.data).toEqual([]);
+            expect(res.body.meta).toMatchObject({ page: 2, limit: 1, total: 1 });
+        });
+
+        it('returns 404 for nonexistent card', async () => {
+            const res = await request(app.getHttpServer())
+                .get('/api/v1/cards/FAKE/999/printings')
+                .expect(404);
+
+            expect(res.body.success).toBe(false);
+            expect(res.body.error).toBeDefined();
+        });
+    });
 });

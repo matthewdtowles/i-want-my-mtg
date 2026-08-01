@@ -9,8 +9,8 @@ test.describe('Home page', () => {
 
     test('shows set list on home page', async ({ page }) => {
         await page.goto('/');
-        await expect(page.locator('.table-container')).toBeVisible();
-        await expect(page.locator('.table-row').first()).toBeVisible();
+        await expect(page.locator('.set-grid')).toBeVisible();
+        await expect(page.locator('a.set-tile').first()).toBeVisible();
     });
 });
 
@@ -18,22 +18,40 @@ test.describe('Sets page', () => {
     test('lists sets with filter input', async ({ page }) => {
         await page.goto('/sets');
         await expect(page.locator('input#filter')).toBeVisible();
-        await expect(page.locator('.table-container')).toBeVisible();
+        await expect(page.locator('.set-grid')).toBeVisible();
     });
 
-    test('set rows link to set detail', async ({ page }) => {
+    test('set tiles link to set detail', async ({ page }) => {
         await page.goto('/sets');
-        const firstSetLink = page.locator('.table-row a').first();
+        const firstSetLink = page.locator('a.set-tile').first();
         await expect(firstSetLink).toBeVisible();
         const href = await firstSetLink.getAttribute('href');
         expect(href).toMatch(/^\/sets\/[A-Za-z0-9]+$/);
+    });
+
+    // The toggle is a real link, so the layout survives a reload and works
+    // without JS.
+    test('table view renders the sortable table', async ({ page }) => {
+        await page.goto('/sets?view=table');
+        await expect(page.locator('.table-container')).toBeVisible();
+        await expect(page.locator('.table-row').first()).toBeVisible();
+        await expect(page.locator('.set-grid')).toHaveCount(0);
+    });
+
+    test('grid view sorts through the chip row', async ({ page }) => {
+        await page.goto('/sets');
+        const valueChip = page.locator('.sort-chip', { hasText: 'Set Value' });
+        await valueChip.click();
+        await expect(page.locator('.sort-chip-active')).toContainText('Set Value');
+        await expect(page).toHaveURL(/sort=setPrice\.basePrice/);
+        await expect(page.locator('a.set-tile').first()).toBeVisible();
     });
 });
 
 test.describe('Set detail page', () => {
     test('renders set name and stat cards', async ({ page }) => {
         await page.goto('/sets');
-        const href = (await page.locator('.table-row a').first().getAttribute('href'))!;
+        const href = (await page.locator('a.set-tile').first().getAttribute('href'))!;
         await page.goto(href);
         await expect(page.locator('h1')).toBeVisible();
         await expect(page.locator('.stat-card').first()).toBeVisible();
@@ -41,7 +59,7 @@ test.describe('Set detail page', () => {
 
     test('shows price info popover on button click', async ({ page }) => {
         await page.goto('/sets');
-        const href = (await page.locator('.table-row a').first().getAttribute('href'))!;
+        const href = (await page.locator('a.set-tile').first().getAttribute('href'))!;
         await page.goto(href);
         await expect(page.locator('#price-info-toggle')).toBeVisible();
         await page.locator('#price-info-toggle').click();
@@ -50,7 +68,7 @@ test.describe('Set detail page', () => {
 
     test('renders card list', async ({ page }) => {
         await page.goto('/sets');
-        const href = (await page.locator('.table-row a').first().getAttribute('href'))!;
+        const href = (await page.locator('a.set-tile').first().getAttribute('href'))!;
         await page.goto(href);
         await expect(page.locator('#set-card-list-ajax')).toBeVisible();
     });
@@ -61,7 +79,7 @@ test.describe('Set detail page', () => {
         // until a hard refresh.
         await page.setViewportSize({ width: 390, height: 844 });
         await page.goto('/sets');
-        const href = (await page.locator('.table-row a').first().getAttribute('href'))!;
+        const href = (await page.locator('a.set-tile').first().getAttribute('href'))!;
         await page.goto(href);
 
         const cardCalls: string[] = [];
@@ -89,7 +107,7 @@ test.describe('Set detail page', () => {
 test.describe('Card detail page', () => {
     test('renders card name and price', async ({ page }) => {
         await page.goto('/sets');
-        const setHref = (await page.locator('.table-row a').first().getAttribute('href'))!;
+        const setHref = (await page.locator('a.set-tile').first().getAttribute('href'))!;
         await page.goto(setHref);
         // Card list is AJAX-loaded - wait for first card link to appear
         const cardLink = page.locator('#set-card-list-ajax a[href^="/card/"]').first();

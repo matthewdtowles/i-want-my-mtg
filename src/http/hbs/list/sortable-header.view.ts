@@ -14,6 +14,10 @@ export class SortableHeaderView extends TableHeaderView {
     readonly href: string;
     readonly ascend?: boolean;
 
+    /** Whether the list is currently sorted by this column. Drives the chip row
+     *  in grid view, where there is no header to highlight. */
+    readonly active: boolean;
+
     constructor(
         options: SafeQueryOptions,
         sortOption: SortOptions,
@@ -21,7 +25,8 @@ export class SortableHeaderView extends TableHeaderView {
         subtitle?: string
     ) {
         super(SortOptionLabels[sortOption], classes, subtitle);
-        this.ascend = options.sort === sortOption ? !options.ascend : true;
+        this.active = options.sort === sortOption;
+        this.ascend = this.active ? !options.ascend : true;
         this.href = buildQueryString({ ...options, sort: sortOption, ascend: this.ascend });
     }
 }

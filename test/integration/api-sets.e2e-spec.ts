@@ -43,6 +43,15 @@ describe('Sets API (e2e)', () => {
             expect(res.body.success).toBe(true);
             expect(Array.isArray(res.body.data)).toBe(true);
         });
+
+        // Same cover rule as the detail route, resolved for a whole page of sets
+        // in one query.
+        it('covers each listed set with its most valuable card', async () => {
+            const res = await request(app.getHttpServer()).get('/api/v1/sets?q=Test').expect(200);
+
+            const testSet = res.body.data.find((s) => s.code === TEST_SET_CODE);
+            expect(testSet.coverImgSrc).toBe('4/4/44444444-4444-4444-a444-444444444444.jpg');
+        });
     });
 
     describe('GET /api/v1/sets/:code', () => {
@@ -69,6 +78,19 @@ describe('Sets API (e2e)', () => {
                 expect(res.body.data.prices).toHaveProperty('basePrice');
                 expect(res.body.data.prices).toHaveProperty('totalPrice');
             }
+        });
+
+        // The cover is the set's most valuable card, not its opening card (#628):
+        // the seed's Test Dragon is $20.00 against Test Angel's $5.00, and Angel
+        // is the one that sorts first.
+        it('covers the set with its most valuable card', async () => {
+            const res = await request(app.getHttpServer())
+                .get(`/api/v1/sets/${TEST_SET_CODE}`)
+                .expect(200);
+
+            expect(res.body.data.coverImgSrc).toBe(
+                '4/4/44444444-4444-4444-a444-444444444444.jpg'
+            );
         });
 
         it('returns 404 for nonexistent set', async () => {

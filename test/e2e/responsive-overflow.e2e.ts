@@ -85,7 +85,7 @@ async function assertNoHorizontalOverflow(page: Page, label: string): Promise<vo
 
 async function resolveSetHref(page: Page): Promise<string> {
     await page.goto('/sets');
-    return (await page.locator('.table-row a').first().getAttribute('href'))!;
+    return (await page.locator('a.set-tile').first().getAttribute('href'))!;
 }
 
 async function resolveCardHref(page: Page, setHref: string): Promise<string> {

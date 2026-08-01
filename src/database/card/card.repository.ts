@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Card } from 'src/core/card/card.entity';
 import { CardRepositoryPort } from 'src/core/card/ports/card.repository.port';
+import { PriceCalculationPolicy } from 'src/core/pricing/price-calculation.policy';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
 import { SET_CARD_SORTS, SortOptions } from 'src/core/query/sort-options.enum';
 import { latestPriceCondition } from 'src/database/query/latest-price.sql';
@@ -337,9 +338,14 @@ export class CardRepository implements CardRepositoryPort {
         if (setCodes.length === 0) return new Map();
         this.LOGGER.debug(`Finding cover images for ${setCodes.length} sets.`);
         // One query for the whole page of sets, not one per set. DISTINCT ON
-        // takes the first row per set under the ORDER BY, which is the same card
-        // `findBySet` returns first (default sort: sortNumber ascending) — so the
-        // cover matches the set's opening card.
+        // takes the first row per set under the ORDER BY, so the cover is the
+        // set's most valuable card (#628) — the chase card people recognize,
+        // rather than whatever happens to be numbered 001.
+        //
+        // Value is the same expression the rest of the app calls a card's value
+        // (normal, falling back to foil); cards with no price row COALESCE to 0
+        // and lose to any priced card. sortNumber breaks ties, which keeps the
+        // old behavior for a set that has no prices at all.
         //
         // Built through the query builder rather than raw SQL so the column names
         // come from the entity metadata. There is no `img_src` column to select:
@@ -348,10 +354,12 @@ export class CardRepository implements CardRepositoryPort {
         const rows = await this.repository
             .createQueryBuilder(this.TABLE)
             .select([`${this.TABLE}.setCode`, `${this.TABLE}.scryfallId`])
+            .leftJoin(`${this.TABLE}.prices`, 'p', latestPriceCondition('p', this.TABLE))
             .distinctOn([`${this.TABLE}.setCode`])
             .where(`${this.TABLE}.setCode IN (:...setCodes)`, { setCodes })
             .andWhere(`${this.TABLE}.scryfallId IS NOT NULL`)
             .orderBy(`${this.TABLE}.setCode`, 'ASC')
+            .addOrderBy(PriceCalculationPolicy.cardValueExpression(false), 'DESC')
             .addOrderBy(`${this.TABLE}.sortNumber`, 'ASC')
             .getMany();
         this.LOGGER.debug(`Found ${rows.length} cover images.`);

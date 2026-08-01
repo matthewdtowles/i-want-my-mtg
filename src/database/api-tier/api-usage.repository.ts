@@ -27,7 +27,10 @@ export class ApiUsageRepository implements ApiUsageRepositoryPort {
     }
 
     async getCount(userId: number, day: Date): Promise<number> {
-        const found = await this.repository.findOneBy({ userId, day: this.toDayKey(day) as unknown as Date });
+        const found = await this.repository.findOneBy({
+            userId,
+            day: this.toDayKey(day) as unknown as Date,
+        });
         return found?.requestCount ?? 0;
     }
 
@@ -35,7 +38,10 @@ export class ApiUsageRepository implements ApiUsageRepositoryPort {
         const rows = await this.repository.find({
             where: {
                 userId,
-                day: Between(this.toDayKey(fromDay) as unknown as Date, this.toDayKey(toDay) as unknown as Date),
+                day: Between(
+                    this.toDayKey(fromDay) as unknown as Date,
+                    this.toDayKey(toDay) as unknown as Date
+                ),
             },
             order: { day: 'ASC' },
         });

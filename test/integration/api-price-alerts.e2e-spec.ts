@@ -57,9 +57,7 @@ describe('Price Alerts API (e2e)', () => {
 
     describe('Auth guard enforcement', () => {
         it('GET /api/v1/price-alerts without auth returns 401', async () => {
-            const res = await request(app.getHttpServer())
-                .get('/api/v1/price-alerts')
-                .expect(401);
+            const res = await request(app.getHttpServer()).get('/api/v1/price-alerts').expect(401);
             expect(res.body.success).toBe(false);
         });
 
@@ -72,9 +70,7 @@ describe('Price Alerts API (e2e)', () => {
         });
 
         it('GET /api/v1/notifications without auth returns 401', async () => {
-            const res = await request(app.getHttpServer())
-                .get('/api/v1/notifications')
-                .expect(401);
+            const res = await request(app.getHttpServer()).get('/api/v1/notifications').expect(401);
             expect(res.body.success).toBe(false);
         });
     });
@@ -177,9 +173,7 @@ describe('Price Alerts API (e2e)', () => {
             // Card 2: increase alert @ 10% — will NOT trigger (+6.7%)
             // Card 3: decrease alert @ 10% — will trigger (-20%)
             // Card 4: decrease alert @ 10% — will NOT trigger (-5%)
-            const userRows = await ds.query(
-                `SELECT id FROM users WHERE email = 'integ@test.com'`
-            );
+            const userRows = await ds.query(`SELECT id FROM users WHERE email = 'integ@test.com'`);
             const userId = userRows[0].id;
 
             await ds.query(
@@ -205,22 +199,10 @@ describe('Price Alerts API (e2e)', () => {
             );
 
             // Update current prices to trigger/not-trigger thresholds
-            await ds.query(
-                `UPDATE price SET normal = 6.00 WHERE card_id = $1`,
-                [TEST_CARD_ID]
-            );
-            await ds.query(
-                `UPDATE price SET normal = 1.60 WHERE card_id = $1`,
-                [TEST_CARD_ID_2]
-            );
-            await ds.query(
-                `UPDATE price SET normal = 0.20 WHERE card_id = $1`,
-                [TEST_CARD_ID_3]
-            );
-            await ds.query(
-                `UPDATE price SET normal = 19.00 WHERE card_id = $1`,
-                [TEST_CARD_ID_4]
-            );
+            await ds.query(`UPDATE price SET normal = 6.00 WHERE card_id = $1`, [TEST_CARD_ID]);
+            await ds.query(`UPDATE price SET normal = 1.60 WHERE card_id = $1`, [TEST_CARD_ID_2]);
+            await ds.query(`UPDATE price SET normal = 0.20 WHERE card_id = $1`, [TEST_CARD_ID_3]);
+            await ds.query(`UPDATE price SET normal = 19.00 WHERE card_id = $1`, [TEST_CARD_ID_4]);
         });
 
         afterAll(async () => {
@@ -239,9 +221,7 @@ describe('Price Alerts API (e2e)', () => {
         });
 
         it('POST /api/v1/price-alerts/process requires API key', async () => {
-            await request(app.getHttpServer())
-                .post('/api/v1/price-alerts/process')
-                .expect(401);
+            await request(app.getHttpServer()).post('/api/v1/price-alerts/process').expect(401);
         });
 
         it('POST /api/v1/price-alerts/process rejects wrong API key', async () => {
@@ -275,19 +255,15 @@ describe('Price Alerts API (e2e)', () => {
             expect(notifications.length).toBe(2);
 
             // Find the decrease notification (Card 3)
-            const decreaseNotif = notifications.find(
-                (n: any) => n.direction === 'decrease'
-            );
+            const decreaseNotif = notifications.find((n: any) => n.direction === 'decrease');
             expect(decreaseNotif).toBeDefined();
             expect(decreaseNotif.card_id).toBe(TEST_CARD_ID_3);
             expect(Number(decreaseNotif.old_price)).toBe(0.25);
-            expect(Number(decreaseNotif.new_price)).toBe(0.20);
+            expect(Number(decreaseNotif.new_price)).toBe(0.2);
             expect(Number(decreaseNotif.change_pct)).toBe(-20.0);
 
             // Find the increase notification (Card 1)
-            const increaseNotif = notifications.find(
-                (n: any) => n.direction === 'increase'
-            );
+            const increaseNotif = notifications.find((n: any) => n.direction === 'increase');
             expect(increaseNotif).toBeDefined();
             expect(increaseNotif.card_id).toBe(TEST_CARD_ID);
             expect(Number(increaseNotif.old_price)).toBe(5.0);
@@ -334,9 +310,7 @@ describe('Price Alerts API (e2e)', () => {
             await ds.query('DELETE FROM price_notification');
             await ds.query('DELETE FROM price_alert');
 
-            const userRows = await ds.query(
-                `SELECT id FROM users WHERE email = 'integ@test.com'`
-            );
+            const userRows = await ds.query(`SELECT id FROM users WHERE email = 'integ@test.com'`);
             const userId = userRows[0].id;
 
             await ds.query(
@@ -408,9 +382,7 @@ describe('Price Alerts API (e2e)', () => {
         beforeAll(async () => {
             // Ensure we have notifications from the previous test suite
             // If not, create them manually
-            const existing = await ds.query(
-                `SELECT id FROM price_notification LIMIT 1`
-            );
+            const existing = await ds.query(`SELECT id FROM price_notification LIMIT 1`);
             if (existing.length === 0) {
                 const userRows = await ds.query(
                     `SELECT id FROM users WHERE email = 'integ@test.com'`
@@ -422,9 +394,7 @@ describe('Price Alerts API (e2e)', () => {
                     [userId, TEST_CARD_ID]
                 );
             }
-            const rows = await ds.query(
-                `SELECT id FROM price_notification ORDER BY id LIMIT 1`
-            );
+            const rows = await ds.query(`SELECT id FROM price_notification ORDER BY id LIMIT 1`);
             notificationId = rows[0].id;
         });
 
@@ -462,10 +432,9 @@ describe('Price Alerts API (e2e)', () => {
 
             expect(res.body.success).toBe(true);
 
-            const row = await ds.query(
-                `SELECT is_read FROM price_notification WHERE id = $1`,
-                [notificationId]
-            );
+            const row = await ds.query(`SELECT is_read FROM price_notification WHERE id = $1`, [
+                notificationId,
+            ]);
             expect(row[0].is_read).toBe(true);
         });
 

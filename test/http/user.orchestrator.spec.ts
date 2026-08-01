@@ -127,7 +127,10 @@ describe('UserOrchestrator', () => {
                 message: 'Email verified successfully! Welcome to I Want My MTG.',
                 user: mockUser,
             });
-            mockAuthService.login.mockResolvedValue({ access_token: 'jwt-token', expires_in: 3600 });
+            mockAuthService.login.mockResolvedValue({
+                access_token: 'jwt-token',
+                expires_in: 3600,
+            });
 
             const result = await orchestrator.verifyEmail('validtoken');
 

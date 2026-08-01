@@ -76,9 +76,7 @@ export class SealedProductRepository implements SealedProductRepositoryPort {
         userId: number,
         uuids: string[]
     ): Promise<Map<string, number>> {
-        this.LOGGER.debug(
-            `findInventoryQuantitiesForUser(user=${userId}, ${uuids.length} uuids)`
-        );
+        this.LOGGER.debug(`findInventoryQuantitiesForUser(user=${userId}, ${uuids.length} uuids)`);
         const result = new Map<string, number>();
         if (uuids.length === 0) return result;
         const rows = await this.inventoryRepo.find({
@@ -91,10 +89,7 @@ export class SealedProductRepository implements SealedProductRepositoryPort {
         return result;
     }
 
-    async findInventoryItem(
-        uuid: string,
-        userId: number
-    ): Promise<SealedProductInventory | null> {
+    async findInventoryItem(uuid: string, userId: number): Promise<SealedProductInventory | null> {
         this.LOGGER.debug(`findInventoryItem(${uuid}, ${userId})`);
         const item = await this.inventoryRepo.findOne({
             where: { sealedProductUuid: uuid, userId },

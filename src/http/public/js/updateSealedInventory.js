@@ -70,15 +70,20 @@ document.addEventListener('DOMContentLoaded', function () {
             }),
         })
             .then(function (res) {
-                return res.json().catch(function () { return null; }).then(function (body) {
-                    if (!res.ok) {
-                        if (window.AjaxUtils && AjaxUtils.handleGatedResponse(res, body)) {
-                            throw new Error('PREMIUM_GATED');
+                return res
+                    .json()
+                    .catch(function () {
+                        return null;
+                    })
+                    .then(function (body) {
+                        if (!res.ok) {
+                            if (window.AjaxUtils && AjaxUtils.handleGatedResponse(res, body)) {
+                                throw new Error('PREMIUM_GATED');
+                            }
+                            throw new Error('HTTP ' + res.status);
                         }
-                        throw new Error('HTTP ' + res.status);
-                    }
-                    return body;
-                });
+                        return body;
+                    });
             })
             .then(function (json) {
                 if (!json.success) throw new Error(json.error || 'Unknown error');
@@ -94,15 +99,20 @@ document.addEventListener('DOMContentLoaded', function () {
             body: JSON.stringify({ sealedProductUuid: uuid }),
         })
             .then(function (res) {
-                return res.json().catch(function () { return null; }).then(function (body) {
-                    if (!res.ok) {
-                        if (window.AjaxUtils && AjaxUtils.handleGatedResponse(res, body)) {
-                            throw new Error('PREMIUM_GATED');
+                return res
+                    .json()
+                    .catch(function () {
+                        return null;
+                    })
+                    .then(function (body) {
+                        if (!res.ok) {
+                            if (window.AjaxUtils && AjaxUtils.handleGatedResponse(res, body)) {
+                                throw new Error('PREMIUM_GATED');
+                            }
+                            throw new Error('HTTP ' + res.status);
                         }
-                        throw new Error('HTTP ' + res.status);
-                    }
-                    return body;
-                });
+                        return body;
+                    });
             })
             .then(function (json) {
                 if (!json.success) throw new Error(json.error || 'Unknown error');

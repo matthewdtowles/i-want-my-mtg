@@ -1,4 +1,7 @@
-import { ACTIVE_SUBSCRIPTION_STATUSES, SubscriptionStatus } from 'src/core/billing/subscription-status.enum';
+import {
+    ACTIVE_SUBSCRIPTION_STATUSES,
+    SubscriptionStatus,
+} from 'src/core/billing/subscription-status.enum';
 import { validateInit } from 'src/core/validation.util';
 import { ApiTier } from './api-tier.enum';
 

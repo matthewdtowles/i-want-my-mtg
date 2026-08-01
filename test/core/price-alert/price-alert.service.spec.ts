@@ -211,21 +211,31 @@ describe('PriceAlertService', () => {
         });
 
         it('should throw if update would null out both thresholds', async () => {
-            const existing = new PriceAlert({ id: 1, userId: 1, cardId: 'card-1', increasePct: 10 });
+            const existing = new PriceAlert({
+                id: 1,
+                userId: 1,
+                cardId: 'card-1',
+                increasePct: 10,
+            });
             alertRepo.findById.mockResolvedValue(existing);
 
-            await expect(
-                service.update(1, 1, { increasePct: null })
-            ).rejects.toThrow('At least one threshold');
+            await expect(service.update(1, 1, { increasePct: null })).rejects.toThrow(
+                'At least one threshold'
+            );
         });
 
         it('should reject adding a second threshold direction for free user', async () => {
             mockSubscriptionService.isUserSubscribed.mockResolvedValue(false);
-            const existing = new PriceAlert({ id: 1, userId: 1, cardId: 'card-1', increasePct: 10 });
+            const existing = new PriceAlert({
+                id: 1,
+                userId: 1,
+                cardId: 'card-1',
+                increasePct: 10,
+            });
             alertRepo.findById.mockResolvedValue(existing);
-            await expect(
-                service.update(1, 1, { decreasePct: 10 })
-            ).rejects.toThrow(/Only one threshold direction/);
+            await expect(service.update(1, 1, { decreasePct: 10 })).rejects.toThrow(
+                /Only one threshold direction/
+            );
         });
     });
 

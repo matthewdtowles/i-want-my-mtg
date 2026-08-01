@@ -62,7 +62,14 @@ describe('DeckApiPresenter.toDetail', () => {
             format: null,
             createdAt: new Date(),
             updatedAt: new Date(),
-            cards: [new DeckCard({ cardId: 'a', quantity: 1, isSideboard: false, card: card('a', 'Creature', 5) })],
+            cards: [
+                new DeckCard({
+                    cardId: 'a',
+                    quantity: 1,
+                    isSideboard: false,
+                    card: card('a', 'Creature', 5),
+                }),
+            ],
         });
 
         const dto = DeckApiPresenter.toDetail(deck);
@@ -88,7 +95,9 @@ describe('DeckApiPresenter.toSummary cover art', () => {
     it('exposes the cover as a ready-to-render art crop', () => {
         const cover = card('Sheoldred', 'Legendary Creature — Praetor', 90);
         const summary = DeckApiPresenter.toSummary(
-            deckWith([new DeckCard({ cardId: 'Sheoldred', quantity: 1, isSideboard: false, card: cover })])
+            deckWith([
+                new DeckCard({ cardId: 'Sheoldred', quantity: 1, isSideboard: false, card: cover }),
+            ])
         );
 
         expect(summary.coverImgSrc).toBe('https://cards.scryfall.io/art_crop/front/a/b/c.jpg');

@@ -3,10 +3,7 @@ import { createHash } from 'crypto';
 import { ApiKey } from 'src/core/api-tier/api-key.entity';
 import { ApiKeyService } from 'src/core/api-tier/api-key.service';
 import { ApiKeyRepositoryPort } from 'src/core/api-tier/ports/api-key.repository.port';
-import {
-    DomainNotFoundError,
-    DomainValidationError,
-} from 'src/core/errors/domain.errors';
+import { DomainNotFoundError, DomainValidationError } from 'src/core/errors/domain.errors';
 
 describe('ApiKeyService', () => {
     let service: ApiKeyService;

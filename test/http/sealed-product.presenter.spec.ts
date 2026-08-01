@@ -16,7 +16,11 @@ describe('SealedProductHbsPresenter', () => {
             releaseDate: '2024-08-02',
             contentsSummary: '36x Draft Booster Pack',
             tcgplayerProductId: '500001',
-            price: new SealedProductPrice({ price: 99.99, priceChangeWeekly: 1.5, date: '2024-08-02' }),
+            price: new SealedProductPrice({
+                price: 99.99,
+                priceChangeWeekly: 1.5,
+                date: '2024-08-02',
+            }),
             ...overrides,
         });
 

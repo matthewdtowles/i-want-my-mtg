@@ -64,21 +64,35 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function renderNotificationRow(notification) {
-        var cardUrl = notification.setCode && notification.cardNumber
-            ? '/card/' + encodeURIComponent(notification.setCode.toLowerCase()) + '/' + encodeURIComponent(notification.cardNumber)
-            : null;
+        var cardUrl =
+            notification.setCode && notification.cardNumber
+                ? '/card/' +
+                  encodeURIComponent(notification.setCode.toLowerCase()) +
+                  '/' +
+                  encodeURIComponent(notification.cardNumber)
+                : null;
         var cardLabel = notification.cardName
             ? AjaxUtils.escapeHtml(notification.cardName)
             : AjaxUtils.escapeHtml(notification.cardId);
         if (notification.setCode) {
-            cardLabel += ' <span class="text-gray-400 dark:text-gray-500 text-xs">(' + AjaxUtils.escapeHtml(notification.setCode.toUpperCase()) + ')</span>';
+            cardLabel +=
+                ' <span class="text-gray-400 dark:text-gray-500 text-xs">(' +
+                AjaxUtils.escapeHtml(notification.setCode.toUpperCase()) +
+                ')</span>';
         }
 
         var unreadClass = notification.isRead ? '' : ' border-l-2 border-teal-400';
-        var html = '<tr class="table-row notification-row' + unreadClass + '"'
-            + ' data-notification-id="' + notification.id + '"'
-            + ' data-is-read="' + notification.isRead + '"'
-            + ' style="cursor: pointer;">';
+        var html =
+            '<tr class="table-row notification-row' +
+            unreadClass +
+            '"' +
+            ' data-notification-id="' +
+            notification.id +
+            '"' +
+            ' data-is-read="' +
+            notification.isRead +
+            '"' +
+            ' style="cursor: pointer;">';
 
         // Card
         html += '<td class="table-cell">';
@@ -96,24 +110,45 @@ document.addEventListener('DOMContentLoaded', function () {
             : 'bg-hotpink-100 text-hotpink-700 dark:bg-hotpink-700/30 dark:text-hotpink-300';
         var directionLabel = isIncrease ? 'UP' : 'DOWN';
         html += '<td class="table-cell">';
-        html += '<span class="inline-block px-2 py-0.5 rounded-full text-xs font-medium ' + badgeClasses + '">' + directionLabel + '</span>';
+        html +=
+            '<span class="inline-block px-2 py-0.5 rounded-full text-xs font-medium ' +
+            badgeClasses +
+            '">' +
+            directionLabel +
+            '</span>';
         html += '</td>';
 
         // Old Price
-        html += '<td class="table-cell font-mono">' + AjaxUtils.toDollar(notification.oldPrice) + '</td>';
+        html +=
+            '<td class="table-cell font-mono">' +
+            AjaxUtils.toDollar(notification.oldPrice) +
+            '</td>';
 
         // New Price
-        html += '<td class="table-cell font-mono">' + AjaxUtils.toDollar(notification.newPrice) + '</td>';
+        html +=
+            '<td class="table-cell font-mono">' +
+            AjaxUtils.toDollar(notification.newPrice) +
+            '</td>';
 
         // Change %
         var changeSign = notification.changePct >= 0 ? '+' : '';
-        var changeColor = notification.changePct >= 0
-            ? 'text-teal-600 dark:text-teal-400'
-            : 'text-red-500 dark:text-red-400';
-        html += '<td class="table-cell ' + changeColor + ' font-medium">' + changeSign + notification.changePct.toFixed(1) + '%</td>';
+        var changeColor =
+            notification.changePct >= 0
+                ? 'text-teal-600 dark:text-teal-400'
+                : 'text-red-500 dark:text-red-400';
+        html +=
+            '<td class="table-cell ' +
+            changeColor +
+            ' font-medium">' +
+            changeSign +
+            notification.changePct.toFixed(1) +
+            '%</td>';
 
         // Date
-        html += '<td class="table-cell xs-hide text-gray-500 dark:text-gray-400">' + formatDate(notification.createdAt) + '</td>';
+        html +=
+            '<td class="table-cell xs-hide text-gray-500 dark:text-gray-400">' +
+            formatDate(notification.createdAt) +
+            '</td>';
 
         html += '</tr>';
         return html;

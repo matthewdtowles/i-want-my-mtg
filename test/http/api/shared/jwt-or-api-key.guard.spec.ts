@@ -4,10 +4,10 @@ import { ApiKeyService } from 'src/core/api-tier/api-key.service';
 import { ApiKeyAuthGuard } from 'src/http/api/shared/api-key-auth.guard';
 import { JwtOrApiKeyGuard } from 'src/http/api/shared/jwt-or-api-key.guard';
 
-function ctxFor(opts: {
-    headers?: Record<string, string>;
-    cookies?: Record<string, string>;
-}): { ctx: ExecutionContext; request: any } {
+function ctxFor(opts: { headers?: Record<string, string>; cookies?: Record<string, string> }): {
+    ctx: ExecutionContext;
+    request: any;
+} {
     const request: any = { headers: opts.headers ?? {}, cookies: opts.cookies ?? {} };
     const ctx = {
         switchToHttp: () => ({ getRequest: () => request }),
@@ -42,7 +42,13 @@ describe('JwtOrApiKeyGuard', () => {
     });
 
     it('routes to API key path when X-API-Key header is present', async () => {
-        const apiKey = new ApiKey({ id: 1, userId: 42, keyHash: 'h', keyPrefix: 'iwm_live_a', name: 'k' });
+        const apiKey = new ApiKey({
+            id: 1,
+            userId: 42,
+            keyHash: 'h',
+            keyPrefix: 'iwm_live_a',
+            name: 'k',
+        });
         apiKeySvc.resolveByRawKey.mockResolvedValue(apiKey);
         const { ctx, request } = ctxFor({ headers: { 'x-api-key': 'iwm_live_valid' } });
         await expect(guard.canActivate(ctx)).resolves.toBe(true);
@@ -51,7 +57,13 @@ describe('JwtOrApiKeyGuard', () => {
     });
 
     it('routes to API key path when both API key header AND JWT cookie are present (no JWT bypass)', async () => {
-        const apiKey = new ApiKey({ id: 1, userId: 42, keyHash: 'h', keyPrefix: 'iwm_live_a', name: 'k' });
+        const apiKey = new ApiKey({
+            id: 1,
+            userId: 42,
+            keyHash: 'h',
+            keyPrefix: 'iwm_live_a',
+            name: 'k',
+        });
         apiKeySvc.resolveByRawKey.mockResolvedValue(apiKey);
         const { ctx, request } = ctxFor({
             headers: { 'x-api-key': 'iwm_live_valid' },
@@ -80,7 +92,9 @@ describe('JwtOrApiKeyGuard', () => {
     it('treats Authorization: Bearer <jwt> as a JWT (not as an API key) when no iwm_live_ prefix', async () => {
         // A plain JWT in the Authorization header has no iwm_live_ prefix and must NOT
         // be misrouted into the API key resolver.
-        const { ctx } = ctxFor({ headers: { authorization: 'Bearer eyJhbGciOiJIUzI1NiJ9.payload.sig' } });
+        const { ctx } = ctxFor({
+            headers: { authorization: 'Bearer eyJhbGciOiJIUzI1NiJ9.payload.sig' },
+        });
         await expect(guard.canActivate(ctx)).resolves.toBe(true);
         expect(apiKeySvc.resolveByRawKey).not.toHaveBeenCalled();
         expect(jwtSpy).toHaveBeenCalled();

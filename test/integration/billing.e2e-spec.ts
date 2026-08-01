@@ -281,10 +281,9 @@ describe('Billing (e2e)', () => {
                 .send(payload)
                 .expect(200);
 
-            const rows = await ds.query(
-                `SELECT status FROM subscription WHERE user_id = $1`,
-                [userId]
-            );
+            const rows = await ds.query(`SELECT status FROM subscription WHERE user_id = $1`, [
+                userId,
+            ]);
             expect(rows[0].status).toBe('canceled');
         });
     });
@@ -294,7 +293,11 @@ describe('Billing (e2e)', () => {
             await request(app.getHttpServer())
                 .post('/api/v1/billing/webhooks/stripe')
                 .set('content-type', 'application/json')
-                .send({ id: 'evt_nope', type: 'customer.subscription.updated', data: { object: {} } })
+                .send({
+                    id: 'evt_nope',
+                    type: 'customer.subscription.updated',
+                    data: { object: {} },
+                })
                 .expect(400);
         });
 

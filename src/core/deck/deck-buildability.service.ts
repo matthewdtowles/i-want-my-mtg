@@ -58,7 +58,9 @@ export class DeckBuildabilityService {
                 this.buyListService.add(userId, cardId, false, quantity)
             )
         );
-        this.LOGGER.debug(`seeded buy-list with ${gap.missingByCard.length} cards for user ${userId}.`);
+        this.LOGGER.debug(
+            `seeded buy-list with ${gap.missingByCard.length} cards for user ${userId}.`
+        );
         return gap.missingByCard.length;
     }
 }

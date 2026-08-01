@@ -196,8 +196,7 @@ export class PortfolioOrchestrator {
             HttpErrorHandler.validateAuthenticatedRequest(req);
             const subscribed = await this.subscriptionService.isUserSubscribed(req.user.id);
 
-            const colorChips =
-                dimension === 'color' ? this.buildColorChips(selectedColors) : [];
+            const colorChips = dimension === 'color' ? this.buildColorChips(selectedColors) : [];
             const filterLabel =
                 dimension === 'color' && selectedColors.length > 0
                     ? selectedColors.map((c) => COLOR_LABELS[c] ?? c).join(', ')
@@ -239,9 +238,7 @@ export class PortfolioOrchestrator {
             // No-JS fallback: when `expand` names a real slice, server-render
             // that slice's cards inline so drill-down works without JS. JS
             // intercepts the same links and fetches the API instead.
-            const expandTarget = breakdown.slices.some((s) => s.key === expandKey)
-                ? expandKey
-                : '';
+            const expandTarget = breakdown.slices.some((s) => s.key === expandKey) ? expandKey : '';
             const expandedCards: BreakdownCardView[] = expandTarget
                 ? (
                       await this.breakdownService.listSliceCards(
@@ -278,12 +275,7 @@ export class PortfolioOrchestrator {
                     percent: totalValue > 0 ? (s.value / totalValue) * 100 : 0,
                     percentFormatted:
                         totalValue > 0 ? `${((s.value / totalValue) * 100).toFixed(1)}%` : '0%',
-                    expandHref: this.buildExpandHref(
-                        dimension,
-                        s.key,
-                        selectedColors,
-                        expanded
-                    ),
+                    expandHref: this.buildExpandHref(dimension, s.key, selectedColors, expanded),
                     expanded,
                     cards: expanded ? expandedCards : [],
                 };

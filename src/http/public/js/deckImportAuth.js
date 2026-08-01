@@ -42,8 +42,7 @@
                     format: formatInput ? formatInput.value : '',
                     text: textInput ? textInput.value : '',
                 });
-                window.location.href =
-                    '/auth/login?returnUrl=' + encodeURIComponent(RETURN_URL);
+                window.location.href = '/auth/login?returnUrl=' + encodeURIComponent(RETURN_URL);
             });
         }
     });

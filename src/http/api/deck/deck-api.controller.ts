@@ -133,7 +133,12 @@ export class DeckApiController {
         @Body() dto: DeckUpdateApiDto,
         @Req() req: AuthenticatedRequest
     ): Promise<ApiResponseDto<DeckSummaryApiDto>> {
-        const deck = await this.deckService.updateDeck(id, req.user.id, dto.name, dto.format ?? null);
+        const deck = await this.deckService.updateDeck(
+            id,
+            req.user.id,
+            dto.name,
+            dto.format ?? null
+        );
         return ApiResponseDto.ok(DeckApiPresenter.toSummary(deck));
     }
 

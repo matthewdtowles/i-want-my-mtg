@@ -27,9 +27,7 @@ function createProduct(overrides: Partial<SealedProduct> = {}): SealedProduct {
     });
 }
 
-function createInventory(
-    overrides: Partial<SealedProductInventory> = {}
-): SealedProductInventory {
+function createInventory(overrides: Partial<SealedProductInventory> = {}): SealedProductInventory {
     return new SealedProductInventory({
         sealedProductUuid: '11111111-1111-1111-1111-111111111111',
         userId: 42,
@@ -94,11 +92,7 @@ describe('SealedProductApiController', () => {
             sealedProductService.findBySetCode.mockResolvedValue([createProduct()]);
             sealedProductService.totalBySetCode.mockResolvedValue(7);
 
-            const result = await controller.findBySet(
-                'mkm',
-                { page: '2', limit: '25' },
-                makeReq()
-            );
+            const result = await controller.findBySet('mkm', { page: '2', limit: '25' }, makeReq());
 
             expect(result.success).toBe(true);
             expect(result.data).toHaveLength(1);
@@ -143,10 +137,10 @@ describe('SealedProductApiController', () => {
             expect(result.data[0].ownedQuantity).toBe(5);
             // Products not in the map default to 0.
             expect(result.data[1].ownedQuantity).toBe(0);
-            expect(sealedProductService.findInventoryQuantitiesForUser).toHaveBeenCalledWith(
-                42,
-                ['uuid-1', 'uuid-2']
-            );
+            expect(sealedProductService.findInventoryQuantitiesForUser).toHaveBeenCalledWith(42, [
+                'uuid-1',
+                'uuid-2',
+            ]);
         });
 
         it('skips the inventory lookup when authenticated but no products returned', async () => {
@@ -176,9 +170,7 @@ describe('SealedProductApiController', () => {
         it('throws NotFoundException when the product is missing', async () => {
             sealedProductService.findByUuid.mockResolvedValue(null);
 
-            await expect(controller.findByUuid('missing-uuid')).rejects.toThrow(
-                NotFoundException
-            );
+            await expect(controller.findByUuid('missing-uuid')).rejects.toThrow(NotFoundException);
         });
     });
 
@@ -221,7 +213,6 @@ describe('SealedProductApiController', () => {
             expect(arg.userId).toBe(42);
             expect(arg.quantity).toBe(1);
         });
-
     });
 
     describe('updateInventory', () => {

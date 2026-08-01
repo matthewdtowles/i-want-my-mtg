@@ -35,7 +35,7 @@ export class SealedProductApiResponseDto {
     tcgplayerProductId?: string;
 
     @ApiPropertyOptional({
-        description: 'Authenticated user\'s owned quantity; omitted when not logged in',
+        description: "Authenticated user's owned quantity; omitted when not logged in",
     })
     ownedQuantity?: number;
 }

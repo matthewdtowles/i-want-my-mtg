@@ -94,10 +94,7 @@ describe('CardImportResolver', () => {
         });
 
         it('breaks price ties on card id for a stable representative', async () => {
-            mockCardRepo.findWithName.mockResolvedValue([
-                priced('zeta', 2),
-                priced('alpha', 2),
-            ]);
+            mockCardRepo.findWithName.mockResolvedValue([priced('zeta', 2), priced('alpha', 2)]);
 
             const result = await resolver.resolveByName('Lightning Bolt');
 

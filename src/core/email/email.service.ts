@@ -239,14 +239,10 @@ export class EmailService {
                 subject: `Price Alert: ${alerts.length} card${alerts.length > 1 ? 's' : ''} changed - I Want My MTG`,
                 html,
             });
-            this.LOGGER.log(
-                `Price alert email sent to ${redacted}. MessageId: ${info.messageId}`
-            );
+            this.LOGGER.log(`Price alert email sent to ${redacted}. MessageId: ${info.messageId}`);
             return true;
         } catch (error) {
-            this.LOGGER.error(
-                `Failed to send price alert email to ${redacted}: ${error.message}`
-            );
+            this.LOGGER.error(`Failed to send price alert email to ${redacted}: ${error.message}`);
             return false;
         }
     }

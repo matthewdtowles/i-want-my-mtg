@@ -185,6 +185,11 @@ describe('Sets API (e2e)', () => {
         // baseOnly drops everything outside the main run — the seed's no. 305
         // Test Dragon. Note the default is `true` (safeBoolean defaults to true),
         // so it takes an explicit `baseOnly=false` to get the variant back.
+        //
+        // Asserts on that one printing rather than the whole card list: other
+        // suites add and remove their own cards in `tst` (freemium-gates seeds a
+        // no. 5 Test Hydra), and their cleanup is best-effort, so an exact list
+        // here would fail on whichever suite ran last rather than on this route.
         it('supports baseOnly parameter', async () => {
             const numbersFor = async (query: string) => {
                 const res = await request(app.getHttpServer())
@@ -194,10 +199,14 @@ describe('Sets API (e2e)', () => {
                 return res.body.data.map((c: { number: string }) => c.number);
             };
 
-            expect(await numbersFor('?baseOnly=true')).toEqual(['1', '2', '3', '4']);
-            expect(await numbersFor('?baseOnly=false')).toEqual(['1', '2', '3', '4', '305']);
+            // The main-set cards are always present, whatever else is.
+            expect(await numbersFor('?baseOnly=true')).toEqual(
+                expect.arrayContaining(['1', '2', '3', '4'])
+            );
+            expect(await numbersFor('?baseOnly=true')).not.toContain('305');
+            expect(await numbersFor('?baseOnly=false')).toContain('305');
             // Omitting the parameter is base-only, not everything.
-            expect(await numbersFor('')).toEqual(['1', '2', '3', '4']);
+            expect(await numbersFor('')).not.toContain('305');
         });
 
         describe('catalog filters', () => {
@@ -207,9 +216,9 @@ describe('Sets API (e2e)', () => {
                     .expect(200);
 
                 expect(res.body.data.length).toBeGreaterThan(0);
-                expect(
-                    res.body.data.every((c: { rarity: string }) => c.rarity === 'mythic')
-                ).toBe(true);
+                expect(res.body.data.every((c: { rarity: string }) => c.rarity === 'mythic')).toBe(
+                    true
+                );
             });
 
             it('filters by type substring', async () => {

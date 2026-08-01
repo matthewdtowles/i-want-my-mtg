@@ -11,10 +11,18 @@ describe('API tier limits', () => {
     });
 
     it('orders tiers by ascending capacity', () => {
-        expect(API_TIER_LIMITS[ApiTier.Free].perDay).toBeLessThan(API_TIER_LIMITS[ApiTier.Developer].perDay);
-        expect(API_TIER_LIMITS[ApiTier.Developer].perDay).toBeLessThan(API_TIER_LIMITS[ApiTier.Business].perDay);
-        expect(API_TIER_LIMITS[ApiTier.Free].perMinute).toBeLessThan(API_TIER_LIMITS[ApiTier.Developer].perMinute);
-        expect(API_TIER_LIMITS[ApiTier.Developer].perMinute).toBeLessThan(API_TIER_LIMITS[ApiTier.Business].perMinute);
+        expect(API_TIER_LIMITS[ApiTier.Free].perDay).toBeLessThan(
+            API_TIER_LIMITS[ApiTier.Developer].perDay
+        );
+        expect(API_TIER_LIMITS[ApiTier.Developer].perDay).toBeLessThan(
+            API_TIER_LIMITS[ApiTier.Business].perDay
+        );
+        expect(API_TIER_LIMITS[ApiTier.Free].perMinute).toBeLessThan(
+            API_TIER_LIMITS[ApiTier.Developer].perMinute
+        );
+        expect(API_TIER_LIMITS[ApiTier.Developer].perMinute).toBeLessThan(
+            API_TIER_LIMITS[ApiTier.Business].perMinute
+        );
     });
 
     it('matches roadmap-published values', () => {

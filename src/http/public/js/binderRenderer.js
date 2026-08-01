@@ -82,7 +82,10 @@
                 html += ' <span class="binder-card-overlay-price-sep">/</span> ';
             }
             if (prices.foil != null) {
-                html += '<span class="binder-card-overlay-price-foil">Foil ' + AjaxUtils.toDollar(prices.foil) + '</span>';
+                html +=
+                    '<span class="binder-card-overlay-price-foil">Foil ' +
+                    AjaxUtils.toDollar(prices.foil) +
+                    '</span>';
             }
             html += '</span>';
         }

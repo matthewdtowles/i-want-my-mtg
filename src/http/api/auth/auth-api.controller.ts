@@ -18,11 +18,7 @@ import { LocalAuthGuard } from 'src/http/auth/local.auth.guard';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
 import { ApiResponseDto } from 'src/http/base/api-response.dto';
 import { LoginRequestDto, LoginResponseDto, RefreshRequestDto } from './dto/auth-response.dto';
-import {
-    RegisterRequestDto,
-    RegisterResponseDto,
-    VerifyEmailRequestDto,
-} from './dto/register.dto';
+import { RegisterRequestDto, RegisterResponseDto, VerifyEmailRequestDto } from './dto/register.dto';
 import { ApiRateLimitGuard } from '../shared/api-rate-limit.guard';
 import { ApiOkEnvelope } from '../shared/api-ok-envelope.decorator';
 

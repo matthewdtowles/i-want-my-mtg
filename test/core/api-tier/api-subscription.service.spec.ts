@@ -25,7 +25,10 @@ describe('ApiSubscriptionService', () => {
             providers: [
                 ApiSubscriptionService,
                 { provide: ApiSubscriptionRepositoryPort, useValue: repo },
-                { provide: SubscriptionRepositoryPort, useValue: { findByUserId: jest.fn(), findByStripeCustomerId: jest.fn() } },
+                {
+                    provide: SubscriptionRepositoryPort,
+                    useValue: { findByUserId: jest.fn(), findByStripeCustomerId: jest.fn() },
+                },
                 { provide: StripeGatewayPort, useValue: {} },
                 { provide: ConfigService, useValue: { get: jest.fn() } },
             ],
@@ -49,7 +52,10 @@ describe('ApiSubscriptionService', () => {
                 providers: [
                     ApiSubscriptionService,
                     { provide: ApiSubscriptionRepositoryPort, useValue: customRepo },
-                    { provide: SubscriptionRepositoryPort, useValue: { findByUserId: jest.fn(), findByStripeCustomerId: jest.fn() } },
+                    {
+                        provide: SubscriptionRepositoryPort,
+                        useValue: { findByUserId: jest.fn(), findByStripeCustomerId: jest.fn() },
+                    },
                     { provide: StripeGatewayPort, useValue: stripe },
                     { provide: ConfigService, useValue: { get: jest.fn() } },
                 ],
@@ -70,7 +76,12 @@ describe('ApiSubscriptionService', () => {
             const customRepo = {
                 findByUserId: jest.fn(),
                 findByStripeCustomerId: jest.fn().mockResolvedValue(
-                    new ApiSubscription({ id: 1, userId: 7, tier: ApiTier.Free, stripeCustomerId: 'cus_x' })
+                    new ApiSubscription({
+                        id: 1,
+                        userId: 7,
+                        tier: ApiTier.Free,
+                        stripeCustomerId: 'cus_x',
+                    })
                 ),
                 findByStripeSubscriptionId: jest.fn(),
                 upsert: jest.fn().mockImplementation(async (s) => s),
@@ -80,7 +91,10 @@ describe('ApiSubscriptionService', () => {
                 providers: [
                     ApiSubscriptionService,
                     { provide: ApiSubscriptionRepositoryPort, useValue: customRepo },
-                    { provide: SubscriptionRepositoryPort, useValue: { findByUserId: jest.fn(), findByStripeCustomerId: jest.fn() } },
+                    {
+                        provide: SubscriptionRepositoryPort,
+                        useValue: { findByUserId: jest.fn(), findByStripeCustomerId: jest.fn() },
+                    },
                     { provide: StripeGatewayPort, useValue: stripe },
                     { provide: ConfigService, useValue: { get: jest.fn() } },
                 ],
@@ -122,7 +136,10 @@ describe('ApiSubscriptionService', () => {
                 providers: [
                     ApiSubscriptionService,
                     { provide: ApiSubscriptionRepositoryPort, useValue: customRepo },
-                    { provide: SubscriptionRepositoryPort, useValue: { findByUserId: jest.fn(), findByStripeCustomerId: jest.fn() } },
+                    {
+                        provide: SubscriptionRepositoryPort,
+                        useValue: { findByUserId: jest.fn(), findByStripeCustomerId: jest.fn() },
+                    },
                     { provide: StripeGatewayPort, useValue: stripe },
                     { provide: ConfigService, useValue: { get: jest.fn() } },
                 ],

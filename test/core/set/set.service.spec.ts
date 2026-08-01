@@ -381,9 +381,7 @@ describe('SetService', () => {
         it('should throw error when repository fails', async () => {
             repository.totalSearchSets.mockRejectedValue(new Error('Database error'));
 
-            await expect(service.totalSearchSets('Test')).rejects.toThrow(
-                'Database error'
-            );
+            await expect(service.totalSearchSets('Test')).rejects.toThrow('Database error');
         });
     });
 
@@ -438,9 +436,7 @@ describe('SetService', () => {
         it('should throw error when repository fails', async () => {
             priceHistoryRepository.findBySetCode.mockRejectedValue(new Error('Database error'));
 
-            await expect(service.findSetPriceHistory('SET')).rejects.toThrow(
-                'Database error'
-            );
+            await expect(service.findSetPriceHistory('SET')).rejects.toThrow('Database error');
         });
     });
 });

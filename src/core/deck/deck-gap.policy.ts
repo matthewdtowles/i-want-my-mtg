@@ -87,8 +87,7 @@ export class DeckGapPolicy {
         }
 
         const missingCount = neededCount - ownedCount;
-        const completeness =
-            neededCount === 0 ? 100 : Math.round((ownedCount / neededCount) * 100);
+        const completeness = neededCount === 0 ? 100 : Math.round((ownedCount / neededCount) * 100);
 
         return {
             neededCount,

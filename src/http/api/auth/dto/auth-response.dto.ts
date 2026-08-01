@@ -34,7 +34,9 @@ export class LoginResponseDto {
 }
 
 export class RefreshRequestDto {
-    @ApiProperty({ description: 'The refresh token issued at login (or the previous refresh call).' })
+    @ApiProperty({
+        description: 'The refresh token issued at login (or the previous refresh call).',
+    })
     @IsString()
     @IsNotEmpty()
     readonly refreshToken: string;

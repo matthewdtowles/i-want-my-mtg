@@ -239,7 +239,9 @@ describe('Inventory Import/Export API (e2e)', () => {
                 .expect(200);
 
             expect(res.headers['content-type']).toMatch(/text\/csv/);
-            expect(res.headers['content-disposition']).toMatch(/attachment; filename="inventory\.csv"/);
+            expect(res.headers['content-disposition']).toMatch(
+                /attachment; filename="inventory\.csv"/
+            );
 
             const lines = res.text.trim().split('\n');
             expect(lines[0]).toBe('id,name,set_code,number,quantity,foil');

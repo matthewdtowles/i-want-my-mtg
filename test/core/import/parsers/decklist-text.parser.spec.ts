@@ -5,13 +5,29 @@ describe('parseDecklistText', () => {
         const { rows, errors } = parseDecklistText('4 Lightning Bolt\n2x Counterspell');
         expect(errors).toEqual([]);
         expect(rows).toEqual([
-            { quantity: 4, name: 'Lightning Bolt', setCode: undefined, number: undefined, isSideboard: false, line: 1 },
-            { quantity: 2, name: 'Counterspell', setCode: undefined, number: undefined, isSideboard: false, line: 2 },
+            {
+                quantity: 4,
+                name: 'Lightning Bolt',
+                setCode: undefined,
+                number: undefined,
+                isSideboard: false,
+                line: 1,
+            },
+            {
+                quantity: 2,
+                name: 'Counterspell',
+                setCode: undefined,
+                number: undefined,
+                isSideboard: false,
+                line: 2,
+            },
         ]);
     });
 
     it('extracts a (SET) code and optional collector number', () => {
-        const { rows } = parseDecklistText('1 Sol Ring (CMR)\n1 Sol Ring (CMR) 263\n4 Lightning Bolt [2X2]');
+        const { rows } = parseDecklistText(
+            '1 Sol Ring (CMR)\n1 Sol Ring (CMR) 263\n4 Lightning Bolt [2X2]'
+        );
         expect(rows[0]).toMatchObject({ name: 'Sol Ring', setCode: 'cmr', number: undefined });
         expect(rows[1]).toMatchObject({ name: 'Sol Ring', setCode: 'cmr', number: '263' });
         expect(rows[2]).toMatchObject({ name: 'Lightning Bolt', setCode: '2x2' });
@@ -29,7 +45,9 @@ describe('parseDecklistText', () => {
     });
 
     it('skips blank lines and non-quantity section headers without error', () => {
-        const { rows, errors } = parseDecklistText('Commander\n1 Atraxa, Praetors’ Voice\n\nDeck\n1 Sol Ring\nCreatures (1)');
+        const { rows, errors } = parseDecklistText(
+            'Commander\n1 Atraxa, Praetors’ Voice\n\nDeck\n1 Sol Ring\nCreatures (1)'
+        );
         expect(errors).toEqual([]);
         expect(rows.map((r) => r.name)).toEqual(['Atraxa, Praetors’ Voice', 'Sol Ring']);
     });

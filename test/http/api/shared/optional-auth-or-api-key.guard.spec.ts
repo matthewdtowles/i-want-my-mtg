@@ -48,7 +48,13 @@ describe('OptionalAuthOrApiKeyGuard', () => {
     });
 
     it('uses API key path when a valid key is presented (even with cookie session)', async () => {
-        const apiKey = new ApiKey({ id: 1, userId: 9, keyHash: 'h', keyPrefix: 'iwm_live_a', name: 'k' });
+        const apiKey = new ApiKey({
+            id: 1,
+            userId: 9,
+            keyHash: 'h',
+            keyPrefix: 'iwm_live_a',
+            name: 'k',
+        });
         apiKeySvc.resolveByRawKey.mockResolvedValue(apiKey);
         const { ctx, request } = ctxFor({
             headers: { 'x-api-key': 'iwm_live_valid' },

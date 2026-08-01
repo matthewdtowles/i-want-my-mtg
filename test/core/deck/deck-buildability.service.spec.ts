@@ -46,7 +46,12 @@ describe('DeckBuildabilityService', () => {
             { quantity: 1, card: card('bolt', 'Lightning Bolt') },
         ]);
         const cards: DeckCard[] = [
-            new DeckCard({ cardId: 'bolt', quantity: 4, isSideboard: false, card: card('bolt', 'Lightning Bolt') }),
+            new DeckCard({
+                cardId: 'bolt',
+                quantity: 4,
+                isSideboard: false,
+                card: card('bolt', 'Lightning Bolt'),
+            }),
         ];
 
         const added = await service.addMissingToBuyList(cards, 5);

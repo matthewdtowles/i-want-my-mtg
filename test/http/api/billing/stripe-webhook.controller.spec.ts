@@ -77,7 +77,10 @@ describe('StripeWebhookController', () => {
     });
 
     function subWithPrice(id: string, priceId = 'price_consumer'): Stripe.Subscription {
-        return { id, items: { data: [{ price: { id: priceId } }] } } as unknown as Stripe.Subscription;
+        return {
+            id,
+            items: { data: [{ price: { id: priceId } }] },
+        } as unknown as Stripe.Subscription;
     }
 
     it('syncs subscription on customer.subscription.updated', async () => {

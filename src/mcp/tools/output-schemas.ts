@@ -223,9 +223,7 @@ const cashFlowPeriod = z.object({ period: str, totalBought: num, totalSold: num,
 
 const breakdown = z.object({
     dimension: str,
-    slices: z.array(
-        z.object({ key: str, label: str, cardCount: num, itemCount: num, value: num })
-    ),
+    slices: z.array(z.object({ key: str, label: str, cardCount: num, itemCount: num, value: num })),
     totalValue: num,
     totalItems: num,
 });

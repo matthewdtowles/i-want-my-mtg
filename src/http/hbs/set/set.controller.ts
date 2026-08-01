@@ -30,9 +30,7 @@ const SAFE_SET_CODE_RE = /^[A-Za-z0-9_-]+$/;
 
 @Controller('sets')
 export class SetController {
-    constructor(
-        @Inject(SetOrchestrator) private readonly setOrchestrator: SetOrchestrator
-    ) {}
+    constructor(@Inject(SetOrchestrator) private readonly setOrchestrator: SetOrchestrator) {}
 
     @UseGuards(OptionalAuthGuard)
     @Get()

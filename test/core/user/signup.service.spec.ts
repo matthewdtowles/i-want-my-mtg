@@ -65,7 +65,9 @@ describe('SignupService', () => {
         });
 
         it('returns silently for an already-registered email (no enumeration)', async () => {
-            mockUserService.findByEmail.mockResolvedValue(new User({ email: 'a@b.com', name: 'x' }));
+            mockUserService.findByEmail.mockResolvedValue(
+                new User({ email: 'a@b.com', name: 'x' })
+            );
 
             await expect(
                 service.initiateSignup('a@b.com', 'Some User', 'Sup3rSecret!')
@@ -123,7 +125,9 @@ describe('SignupService', () => {
         });
 
         it('fails and cleans up an expired token', async () => {
-            mockPendingUserService.findByToken.mockResolvedValue(pending({ isExpired: () => true }));
+            mockPendingUserService.findByToken.mockResolvedValue(
+                pending({ isExpired: () => true })
+            );
 
             const result = await service.verifyEmail('raw-token');
 

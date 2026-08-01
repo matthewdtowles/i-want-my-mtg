@@ -51,7 +51,9 @@ describe('DeckService', () => {
             expect(deck.format).toBe(Format.Modern);
         });
         it('throws BadRequest (400) on an empty name', async () => {
-            await expect(service.createDeck(7, '   ')).rejects.toBeInstanceOf(DomainValidationError);
+            await expect(service.createDeck(7, '   ')).rejects.toBeInstanceOf(
+                DomainValidationError
+            );
             expect(repo.create).not.toHaveBeenCalled();
         });
     });

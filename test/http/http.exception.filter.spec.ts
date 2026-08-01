@@ -1,14 +1,13 @@
-import {
-    ArgumentsHost,
-    InternalServerErrorException,
-    UnauthorizedException,
-} from '@nestjs/common';
+import { ArgumentsHost, InternalServerErrorException, UnauthorizedException } from '@nestjs/common';
 import { DomainNotFoundError, DomainValidationError } from 'src/core/errors/domain.errors';
 import { HttpExceptionFilter } from 'src/http/http.exception.filter';
 
 type Rendered = { status: number; template?: string; json?: any; view?: any };
 
-function hostFor(url: string, headers: Record<string, string> = {}): {
+function hostFor(
+    url: string,
+    headers: Record<string, string> = {}
+): {
     host: ArgumentsHost;
     result: Rendered;
 } {

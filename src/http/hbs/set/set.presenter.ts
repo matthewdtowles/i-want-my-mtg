@@ -70,7 +70,9 @@ export class SetPresenter {
         }
 
         // Helper to format a change value into display string + sign
-        const formatChange = (value: unknown): { changeWeekly: string; changeWeeklySign: string } => {
+        const formatChange = (
+            value: unknown
+        ): { changeWeekly: string; changeWeeklySign: string } => {
             const num = toChangeNumber(value);
             if (num === null) return { changeWeekly: '', changeWeeklySign: '' };
             if (num === 0) return { changeWeekly: '$0.00', changeWeeklySign: 'neutral' };

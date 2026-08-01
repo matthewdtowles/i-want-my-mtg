@@ -35,7 +35,6 @@ describe('SealedProductApiPresenter', () => {
                 encodeURIComponent('tcgplayer.com/product/672033')
             );
         });
-
     });
 
     describe('toInventoryResponse', () => {

@@ -86,19 +86,33 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function renderAlertRow(alert) {
-        var cardUrl = alert.setCode && alert.cardNumber
-            ? '/card/' + encodeURIComponent(alert.setCode.toLowerCase()) + '/' + encodeURIComponent(alert.cardNumber)
-            : null;
+        var cardUrl =
+            alert.setCode && alert.cardNumber
+                ? '/card/' +
+                  encodeURIComponent(alert.setCode.toLowerCase()) +
+                  '/' +
+                  encodeURIComponent(alert.cardNumber)
+                : null;
         var cardLabel = alert.cardName
             ? AjaxUtils.escapeHtml(alert.cardName)
             : AjaxUtils.escapeHtml(alert.cardId);
         if (alert.setCode) {
-            cardLabel += ' <span class="text-gray-400 dark:text-gray-500 text-xs">(' + AjaxUtils.escapeHtml(alert.setCode.toUpperCase()) + ')</span>';
+            cardLabel +=
+                ' <span class="text-gray-400 dark:text-gray-500 text-xs">(' +
+                AjaxUtils.escapeHtml(alert.setCode.toUpperCase()) +
+                ')</span>';
         }
 
-        var html = '<tr class="table-row" data-alert-id="' + alert.id + '"'
-            + ' data-increase="' + (alert.increasePct != null ? alert.increasePct : '') + '"'
-            + ' data-decrease="' + (alert.decreasePct != null ? alert.decreasePct : '') + '">';
+        var html =
+            '<tr class="table-row" data-alert-id="' +
+            alert.id +
+            '"' +
+            ' data-increase="' +
+            (alert.increasePct != null ? alert.increasePct : '') +
+            '"' +
+            ' data-decrease="' +
+            (alert.decreasePct != null ? alert.decreasePct : '') +
+            '">';
 
         // Card
         html += '<td class="table-cell">';
@@ -112,13 +126,19 @@ document.addEventListener('DOMContentLoaded', function () {
         // Increase %
         html += '<td class="table-cell">';
         html += '<span class="alert-display">' + formatPct(alert.increasePct) + '</span>';
-        html += '<input type="number" class="alert-edit hidden w-20 text-sm border border-gray-300 dark:border-midnight-500 rounded px-1 py-0.5 bg-white dark:bg-midnight-700 text-gray-700 dark:text-gray-200" data-field="increasePct" value="' + (alert.increasePct != null ? alert.increasePct : '') + '" min="0.01" step="0.01" />';
+        html +=
+            '<input type="number" class="alert-edit hidden w-20 text-sm border border-gray-300 dark:border-midnight-500 rounded px-1 py-0.5 bg-white dark:bg-midnight-700 text-gray-700 dark:text-gray-200" data-field="increasePct" value="' +
+            (alert.increasePct != null ? alert.increasePct : '') +
+            '" min="0.01" step="0.01" />';
         html += '</td>';
 
         // Decrease %
         html += '<td class="table-cell">';
         html += '<span class="alert-display">' + formatPct(alert.decreasePct) + '</span>';
-        html += '<input type="number" class="alert-edit hidden w-20 text-sm border border-gray-300 dark:border-midnight-500 rounded px-1 py-0.5 bg-white dark:bg-midnight-700 text-gray-700 dark:text-gray-200" data-field="decreasePct" value="' + (alert.decreasePct != null ? alert.decreasePct : '') + '" min="0.01" step="0.01" />';
+        html +=
+            '<input type="number" class="alert-edit hidden w-20 text-sm border border-gray-300 dark:border-midnight-500 rounded px-1 py-0.5 bg-white dark:bg-midnight-700 text-gray-700 dark:text-gray-200" data-field="decreasePct" value="' +
+            (alert.decreasePct != null ? alert.decreasePct : '') +
+            '" min="0.01" step="0.01" />';
         html += '</td>';
 
         // Active toggle
@@ -127,7 +147,16 @@ document.addEventListener('DOMContentLoaded', function () {
             : 'text-gray-400 dark:text-gray-600';
         var activeIcon = alert.isActive ? 'fa-toggle-on' : 'fa-toggle-off';
         html += '<td class="table-cell">';
-        html += '<button type="button" class="toggle-active-button ' + activeClass + '" data-alert-id="' + alert.id + '" data-active="' + alert.isActive + '" title="' + (alert.isActive ? 'Deactivate' : 'Activate') + '">';
+        html +=
+            '<button type="button" class="toggle-active-button ' +
+            activeClass +
+            '" data-alert-id="' +
+            alert.id +
+            '" data-active="' +
+            alert.isActive +
+            '" title="' +
+            (alert.isActive ? 'Deactivate' : 'Activate') +
+            '">';
         html += '<i class="fas ' + activeIcon + ' text-xl"></i>';
         html += '</button>';
         html += '</td>';
@@ -140,12 +169,18 @@ document.addEventListener('DOMContentLoaded', function () {
         // Actions
         html += '<td class="table-cell alert-actions-cell">';
         html += '<span class="alert-display inline-flex gap-1">';
-        html += '<button type="button" class="edit-alert-button text-gray-400 hover:text-teal-500 dark:hover:text-teal-400" title="Edit"><i class="fas fa-pencil-alt"></i></button>';
-        html += '<button type="button" class="delete-alert-button text-gray-400 hover:text-red-500 dark:hover:text-red-400" data-alert-id="' + alert.id + '" title="Delete"><i class="fas fa-trash-alt"></i></button>';
+        html +=
+            '<button type="button" class="edit-alert-button text-gray-400 hover:text-teal-500 dark:hover:text-teal-400" title="Edit"><i class="fas fa-pencil-alt"></i></button>';
+        html +=
+            '<button type="button" class="delete-alert-button text-gray-400 hover:text-red-500 dark:hover:text-red-400" data-alert-id="' +
+            alert.id +
+            '" title="Delete"><i class="fas fa-trash-alt"></i></button>';
         html += '</span>';
         html += '<span class="alert-edit hidden inline-flex gap-1">';
-        html += '<button type="button" class="save-alert-button text-gray-400 hover:text-teal-500 dark:hover:text-teal-400" title="Save"><i class="fas fa-check"></i></button>';
-        html += '<button type="button" class="cancel-alert-edit text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" title="Cancel"><i class="fas fa-times"></i></button>';
+        html +=
+            '<button type="button" class="save-alert-button text-gray-400 hover:text-teal-500 dark:hover:text-teal-400" title="Save"><i class="fas fa-check"></i></button>';
+        html +=
+            '<button type="button" class="cancel-alert-edit text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" title="Cancel"><i class="fas fa-times"></i></button>';
         html += '</span>';
         html += '</td>';
 
@@ -190,7 +225,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ isActive: newActive }),
             });
-            var data = await response.json().catch(function () { return null; });
+            var data = await response.json().catch(function () {
+                return null;
+            });
             if (response.ok && data && data.success) {
                 btn.dataset.active = String(newActive);
                 btn.title = newActive ? 'Deactivate' : 'Activate';
@@ -232,7 +269,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(body),
             });
-            var data = await response.json().catch(function () { return null; });
+            var data = await response.json().catch(function () {
+                return null;
+            });
             if (response.ok && data && data.success) {
                 var incDisplay = row.querySelectorAll('.alert-display')[0];
                 var decDisplay = row.querySelectorAll('.alert-display')[1];
@@ -258,7 +297,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 method: 'DELETE',
                 headers: { 'Content-Type': 'application/json' },
             });
-            var data = await response.json().catch(function () { return null; });
+            var data = await response.json().catch(function () {
+                return null;
+            });
             if (response.ok && data && data.success) {
                 var row = deleteBtn.closest('tr');
                 if (row) row.remove();

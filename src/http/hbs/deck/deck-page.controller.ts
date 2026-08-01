@@ -48,12 +48,7 @@ export class DeckPageController {
         @Body() body: { name?: string; format?: string; text?: string },
         @Req() req: AuthenticatedRequest
     ): Promise<DeckImportResultViewDto> {
-        return this.orchestrator.importDecklist(
-            req,
-            body.name ?? '',
-            body.format,
-            body.text ?? ''
-        );
+        return this.orchestrator.importDecklist(req, body.name ?? '', body.format, body.text ?? '');
     }
 
     @UseGuards(JwtAuthGuard)

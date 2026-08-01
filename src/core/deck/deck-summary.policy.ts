@@ -19,7 +19,10 @@ export class DeckSummaryPolicy {
 
     /** Estimated total value of a deck's cards (main + side), quantity-weighted. */
     static estimatedValue(cards: DeckCard[] = []): number {
-        return cards.reduce((sum, dc) => sum + dc.quantity * DeckSummaryPolicy.cardValue(dc.card), 0);
+        return cards.reduce(
+            (sum, dc) => sum + dc.quantity * DeckSummaryPolicy.cardValue(dc.card),
+            0
+        );
     }
 
     /** Total card count (sum of quantities), optionally limited to one board. */

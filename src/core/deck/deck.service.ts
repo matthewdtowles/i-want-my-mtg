@@ -33,7 +33,9 @@ export class DeckService {
             throw new DomainValidationError('Deck name is required.');
         }
         this.LOGGER.debug(`create deck "${cleanName}" for user ${userId}.`);
-        return this.repository.create(new Deck({ userId, name: cleanName, format: format ?? null }));
+        return this.repository.create(
+            new Deck({ userId, name: cleanName, format: format ?? null })
+        );
     }
 
     async updateDeck(

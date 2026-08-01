@@ -369,9 +369,7 @@ export class CardRepository implements CardRepositoryPort {
         return new Map(rows.map((r) => [r.setCode, buildScryfallImagePath(r.scryfallId)]));
     }
 
-    async findBySetCodeAndNumbers(
-        pairs: { setCode: string; number: string }[]
-    ): Promise<Card[]> {
+    async findBySetCodeAndNumbers(pairs: { setCode: string; number: string }[]): Promise<Card[]> {
         if (pairs.length === 0) return [];
         // Group by set so each set is one `number IN (...)` query, run in
         // parallel — a handful of queries instead of one per pair.

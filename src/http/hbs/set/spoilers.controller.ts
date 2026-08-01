@@ -6,9 +6,7 @@ import { SetOrchestrator } from './set.orchestrator';
 
 @Controller('spoilers')
 export class SpoilersController {
-    constructor(
-        @Inject(SetOrchestrator) private readonly setOrchestrator: SetOrchestrator
-    ) {}
+    constructor(@Inject(SetOrchestrator) private readonly setOrchestrator: SetOrchestrator) {}
 
     @UseGuards(OptionalAuthGuard)
     @Get()

@@ -171,9 +171,9 @@ describe('Cards API (e2e)', () => {
                 const withFormat = await request(app.getHttpServer())
                     .get('/api/v1/cards?q=Test&groupBy=name&format=standard')
                     .expect(200);
-                expect(withFormat.body.data.every((c: { legal: boolean }) => c.legal === true)).toBe(
-                    true
-                );
+                expect(
+                    withFormat.body.data.every((c: { legal: boolean }) => c.legal === true)
+                ).toBe(true);
 
                 const noFormat = await request(app.getHttpServer())
                     .get('/api/v1/cards?q=Test&groupBy=name')

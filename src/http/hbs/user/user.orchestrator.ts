@@ -17,10 +17,7 @@ import {
 } from 'src/shared/constants/set-types';
 import { UserRole } from 'src/shared/constants/user.role.enum';
 import { CreateUserRequestDto } from './dto/create-user.request.dto';
-import {
-    SetTypeOption,
-    SetTypePreferenceViewDto,
-} from './dto/set-type-preference-view.dto';
+import { SetTypeOption, SetTypePreferenceViewDto } from './dto/set-type-preference-view.dto';
 import { UpdateUserRequestDto } from './dto/update-user.request.dto';
 import { UserResponseDto } from './dto/user.response.dto';
 import { UserViewDto } from './dto/user.view.dto';
@@ -95,7 +92,9 @@ export class UserOrchestrator {
                 user: result.user,
             });
         } catch (error) {
-            this.LOGGER.error(`Failed to issue session after verifying ${result.user.email}: ${error}.`);
+            this.LOGGER.error(
+                `Failed to issue session after verifying ${result.user.email}: ${error}.`
+            );
             return new VerificationResultDto({
                 success: false,
                 message: 'Your email was verified, but we could not sign you in. Please log in.',
@@ -121,9 +120,7 @@ export class UserOrchestrator {
                 indexable: false,
                 title: 'My Account - I Want My MTG',
                 user,
-                setTypePreference: this.buildSetTypePreferenceView(
-                    user?.includedSetTypes ?? null
-                ),
+                setTypePreference: this.buildSetTypePreferenceView(user?.includedSetTypes ?? null),
             };
         } catch (error) {
             this.LOGGER.debug(`Error finding user ${userId}.`);
@@ -131,9 +128,7 @@ export class UserOrchestrator {
         }
     }
 
-    private buildSetTypePreferenceView(
-        savedTypes: string[] | null
-    ): SetTypePreferenceViewDto {
+    private buildSetTypePreferenceView(savedTypes: string[] | null): SetTypePreferenceViewDto {
         const selected = new Set(savedTypes ?? []);
         const toOption = (value: KnownSetType): SetTypeOption => ({
             value,

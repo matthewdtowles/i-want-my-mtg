@@ -94,7 +94,8 @@ document.addEventListener('DOMContentLoaded', function () {
                         return;
                     }
                     var opt = select.options[select.selectedIndex];
-                    if (result) result.textContent = 'Added to ' + (opt ? opt.textContent : 'deck') + '.';
+                    if (result)
+                        result.textContent = 'Added to ' + (opt ? opt.textContent : 'deck') + '.';
                 });
             })
             .catch(function () {

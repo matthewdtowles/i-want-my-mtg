@@ -26,7 +26,9 @@ export class ApiKeyAuthGuard implements CanActivate {
         }
         const apiKey = await this.apiKeyService.resolveByRawKey(rawKey);
         if (!apiKey) {
-            this.LOGGER.debug(`Invalid or revoked API key presented (prefix=${rawKey.slice(0, 13)}).`);
+            this.LOGGER.debug(
+                `Invalid or revoked API key presented (prefix=${rawKey.slice(0, 13)}).`
+            );
             throw new UnauthorizedException('Invalid API key');
         }
         request.user = { id: apiKey.userId } as Express.User;

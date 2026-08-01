@@ -19,7 +19,13 @@ VALUES
     -- (in_main = false) and priced above every main card. Set cover art must
     -- still pick the base Test Dragon over this one, so anything that orders
     -- covers by price alone fails here.
-    ('00000000-0000-4000-a000-000000000005', 'Test Artist', true, true, '55555555-5555-4555-a555-555555555555', false, '{R}', 'Test Dragon', '305', 'Haste', 'mythic', 'tst', 'Creature - Dragon', 'normal', true, '305', false)
+    --
+    -- Its id ends in the collector number, not the next number in sequence.
+    -- Suites create and drop their own throwaway cards at ...005 and ...006
+    -- (freemium-gates.e2e-spec.ts), so a seeded row there gets deleted out from
+    -- under the suites that run after it. Keep permanent seed rows clear of
+    -- that range.
+    ('00000000-0000-4000-a000-000000000305', 'Test Artist', true, true, '55555555-5555-4555-a555-555555555555', false, '{R}', 'Test Dragon', '305', 'Haste', 'mythic', 'tst', 'Creature - Dragon', 'normal', true, '305', false)
 ON CONFLICT (id) DO NOTHING;
 
 -- Prices for test cards
@@ -29,7 +35,7 @@ VALUES
     ('00000000-0000-4000-a000-000000000002', 1.50, 3.00, CURRENT_DATE),
     ('00000000-0000-4000-a000-000000000003', 0.25, NULL, CURRENT_DATE),
     ('00000000-0000-4000-a000-000000000004', 20.00, 40.00, CURRENT_DATE),
-    ('00000000-0000-4000-a000-000000000005', 50.00, 90.00, CURRENT_DATE)
+    ('00000000-0000-4000-a000-000000000305', 50.00, 90.00, CURRENT_DATE)
 ON CONFLICT (card_id, date) DO NOTHING;
 
 -- Current granular offers for test card 1: two buylist vendors (normal), one

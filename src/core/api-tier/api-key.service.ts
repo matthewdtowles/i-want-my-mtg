@@ -1,6 +1,10 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { randomBytes, createHash } from 'crypto';
-import { DomainValidationError, DomainNotFoundError, DomainNotAuthorizedError } from 'src/core/errors/domain.errors';
+import {
+    DomainValidationError,
+    DomainNotFoundError,
+    DomainNotAuthorizedError,
+} from 'src/core/errors/domain.errors';
 import { getLogger } from 'src/logger/global-app-logger';
 import { ApiKey } from './api-key.entity';
 import { ApiKeyRepositoryPort } from './ports/api-key.repository.port';
@@ -18,9 +22,7 @@ const KEY_RANDOM_BYTES = 24; // -> 32 url-safe base64 chars
 export class ApiKeyService {
     private readonly LOGGER = getLogger(ApiKeyService.name);
 
-    constructor(
-        @Inject(ApiKeyRepositoryPort) private readonly repository: ApiKeyRepositoryPort
-    ) {}
+    constructor(@Inject(ApiKeyRepositoryPort) private readonly repository: ApiKeyRepositoryPort) {}
 
     async create(userId: number, name: string): Promise<CreateApiKeyResult> {
         const trimmed = name?.trim();

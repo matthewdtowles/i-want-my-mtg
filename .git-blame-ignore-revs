@@ -1,0 +1,11 @@
+# Revisions to skip in `git blame`. These are whole-tree mechanical changes;
+# skipping them shows who last touched a line's content rather than who ran a
+# formatter over it.
+#
+# Configure once per clone:
+#   git config blame.ignoreRevsFile .git-blame-ignore-revs
+#
+# GitHub's blame view reads this file automatically.
+
+# style: apply prettier across the codebase
+1eed05af2779923cb0d10b5e8f320234888b8d76

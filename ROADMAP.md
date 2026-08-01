@@ -5,6 +5,9 @@ per section under **Done**; small leftovers from shipped sections live under
 **Catch-up**; unstarted future work is under Phases 8 and 9. Verbose history lives
 in git.
 
+**Markers:** 🔴 = **manual, AWS console or an external service — cannot be done in a
+PR, and only you can do it.** ✅ = shipped.
+
 ---
 
 ## Now
@@ -18,67 +21,118 @@ internal track.
 
 The live production problem is **[#612](https://github.com/matthewdtowles/i-want-my-mtg/issues/612):
 the API intermittently 503s under load**, badly enough that the mobile app often
-can't load Browse. #612 is now an **umbrella**; the three fixes under it are filed
-separately and are listed below in the order they should be done. Close #612 when
-the 503s actually stop, not when the children merge.
+can't load Browse. #612 is now an **umbrella**; its fixes are filed separately and
+sequenced below. Close #612 when the 503s actually stop, not when the children merge.
+
+### 🔴 Blocked on you — AWS console, no code in any repo
+
+These cannot be done from a PR. There is **no IaC for the CloudFront distribution
+anywhere in this repo**, so nothing in the ordered list below can substitute for
+them. They are also the highest-leverage items on the board, which is the awkward
+part: the two remaining 503 fixes are one console session, not a coding task.
+
+| | Item | Console work | Blocks |
+|---|---|---|---|
+| 🔴 | **[#621](https://github.com/matthewdtowles/i-want-my-mtg/issues/621)** — CloudFront caches nothing on `/api/*` | CloudFront → cache behavior for `/api/v1/sets*`, `/api/v1/cards*` | #616, and the edge half of #625 |
+| 🔴 | **[#625](https://github.com/matthewdtowles/i-want-my-mtg/issues/625)** — no health-check monitoring on the web tier | UptimeRobot/Better Stack signup, *or* a CloudWatch 5xx alarm | nothing, but nothing surfaces the next outage without it |
+
+**#621 detail.** Six identical `/api/v1/sets` requests all returned `Miss`, so every
+catalog request reaches the single Lightsail container — that is the load that makes
+the origin buckle. Recipe and its cache-key hazard are in the issue; the hazard is
+that `GET /api/v1/sets` returns per-user `ownedTotal`, so a naive public cache leaks
+one user's owned counts to everyone. → verify: `x-cache: Hit from cloudfront` on a
+repeat, and a signed-in caller still gets its own `ownedTotal`.
+
+**#625 detail.** #612 was found by *using the app*, not by an alert. The asymmetry to
+close: scry's cron already mails on failure, so the data pipeline is monitored and
+the tier serving that data is not. Option 1 (external uptime service) needs no code
+and no second host. Option 3 (CloudWatch alarm on the distribution's 5xx rate) is
+worth pairing with it once #621 makes the distribution something we manage
+deliberately. → verify: break it on purpose, confirm the alert arrives *and* clears.
+
+### Dependency flow
+
+```
+✅ #620 + #631 (PR #632) ──► trustworthy CI under every PR below
+
+🔴 #621 CloudFront cache ──┬──► #616 CORS (headers must survive the distribution)
+                           └──► #625 edge alarm (option 3 only)
+   #622 trust proxy ───────── independent code; verify hop count against prod first
+   #623 browser review ─────► #624 deck detail thumbnail
+```
+
+Nothing else is gated. #622, #623/#624 and the mobile Browse items can proceed in
+any order at any time.
 
 ### Order of work
 
 Web = this repo, Mobile = `i-want-my-mtg-mobile`. Each line has its own verification.
 
-1. **Mobile [#101](https://github.com/matthewdtowles/i-want-my-mtg-mobile/issues/101)
-   — adopt `coverImgSrc`.** *(client-only, ~1h)* `SetTile.tsx` still runs a
-   `useQuery` per tile against `/sets/{code}/cards?limit=1`, so one Browse screen
-   costs **51 requests**. The server half ([#615](https://github.com/matthewdtowles/i-want-my-mtg/issues/615))
-   is already live. Biggest load reduction available and it needs no infra work.
-   → verify: cold Browse load issues **1** catalog request.
-2. **Web [#621](https://github.com/matthewdtowles/i-want-my-mtg/issues/621) —
-   CloudFront caches nothing on `/api/*`.** *(infra only, ~1–2h in the AWS console)*
-   Six identical `/api/v1/sets` requests all returned `Miss`, so every catalog
-   request reaches the single Lightsail container. There is **no IaC for the
-   distribution anywhere in this repo** — the recipe and its cache-key hazard live
-   in the issue. → verify: `x-cache: Hit from cloudfront` on a repeat request, and a
-   signed-in caller still gets its own `ownedTotal`.
-3. **Web [#622](https://github.com/matthewdtowles/i-want-my-mtg/issues/622) — set
+1. ~~**Mobile [#101](https://github.com/matthewdtowles/i-want-my-mtg-mobile/issues/101)
+   — adopt `coverImgSrc`.**~~ ✅ **Closed 2026-07-30.** `SetTile.tsx` no longer runs a
+   `useQuery` per tile, so a Browse screen costs 1 catalog request instead of 51.
+   This was the largest client-side load reduction available; the remaining 503 work
+   is all server/edge side.
+2. ~~**Web [#620](https://github.com/matthewdtowles/i-want-my-mtg/issues/620) +
+   [#631](https://github.com/matthewdtowles/i-want-my-mtg/issues/631) — CI green and
+   `baseOnly` honest.**~~ ✅ **[PR #632](https://github.com/matthewdtowles/i-want-my-mtg/pull/632)**
+   (which also carries this roadmap update).
+   `api-user` rewrote `mutation@test.com`'s password, so integration runs passed or
+   failed on Jest's suite order; fixed with a dedicated `pwchange@test.com`.
+   *Correction to #620's own diagnosis:* the self-repairing seed it proposed would
+   **not** have fixed this — `test-integ.sh` does `down -v` on entry, so the seed
+   always runs against an empty table and cannot repair a mid-run mutation. Verified
+   by forcing the failing order: 14 failures on `main`, 300/300 on the branch. #631
+   rides along — `safeBoolean` defaulted to `true`, so `baseOnly` silently filtered;
+   the default moved to the call site and the Swagger text now says so. Everything
+   below now lands on a suite whose result means something.
+3. 🔴 **Web [#621](https://github.com/matthewdtowles/i-want-my-mtg/issues/621) —
+   CloudFront caching.** *(AWS console, ~1–2h — see the red table above.)* The single
+   highest-leverage 503 fix.
+4. **Web [#622](https://github.com/matthewdtowles/i-want-my-mtg/issues/622) — set
    `trust proxy`.** *(small diff, security-sensitive, ~2h)* `request.ip` is a
    CloudFront edge IP, so the 60/min anonymous bucket is shared per POP. Scope note:
    signed-in callers are keyed on `user.id` at 200/min, so this only affects
    **anonymous** traffic — which is exactly what public Browse uses. Do not use
-   `trust proxy: true` (spoofable). → verify: two client IPs get independent
+   `trust proxy: true` (spoofable). **Needs one live prod request first** to count
+   the proxy hops — Lightsail may add one in front of CloudFront, and guessing wrong
+   is a live bug in either direction. → verify: two client IPs get independent
    budgets; a forged `X-Forwarded-For` does not.
-4. **Web [#620](https://github.com/matthewdtowles/i-want-my-mtg/issues/620) — CI
-   green.** *(~1h)* `api-user` rewrites `mutation@test.com`'s password and the seed's
-   `ON CONFLICT DO NOTHING` cannot repair it, so integration runs pass or fail on
-   Jest's suite order. Do this before or alongside the above so their PRs land on a
-   trustworthy suite. → verify: `./scripts/test-integ.sh` green twice in a row, and
-   green with `--runInBand`.
 5. **Web [#623](https://github.com/matthewdtowles/i-want-my-mtg/issues/623) — look
-   at the deck pages in a browser.** *(~1h review, plus work if it finds any)* #618
-   and #619 shipped on tests alone. The decision it surfaced — deck *detail* pages
-   have no cover art — is split out as
-   [#624](https://github.com/matthewdtowles/i-want-my-mtg/issues/624) (thumbnail
-   beside the `<h1>`, not a hero band), so this closes on the review alone.
+   at the deck pages in a browser** *(~1h review)*, then
+   **[#624](https://github.com/matthewdtowles/i-want-my-mtg/issues/624) — deck detail
+   cover thumbnail** *(~2h)*. #618/#619/#629 shipped on tests alone, so no deck or
+   set page has been opened in a browser. #624 is already decided — a thumbnail beside
+   the `<h1>`, not a hero band, reusing `DeckCoverPolicy.pick` for no extra query — so
+   #623 closes on the review alone.
 6. **Web [#616](https://github.com/matthewdtowles/i-want-my-mtg/issues/616) — CORS
-   on `/api/v1`.** *(~3h)* Preflight 404s, so no browser-based third-party client
-   can use the paid API tiers. Not a 503 contributor — sequenced after them because
-   it unblocks a paid product, not a live outage. Must be `credentials: false`;
-   `/api/v1` also accepts the session cookie, so credentialed CORS would be a CSRF
-   hole. Do it after #621 so the new `OPTIONS` behavior is added against the final
-   cache config.
-7. **Mobile Browse polish** — [#96](https://github.com/matthewdtowles/i-want-my-mtg-mobile/issues/96)
+   on `/api/v1`.** *(~3h, **do after #621**)* Preflight 404s, so no browser-based
+   third-party client can use the paid API tiers. Not a 503 contributor — sequenced
+   here because it unblocks a paid product, not a live outage. Must be
+   `credentials: false`; `/api/v1` also accepts the session cookie, so credentialed
+   CORS would be a CSRF hole across every authenticated route. Sequenced after #621
+   so the new `OPTIONS` behavior is added against the final cache config rather than
+   one that is about to change.
+7. 🔴 **Web [#625](https://github.com/matthewdtowles/i-want-my-mtg/issues/625) —
+   health-check monitoring.** *(AWS console / external service — see the red table.)*
+   Last because the fixes above reduce the load that caused the 503s; but do not skip
+   it, because none of them make the *next* occurrence visible.
+8. **Mobile Browse polish** — [#96](https://github.com/matthewdtowles/i-want-my-mtg-mobile/issues/96)
    sort by set value *(~1h, no backend work: `SET_SORTS` already has
    `SortOptions.SET_BASE_PRICE`)*, then [#95](https://github.com/matthewdtowles/i-want-my-mtg-mobile/issues/95)
    group by block *(~half a day, `?group=block` already exists)*. **They interact:**
    the API disables block grouping whenever `sort` is set, so the UI has to treat
    grouping and sorting as mutually exclusive.
 
-**Also open, unsequenced:**
-[#625](https://github.com/matthewdtowles/i-want-my-mtg/issues/625) — there is no
-health-check monitoring on the web tier, which is why #612 was found by using the
-app rather than by an alert. It was the one checkbox in #612 no child covers. The
-data pipeline is already monitored (scry's cron `MAILTO` + `health` exit code); the
-tier serving that data is not. Do it whenever, but not never — the fixes above
-reduce the load that caused the 503s without making the next occurrence visible.
+**Newly filed on mobile, unsequenced:**
+[#104](https://github.com/matthewdtowles/i-want-my-mtg-mobile/issues/104) (no
+component test harness — ~7,600 lines of UI with no coverage, and where every shipped
+bug has been) is the one worth pulling forward; it is the mobile analogue of item 2.
+Then [#108](https://github.com/matthewdtowles/i-want-my-mtg-mobile/issues/108) (links
+to other printings — the web half shipped in #627),
+[#110](https://github.com/matthewdtowles/i-want-my-mtg-mobile/issues/110) (mana symbol
+images), [#112](https://github.com/matthewdtowles/i-want-my-mtg-mobile/issues/112)
+(binder view with unowned cards).
 
 **Deferred, deliberately:** mobile
 [#97](https://github.com/matthewdtowles/i-want-my-mtg-mobile/issues/97) (filter
@@ -102,6 +156,14 @@ remaining gap in the catalog API.
 ---
 
 ## Done
+
+### Post-launch shipped, not yet folded into a phase
+
+Work merged since the store releases, listed because the **Now** board references it.
+
+- **Cover art across the catalog** — set DTOs carry `coverImgSrc` ([#615](https://github.com/matthewdtowles/i-want-my-mtg/pull/615)), deck list ([#618](https://github.com/matthewdtowles/i-want-my-mtg/pull/618)) and published-deck grids ([#619](https://github.com/matthewdtowles/i-want-my-mtg/pull/619)) show art-backed tiles, and `/sets` got mobile-style art tiles picked by each set's best card ([#629](https://github.com/matthewdtowles/i-want-my-mtg/pull/629), corrected in [#630](https://github.com/matthewdtowles/i-want-my-mtg/pull/630) to prefer a main-set card). **None of it has been opened in a browser** — that is [#623](https://github.com/matthewdtowles/i-want-my-mtg/issues/623). Deck *detail* pages were never covered: [#624](https://github.com/matthewdtowles/i-want-my-mtg/issues/624).
+- **Card printings endpoint** — list a card's printings by set code and number ([#627](https://github.com/matthewdtowles/i-want-my-mtg/pull/627)). Mobile's half is [#108](https://github.com/matthewdtowles/i-want-my-mtg-mobile/issues/108).
+- **Inventory finish filter** — normal/foil on the inventory list ([#611](https://github.com/matthewdtowles/i-want-my-mtg/pull/611)).
 
 ### Phase 1: Foundation & Infrastructure
 

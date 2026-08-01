@@ -57,7 +57,10 @@ describe('HttpErrorHandler.toHttpException', () => {
 
     it('maps an unknown error to a 500 without leaking its message', () => {
         try {
-            HttpErrorHandler.toHttpException(new Error('DB connection string is postgres://secret'), 'test');
+            HttpErrorHandler.toHttpException(
+                new Error('DB connection string is postgres://secret'),
+                'test'
+            );
             fail('expected throw');
         } catch (e) {
             expect(e).toBeInstanceOf(InternalServerErrorException);

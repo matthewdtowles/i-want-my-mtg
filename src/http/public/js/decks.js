@@ -52,7 +52,9 @@ document.addEventListener('DOMContentLoaded', function () {
                     btn.disabled = false;
                     if (res.gated) return;
                     if (res.ok) {
-                        var card = document.querySelector('.section-container[data-deck-id="' + id + '"]');
+                        var card = document.querySelector(
+                            '.section-container[data-deck-id="' + id + '"]'
+                        );
                         if (card) card.remove();
                         // Reload so the server-rendered "No decks yet" empty state shows.
                         if (!document.querySelector('.section-container[data-deck-id]')) {

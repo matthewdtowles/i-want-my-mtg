@@ -31,7 +31,8 @@ export class McpController {
                 jsonrpc: '2.0',
                 error: {
                     code: -32600,
-                    message: 'Batch requests are not supported. Send one JSON-RPC request per call.',
+                    message:
+                        'Batch requests are not supported. Send one JSON-RPC request per call.',
                 },
                 id: null,
             });

@@ -41,7 +41,10 @@ export class NotificationMcpTools {
                 name: 'mark_notification_read',
                 description: 'Mark a single notification as read. Requires IWMM_API_KEY.',
                 inputSchema: z.object({
-                    id: z.coerce.number().int().describe('Notification ID from list_notifications.'),
+                    id: z.coerce
+                        .number()
+                        .int()
+                        .describe('Notification ID from list_notifications.'),
                 }),
                 requiresAuth: true,
                 annotations: IDEMPOTENT_WRITE,

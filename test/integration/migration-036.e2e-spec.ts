@@ -73,19 +73,16 @@ describe('Card image schema: scryfall_id + img_src drop (6.7/6.8) (e2e)', () => 
             expect(rows).toHaveLength(0);
         });
 
-        it.each(['granular_price'])(
-            '%s.qty exists as a nullable integer column',
-            async (table) => {
-                const rows = await ds.query(
-                    `SELECT data_type, is_nullable FROM information_schema.columns
+        it.each(['granular_price'])('%s.qty exists as a nullable integer column', async (table) => {
+            const rows = await ds.query(
+                `SELECT data_type, is_nullable FROM information_schema.columns
                      WHERE table_schema = 'public' AND table_name = $1 AND column_name = 'qty'`,
-                    [table]
-                );
-                expect(rows).toHaveLength(1);
-                expect(rows[0].data_type).toBe('integer');
-                expect(rows[0].is_nullable).toBe('YES');
-            }
-        );
+                [table]
+            );
+            expect(rows).toHaveLength(1);
+            expect(rows[0].data_type).toBe('integer');
+            expect(rows[0].is_nullable).toBe('YES');
+        });
     });
 
     describe('unique index semantics', () => {

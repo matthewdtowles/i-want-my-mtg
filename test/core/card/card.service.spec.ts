@@ -211,9 +211,7 @@ describe('CardService', () => {
         it('should throw error when repository fails', async () => {
             repository.totalWithName.mockRejectedValue(new Error('Database error'));
 
-            await expect(service.totalWithName('Test Card')).rejects.toThrow(
-                'Database error'
-            );
+            await expect(service.totalWithName('Test Card')).rejects.toThrow('Database error');
         });
     });
 
@@ -293,9 +291,7 @@ describe('CardService', () => {
         it('should throw error when repository fails', async () => {
             repository.totalSearchByName.mockRejectedValue(new Error('Database error'));
 
-            await expect(service.totalSearchByName('Test')).rejects.toThrow(
-                'Database error'
-            );
+            await expect(service.totalSearchByName('Test')).rejects.toThrow('Database error');
         });
     });
 
@@ -313,9 +309,9 @@ describe('CardService', () => {
         it('should throw error when repository fails', async () => {
             repository.searchByNameGrouped.mockRejectedValue(new Error('Database error'));
 
-            await expect(
-                service.searchByNameGrouped('Test', mockQueryOptions)
-            ).rejects.toThrow('Database error');
+            await expect(service.searchByNameGrouped('Test', mockQueryOptions)).rejects.toThrow(
+                'Database error'
+            );
         });
     });
 
@@ -444,16 +440,29 @@ describe('CardService', () => {
             const result = await service.findCurrentBuylistForCards([]);
 
             expect(result.size).toBe(0);
-            expect(
-                mockGranularPriceRepository.findCurrentBuylistByCardIds
-            ).not.toHaveBeenCalled();
+            expect(mockGranularPriceRepository.findCurrentBuylistByCardIds).not.toHaveBeenCalled();
         });
 
         it('groups offers by card id', async () => {
             const offers = [
-                new GranularPrice({ cardId: 'a', provider: 'cardkingdom', finish: 'normal', price: 1 }),
-                new GranularPrice({ cardId: 'a', provider: 'cardkingdom', finish: 'foil', price: 2 }),
-                new GranularPrice({ cardId: 'b', provider: 'cardkingdom', finish: 'normal', price: 3 }),
+                new GranularPrice({
+                    cardId: 'a',
+                    provider: 'cardkingdom',
+                    finish: 'normal',
+                    price: 1,
+                }),
+                new GranularPrice({
+                    cardId: 'a',
+                    provider: 'cardkingdom',
+                    finish: 'foil',
+                    price: 2,
+                }),
+                new GranularPrice({
+                    cardId: 'b',
+                    provider: 'cardkingdom',
+                    finish: 'normal',
+                    price: 3,
+                }),
             ];
             mockGranularPriceRepository.findCurrentBuylistByCardIds.mockResolvedValue(offers);
 

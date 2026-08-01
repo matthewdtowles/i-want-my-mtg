@@ -84,7 +84,12 @@ describe('SellOptimizerService', () => {
                 itemsWithoutOffers: 0,
             });
             buyListService.list.mockResolvedValue([
-                { cardId: 'c9', isFoil: false, quantity: 3, card: { name: 'No Price', setCode: 'tst', number: '9', prices: [] } },
+                {
+                    cardId: 'c9',
+                    isFoil: false,
+                    quantity: 3,
+                    card: { name: 'No Price', setCode: 'tst', number: '9', prices: [] },
+                },
             ]);
 
             const plan = await service.buildPlan(7, 0.3);
@@ -104,7 +109,17 @@ describe('SellOptimizerService', () => {
                 itemsWithoutOffers: 0,
             });
             buyListService.list.mockResolvedValue([
-                { cardId: 'c1', isFoil: true, quantity: 1, card: { name: 'Foil Card', setCode: 'tst', number: '1', prices: [{ normal: 5, foil: 12 }] } },
+                {
+                    cardId: 'c1',
+                    isFoil: true,
+                    quantity: 1,
+                    card: {
+                        name: 'Foil Card',
+                        setCode: 'tst',
+                        number: '1',
+                        prices: [{ normal: 5, foil: 12 }],
+                    },
+                },
             ]);
 
             const plan = await service.buildPlan(7, 0.3);

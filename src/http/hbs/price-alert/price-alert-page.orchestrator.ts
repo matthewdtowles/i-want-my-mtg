@@ -9,9 +9,7 @@ import { PriceAlertListViewDto } from './dto/price-alert-list.view.dto';
 export class PriceAlertPageOrchestrator {
     private readonly LOGGER = getLogger(PriceAlertPageOrchestrator.name);
 
-    constructor(
-        @Inject(PriceAlertService) private readonly priceAlertService: PriceAlertService
-    ) {
+    constructor(@Inject(PriceAlertService) private readonly priceAlertService: PriceAlertService) {
         this.LOGGER.debug('Initialized');
     }
 

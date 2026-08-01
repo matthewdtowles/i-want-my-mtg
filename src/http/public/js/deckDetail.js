@@ -75,7 +75,9 @@ document.addEventListener('DOMContentLoaded', function () {
             // Strip the leading 'h' so half symbols match the server tokenization
             // (manaCost.hbs renders {HW} as ms-w ms-half, not ms-hw).
             if (isHalf) lower = lower.substring(1);
-            return '<i class="ms ms-cost ms-shadow ms-' + lower + (isHalf ? ' ms-half' : '') + '"></i>';
+            return (
+                '<i class="ms ms-cost ms-shadow ms-' + lower + (isHalf ? ' ms-half' : '') + '"></i>'
+            );
         });
     }
 
@@ -166,7 +168,10 @@ document.addEventListener('DOMContentLoaded', function () {
             cardId: row.getAttribute('data-card-id'),
             isSideboard: row.getAttribute('data-sideboard') === 'true',
         };
-        if (extra) Object.keys(extra).forEach(function (k) { payload[k] = extra[k]; });
+        if (extra)
+            Object.keys(extra).forEach(function (k) {
+                payload[k] = extra[k];
+            });
         return payload;
     }
 
@@ -207,7 +212,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
         var link = document.createElement('a');
         link.href = opts.url;
-        link.className = 'card-name-link flex-1 text-sm hover:text-teal-600 dark:hover:text-teal-400 truncate';
+        link.className =
+            'card-name-link flex-1 text-sm hover:text-teal-600 dark:hover:text-teal-400 truncate';
         if (opts.oracleText) link.setAttribute('data-card-text', opts.oracleText);
         link.textContent = opts.name;
         row.appendChild(link);

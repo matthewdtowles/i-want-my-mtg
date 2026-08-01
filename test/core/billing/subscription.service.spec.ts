@@ -320,9 +320,7 @@ describe('SubscriptionService', () => {
                 })
             );
 
-            await expect(service.syncFromCheckoutSessionId('cs_123', user.id)).resolves.toBe(
-                true
-            );
+            await expect(service.syncFromCheckoutSessionId('cs_123', user.id)).resolves.toBe(true);
 
             expect(gateway.retrieveSubscription).toHaveBeenCalledWith('sub_1');
             expect(repo.upsert).toHaveBeenCalledWith(
@@ -336,11 +334,11 @@ describe('SubscriptionService', () => {
         });
 
         it('returns false when Stripe session lookup fails', async () => {
-            gateway.retrieveCheckoutSession.mockRejectedValue(new Error('no such checkout session'));
-
-            await expect(service.syncFromCheckoutSessionId('cs_404', user.id)).resolves.toBe(
-                false
+            gateway.retrieveCheckoutSession.mockRejectedValue(
+                new Error('no such checkout session')
             );
+
+            await expect(service.syncFromCheckoutSessionId('cs_404', user.id)).resolves.toBe(false);
 
             expect(gateway.retrieveSubscription).not.toHaveBeenCalled();
             expect(repo.upsert).not.toHaveBeenCalled();

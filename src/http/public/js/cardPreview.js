@@ -94,7 +94,9 @@
     function closestCardLink(event) {
         var el = event.target;
         if (el && el.nodeType !== 1) el = el.parentElement;
-        return el ? el.closest('.card-name-link[data-card-img], .card-name-link[data-card-text]') : null;
+        return el
+            ? el.closest('.card-name-link[data-card-img], .card-name-link[data-card-text]')
+            : null;
     }
 
     // ── Desktop: hover ──────────────────────────────────────────────

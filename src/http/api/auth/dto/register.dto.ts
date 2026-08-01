@@ -18,8 +18,7 @@ export class RegisterRequestDto {
     readonly email: string;
 
     @ApiProperty({
-        description:
-            'Display name. Letters, numbers, spaces, hyphens, and underscores only.',
+        description: 'Display name. Letters, numbers, spaces, hyphens, and underscores only.',
         example: 'planeswalker42',
         minLength: 6,
         maxLength: 50,

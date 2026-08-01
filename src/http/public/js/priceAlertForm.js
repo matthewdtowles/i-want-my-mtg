@@ -46,7 +46,9 @@ document.addEventListener('DOMContentLoaded', function () {
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ isActive: isPaused }),
                 });
-                var data = await response.json().catch(function () { return null; });
+                var data = await response.json().catch(function () {
+                    return null;
+                });
 
                 if (response.ok && data && data.success) {
                     var newState = isPaused ? 'active' : 'paused';
@@ -71,7 +73,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 var response = await fetch('/api/v1/price-alerts/' + alertId, {
                     method: 'DELETE',
                 });
-                var data = await response.json().catch(function () { return null; });
+                var data = await response.json().catch(function () {
+                    return null;
+                });
 
                 if (response.ok && data && data.success) {
                     showDeletedState();
@@ -95,7 +99,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(body),
             });
-            var data = await response.json().catch(function () { return null; });
+            var data = await response.json().catch(function () {
+                return null;
+            });
 
             if (response.ok && data && data.success) {
                 showSuccessWithLink('Price alert created! ', '/price-alerts', 'View alerts');
@@ -125,7 +131,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(body),
             });
-            var data = await response.json().catch(function () { return null; });
+            var data = await response.json().catch(function () {
+                return null;
+            });
 
             if (response.ok && data && data.success) {
                 showMessage('Alert updated.', 'success');
@@ -163,7 +171,8 @@ document.addEventListener('DOMContentLoaded', function () {
         deleteBtn = document.createElement('button');
         deleteBtn.type = 'button';
         deleteBtn.id = 'price-alert-delete-btn';
-        deleteBtn.className = 'btn text-sm py-1.5 px-3 text-red-500 hover:text-red-600 border border-red-300 dark:border-red-700 hover:bg-red-50 dark:hover:bg-red-950 rounded';
+        deleteBtn.className =
+            'btn text-sm py-1.5 px-3 text-red-500 hover:text-red-600 border border-red-300 dark:border-red-700 hover:bg-red-50 dark:hover:bg-red-950 rounded';
         deleteBtn.title = 'Delete alert';
         deleteBtn.setAttribute('aria-label', 'Delete alert');
         deleteBtn.innerHTML = '<i class="fa-solid fa-trash"></i>';
@@ -196,12 +205,14 @@ document.addEventListener('DOMContentLoaded', function () {
             badge.remove();
         }
         var newBadge = document.createElement('span');
-        newBadge.className = 'inline-block ml-1.5 px-1.5 py-0.5 text-[0.6rem] font-medium rounded-full';
+        newBadge.className =
+            'inline-block ml-1.5 px-1.5 py-0.5 text-[0.6rem] font-medium rounded-full';
         if (isActive) {
             newBadge.className += ' bg-teal-100 text-teal-700 dark:bg-teal-900 dark:text-teal-300';
             newBadge.textContent = 'Active';
         } else {
-            newBadge.className += ' bg-gray-100 text-gray-500 dark:bg-midnight-700 dark:text-gray-400';
+            newBadge.className +=
+                ' bg-gray-100 text-gray-500 dark:bg-midnight-700 dark:text-gray-400';
             newBadge.textContent = 'Paused';
         }
         heading.appendChild(newBadge);
@@ -226,7 +237,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function showMessage(text, type) {
         if (!messageEl) return;
-        messageEl.classList.remove('hidden', 'text-teal-600', 'dark:text-teal-400', 'text-red-500', 'dark:text-red-400');
+        messageEl.classList.remove(
+            'hidden',
+            'text-teal-600',
+            'dark:text-teal-400',
+            'text-red-500',
+            'dark:text-red-400'
+        );
         if (type === 'success') {
             messageEl.classList.add('text-teal-600', 'dark:text-teal-400');
         } else {

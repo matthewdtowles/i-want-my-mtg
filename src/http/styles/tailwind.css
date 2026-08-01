@@ -1178,11 +1178,16 @@
     @apply px-1.5 py-px sm:px-3 text-[0.6rem] font-semibold uppercase tracking-widest
            text-purple-700 dark:text-purple-300
            bg-transparent;
-    text-shadow: 0 0 6px rgba(168, 85, 247, 0.5), 0 0 12px rgba(168, 85, 247, 0.25);
+    text-shadow:
+        0 0 6px rgba(168, 85, 247, 0.5),
+        0 0 12px rgba(168, 85, 247, 0.25);
 }
 
 .dark .block-label {
-    text-shadow: 0 0 8px rgba(192, 132, 252, 0.6), 0 0 20px rgba(168, 85, 247, 0.35), 0 0 30px rgba(168, 85, 247, 0.15);
+    text-shadow:
+        0 0 8px rgba(192, 132, 252, 0.6),
+        0 0 20px rgba(168, 85, 247, 0.35),
+        0 0 30px rgba(168, 85, 247, 0.15);
 }
 
 /* No connector on the main/first set row */
@@ -1251,11 +1256,16 @@
 .set-grid-label {
     @apply col-span-full mt-2 first:mt-0 text-[0.6rem] font-semibold uppercase tracking-widest
            text-purple-700 dark:text-purple-300;
-    text-shadow: 0 0 6px rgba(168, 85, 247, 0.5), 0 0 12px rgba(168, 85, 247, 0.25);
+    text-shadow:
+        0 0 6px rgba(168, 85, 247, 0.5),
+        0 0 12px rgba(168, 85, 247, 0.25);
 }
 
 .dark .set-grid-label {
-    text-shadow: 0 0 8px rgba(192, 132, 252, 0.6), 0 0 20px rgba(168, 85, 247, 0.35), 0 0 30px rgba(168, 85, 247, 0.15);
+    text-shadow:
+        0 0 8px rgba(192, 132, 252, 0.6),
+        0 0 20px rgba(168, 85, 247, 0.35),
+        0 0 30px rgba(168, 85, 247, 0.15);
 }
 
 /* Same proportions as the mobile app's hero tile. */
@@ -1479,7 +1489,7 @@
     @apply absolute inset-0 pointer-events-none;
     background:
         radial-gradient(ellipse 60% 55% at 50% -10%, rgba(114, 51, 164, 0.28) 0%, transparent 70%),
-        radial-gradient(ellipse 40% 35% at 75% 60%, rgba(44, 200, 202, 0.10) 0%, transparent 70%);
+        radial-gradient(ellipse 40% 35% at 75% 60%, rgba(44, 200, 202, 0.1) 0%, transparent 70%);
 }
 .pricing-hero-badge {
     @apply inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium mb-6
@@ -1533,7 +1543,9 @@
     align-items: start;
 }
 @media (max-width: 620px) {
-    .pricing-cards-grid { grid-template-columns: 1fr; }
+    .pricing-cards-grid {
+        grid-template-columns: 1fr;
+    }
 }
 
 .pricing-card {
@@ -1543,8 +1555,14 @@
 }
 .pricing-card.featured {
     @apply border-teal-500;
-    background: linear-gradient(160deg, rgba(44, 200, 202, 0.06) 0%, var(--pricing-card-bg, theme('colors.white')) 60%);
-    box-shadow: 0 0 40px rgba(44, 200, 202, 0.10), inset 0 1px 0 rgba(44, 200, 202, 0.15);
+    background: linear-gradient(
+        160deg,
+        rgba(44, 200, 202, 0.06) 0%,
+        var(--pricing-card-bg, theme('colors.white')) 60%
+    );
+    box-shadow:
+        0 0 40px rgba(44, 200, 202, 0.1),
+        inset 0 1px 0 rgba(44, 200, 202, 0.15);
 }
 .dark .pricing-card.featured {
     --pricing-card-bg: theme('colors.midnight.900');
@@ -1638,7 +1656,9 @@
 .pricing-btn-ghost:hover {
     @apply bg-gray-50 dark:bg-midnight-800 text-gray-900 dark:text-gray-100;
 }
-.pricing-form { @apply w-full; }
+.pricing-form {
+    @apply w-full;
+}
 
 .pricing-table-section {
     @apply max-w-4xl mx-auto px-5 mt-20;
@@ -1753,7 +1773,9 @@
 .pricing-faq-chevron {
     flex-shrink: 0;
     color: theme('colors.gray.400');
-    transition: transform 0.2s, color 0.15s;
+    transition:
+        transform 0.2s,
+        color 0.15s;
 }
 .pricing-faq-item[open] .pricing-faq-chevron {
     transform: rotate(180deg);
@@ -1799,7 +1821,7 @@
 .home-hero-bg {
     @apply absolute inset-0 pointer-events-none;
     background:
-        radial-gradient(ellipse 65% 55% at 50% -10%, rgba(114, 51, 164, 0.30) 0%, transparent 70%),
+        radial-gradient(ellipse 65% 55% at 50% -10%, rgba(114, 51, 164, 0.3) 0%, transparent 70%),
         radial-gradient(ellipse 45% 40% at 80% 65%, rgba(44, 200, 202, 0.12) 0%, transparent 70%),
         radial-gradient(ellipse 35% 35% at 15% 70%, rgba(214, 74, 154, 0.08) 0%, transparent 70%);
 }
@@ -1855,8 +1877,8 @@
 .app-page-header-bg {
     @apply absolute inset-0 pointer-events-none;
     background:
-        radial-gradient(ellipse 55% 70% at 50% -20%, rgba(114, 51, 164, 0.20) 0%, transparent 70%),
-        radial-gradient(ellipse 40% 50% at 85% 80%, rgba(44, 200, 202, 0.10) 0%, transparent 70%);
+        radial-gradient(ellipse 55% 70% at 50% -20%, rgba(114, 51, 164, 0.2) 0%, transparent 70%),
+        radial-gradient(ellipse 40% 50% at 85% 80%, rgba(44, 200, 202, 0.1) 0%, transparent 70%);
 }
 .app-page-header-inner {
     @apply relative px-5 pt-10 pb-7;
@@ -1893,8 +1915,14 @@
 }
 .app-stat-tile--featured {
     @apply border-teal-500;
-    background: linear-gradient(160deg, rgba(44, 200, 202, 0.08) 0%, var(--tile-bg, theme('colors.white')) 70%);
-    box-shadow: 0 0 30px rgba(44, 200, 202, 0.10), inset 0 1px 0 rgba(44, 200, 202, 0.15);
+    background: linear-gradient(
+        160deg,
+        rgba(44, 200, 202, 0.08) 0%,
+        var(--tile-bg, theme('colors.white')) 70%
+    );
+    box-shadow:
+        0 0 30px rgba(44, 200, 202, 0.1),
+        inset 0 1px 0 rgba(44, 200, 202, 0.15);
 }
 .dark .app-stat-tile--featured {
     --tile-bg: theme('colors.midnight.900');
@@ -2038,12 +2066,24 @@
 .breakdown-color-dot {
     @apply inline-block w-3 h-3 rounded-full border border-black/10 dark:border-white/20;
 }
-.color-W .breakdown-color-dot { background: #fffbe6; }
-.color-U .breakdown-color-dot { background: #2a6fb0; }
-.color-B .breakdown-color-dot { background: #4b4b4b; }
-.color-R .breakdown-color-dot { background: #d3392c; }
-.color-G .breakdown-color-dot { background: #3f9b54; }
-.color-C .breakdown-color-dot { background: #b9b4ab; }
+.color-W .breakdown-color-dot {
+    background: #fffbe6;
+}
+.color-U .breakdown-color-dot {
+    background: #2a6fb0;
+}
+.color-B .breakdown-color-dot {
+    background: #4b4b4b;
+}
+.color-R .breakdown-color-dot {
+    background: #d3392c;
+}
+.color-G .breakdown-color-dot {
+    background: #3f9b54;
+}
+.color-C .breakdown-color-dot {
+    background: #b9b4ab;
+}
 
 /* ===== Tile quick-add (+) overlay ===== */
 .tile-quick-add {
@@ -2083,4 +2123,3 @@
     font-size: 0.62em;
     vertical-align: 0.12em;
 }
-

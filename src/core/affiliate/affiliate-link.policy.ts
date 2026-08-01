@@ -17,10 +17,7 @@ export class AffiliateLinkPolicy {
         const id = productId?.trim();
         if (!id) return undefined;
 
-        const productUrl = TCGPLAYER_PRODUCT_URL_TEMPLATE.replace(
-            '{id}',
-            encodeURIComponent(id)
-        );
+        const productUrl = TCGPLAYER_PRODUCT_URL_TEMPLATE.replace('{id}', encodeURIComponent(id));
         return `${TCGPLAYER_AFFILIATE_BASE}?u=${encodeURIComponent(productUrl)}`;
     }
 }

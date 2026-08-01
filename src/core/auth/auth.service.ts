@@ -30,10 +30,7 @@ export class AuthService {
         const encPwd: string = await this.userService.findSavedPassword(email);
         // Always run a compare (against a dummy hash when the email is unknown)
         // so the response time doesn't reveal whether the account exists (B10).
-        const passwordMatches = await bcrypt.compare(
-            password,
-            encPwd || AuthService.DUMMY_HASH
-        );
+        const passwordMatches = await bcrypt.compare(password, encPwd || AuthService.DUMMY_HASH);
         let user: User = null;
         if (encPwd && passwordMatches) {
             user = await this.userService.findByEmail(email);

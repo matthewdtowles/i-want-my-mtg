@@ -66,7 +66,9 @@ export class CardApiResponseDto {
     @ApiPropertyOptional({ description: 'Affiliate-wrapped TCGPlayer purchase URL (normal/foil)' })
     readonly purchaseUrlTcgplayer?: string;
 
-    @ApiPropertyOptional({ description: 'Affiliate-wrapped TCGPlayer purchase URL for etched finish' })
+    @ApiPropertyOptional({
+        description: 'Affiliate-wrapped TCGPlayer purchase URL for etched finish',
+    })
     readonly purchaseUrlTcgplayerEtched?: string;
 
     @ApiPropertyOptional({

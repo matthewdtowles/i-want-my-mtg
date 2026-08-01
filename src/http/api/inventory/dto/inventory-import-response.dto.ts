@@ -2,13 +2,17 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { ImportError, ImportFormat } from 'src/core/import/import.types';
 
 export class InventoryImportResponseDto {
-    @ApiProperty({ description: 'Number of inventory rows saved (created or updated to exact qty)' })
+    @ApiProperty({
+        description: 'Number of inventory rows saved (created or updated to exact qty)',
+    })
     readonly saved: number;
 
     @ApiProperty({ description: 'Number of inventory rows deleted (qty=0 in input)' })
     readonly deleted: number;
 
-    @ApiProperty({ description: 'Number of rows skipped because a record already existed (no-qty input)' })
+    @ApiProperty({
+        description: 'Number of rows skipped because a record already existed (no-qty input)',
+    })
     readonly skipped: number;
 
     @ApiProperty({ description: 'Total number of row errors' })

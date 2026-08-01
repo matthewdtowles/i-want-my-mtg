@@ -65,9 +65,19 @@ export class ApiRateLimitGuard implements CanActivate, OnModuleDestroy {
             return this.checkApiKeyTier(userId, response);
         }
         if (userId) {
-            return this.checkBurst(this.cookieBursts, userId, COOKIE_USER_BURST_PER_MIN, `user ${userId}`);
+            return this.checkBurst(
+                this.cookieBursts,
+                userId,
+                COOKIE_USER_BURST_PER_MIN,
+                `user ${userId}`
+            );
         }
-        return this.checkBurst(this.ipBursts, request.ip || 'unknown', IP_BURST_PER_MIN, `IP ${request.ip}`);
+        return this.checkBurst(
+            this.ipBursts,
+            request.ip || 'unknown',
+            IP_BURST_PER_MIN,
+            `IP ${request.ip}`
+        );
     }
 
     private async checkApiKeyTier(userId: number, response: Response): Promise<boolean> {

@@ -46,14 +46,16 @@ export class ApiKeyApiController {
     @Get('usage')
     @ApiOperation({ summary: 'Get current tier, today usage, and 30-day history' })
     @ApiResponse({ status: 200 })
-    async usage(@Req() req: AuthenticatedRequest): Promise<ApiResponseDto<{
-        tier: string;
-        perDayLimit: number;
-        perMinuteLimit: number;
-        todayCount: number;
-        remainingToday: number;
-        history: Array<{ day: string; count: number }>;
-    }>> {
+    async usage(@Req() req: AuthenticatedRequest): Promise<
+        ApiResponseDto<{
+            tier: string;
+            perDayLimit: number;
+            perMinuteLimit: number;
+            todayCount: number;
+            remainingToday: number;
+            history: Array<{ day: string; count: number }>;
+        }>
+    > {
         const tier = await this.apiSubscriptionService.getEffectiveTier(req.user.id);
         const limits = API_TIER_LIMITS[tier];
         const today = new Date();
@@ -88,7 +90,10 @@ export class ApiKeyApiController {
     @Post()
     @HttpCode(HttpStatus.CREATED)
     @ApiOperation({ summary: 'Create a new API key. Raw key is returned once.' })
-    @ApiOkEnvelope(CreatedApiKeyDto, { status: 201, description: 'Created API key (raw key shown once)' })
+    @ApiOkEnvelope(CreatedApiKeyDto, {
+        status: 201,
+        description: 'Created API key (raw key shown once)',
+    })
     async create(
         @Body() dto: CreateApiKeyDto,
         @Req() req: AuthenticatedRequest

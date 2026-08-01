@@ -105,11 +105,7 @@ export class InventoryRepository implements InventoryRepositoryPort {
         const qb = this.repository
             .createQueryBuilder(this.TABLE)
             .leftJoinAndSelect(`${this.TABLE}.card`, 'card')
-            .leftJoinAndSelect(
-                'card.prices',
-                'prices',
-                latestPriceCondition('prices', 'card')
-            )
+            .leftJoinAndSelect('card.prices', 'prices', latestPriceCondition('prices', 'card'))
             .leftJoinAndSelect('card.set', 'set')
             .where(`${this.TABLE}.userId = :userId`, { userId });
 

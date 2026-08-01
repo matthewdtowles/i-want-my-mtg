@@ -16,10 +16,7 @@ import {
     UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-import {
-    DEFAULT_INCLUDED_SET_TYPES,
-    isKnownSetType,
-} from 'src/shared/constants/set-types';
+import { DEFAULT_INCLUDED_SET_TYPES, isKnownSetType } from 'src/shared/constants/set-types';
 import {
     SetTypePreferenceResponseDto,
     UpdateSetTypePreferenceRequestDto,
@@ -75,10 +72,7 @@ export class UserApiController {
     @Get('export')
     @ApiOperation({ summary: 'Export all personal data as JSON' })
     @ApiResponse({ status: 200, description: 'User data export' })
-    async exportData(
-        @Req() req: AuthenticatedRequest,
-        @Res() res: Response
-    ): Promise<void> {
+    async exportData(@Req() req: AuthenticatedRequest, @Res() res: Response): Promise<void> {
         const userId = req.user.id;
         const fullOptions = new SafeQueryOptions({
             limit: String(UserApiController.EXPORT_LIMIT),
@@ -90,11 +84,7 @@ export class UserApiController {
                 this.inventoryService.findAllForUser(userId, fullOptions),
                 this.transactionService.findByUserPaginated(userId, fullOptions),
                 this.priceAlertService.findByUser(userId, 1, UserApiController.EXPORT_LIMIT),
-                this.priceNotificationService.findByUser(
-                    userId,
-                    1,
-                    UserApiController.EXPORT_LIMIT
-                ),
+                this.priceNotificationService.findByUser(userId, 1, UserApiController.EXPORT_LIMIT),
                 this.sealedProductService.findInventoryForUser(userId, fullOptions),
             ]);
 
@@ -122,8 +112,7 @@ export class UserApiController {
                 source: t.source,
                 fees: t.fees,
                 notes: t.notes,
-                createdAt:
-                    t.createdAt instanceof Date ? t.createdAt.toISOString() : undefined,
+                createdAt: t.createdAt instanceof Date ? t.createdAt.toISOString() : undefined,
             })),
             priceAlerts: alerts.map((a) => ({
                 id: a.id,
@@ -230,18 +219,13 @@ export class UserApiController {
         @Req() req: AuthenticatedRequest
     ): Promise<ApiResponseDto<SetTypePreferenceResponseDto>> {
         const normalized = this.validateSetTypes(dto?.types);
-        const updated = await this.userService.updateSetTypePreference(
-            req.user.id,
-            normalized
-        );
+        const updated = await this.userService.updateSetTypePreference(req.user.id, normalized);
         if (!updated) {
             const exists = await this.userService.findById(req.user.id);
             if (!exists) {
                 throw new NotFoundException('User not found');
             }
-            throw new InternalServerErrorException(
-                'Failed to update set-type preference'
-            );
+            throw new InternalServerErrorException('Failed to update set-type preference');
         }
         return ApiResponseDto.okWithMessage(
             {

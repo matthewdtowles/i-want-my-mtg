@@ -119,9 +119,7 @@ describe('CardApiController', () => {
             cardService.searchByNameGrouped.mockResolvedValue([
                 createCard({
                     prices: [createPrice()],
-                    legalities: [
-                        { format: 'modern', status: 'legal' } as never,
-                    ],
+                    legalities: [{ format: 'modern', status: 'legal' } as never],
                 }),
             ]);
             cardService.totalSearchByNameGrouped.mockResolvedValue(1);

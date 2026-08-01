@@ -110,7 +110,9 @@ export class PublishedDeckOrchestrator {
         }
         const safeOffset = Number.isFinite(offset) && offset > 0 ? Math.floor(offset) : 0;
         const safeLimit =
-            Number.isFinite(limit) && limit > 0 ? Math.min(Math.floor(limit), MAX_ROW_LIMIT) : ROW_SIZE;
+            Number.isFinite(limit) && limit > 0
+                ? Math.min(Math.floor(limit), MAX_ROW_LIMIT)
+                : ROW_SIZE;
         const { decks, hasMore } = await this.publishedDeckService.rowPage(
             format,
             safeLimit,
@@ -134,9 +136,7 @@ export class PublishedDeckOrchestrator {
             const side = cards.filter((c) => c.isSideboard);
 
             const userId = req.user?.id;
-            const gap = userId
-                ? await this.buildabilityService.gapForDeck(cards, userId)
-                : null;
+            const gap = userId ? await this.buildabilityService.gapForDeck(cards, userId) : null;
             const gapByRow = new Map<string, DeckCardGap>();
             for (const g of gap?.perCard ?? []) {
                 gapByRow.set(`${g.cardId}|${g.isSideboard}`, g);
@@ -211,7 +211,10 @@ export class PublishedDeckOrchestrator {
         const cards = deck.cards ?? [];
         // Same representative-card rule the user's own decks use, so a deck
         // looks the same wherever it is listed.
-        const cover = DeckCoverPolicy.pick({ name: this.deckTitle(deck), format: deck.format }, cards);
+        const cover = DeckCoverPolicy.pick(
+            { name: this.deckTitle(deck), format: deck.format },
+            cards
+        );
         return {
             id: deck.id!,
             title: this.deckTitle(deck),

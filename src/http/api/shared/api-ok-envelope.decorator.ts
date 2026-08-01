@@ -26,7 +26,7 @@ export function ApiOkEnvelope<TModel extends Type<unknown>>(
         description?: string;
         status?: number;
         nullableData?: boolean;
-    },
+    }
 ) {
     const modelRef = options?.nullableData
         ? { allOf: [{ $ref: getSchemaPath(model) }], nullable: true }
@@ -56,6 +56,6 @@ export function ApiOkEnvelope<TModel extends Type<unknown>>(
                 },
                 required: ['success'],
             },
-        }),
+        })
     );
 }

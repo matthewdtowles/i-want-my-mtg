@@ -1,4 +1,7 @@
-import { DevicePlatform, NotificationDevice } from 'src/core/notification-device/notification-device.entity';
+import {
+    DevicePlatform,
+    NotificationDevice,
+} from 'src/core/notification-device/notification-device.entity';
 import { NotificationDeviceOrmEntity } from './notification-device.orm-entity';
 
 export class NotificationDeviceMapper {

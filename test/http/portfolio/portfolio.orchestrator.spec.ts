@@ -116,9 +116,7 @@ describe('PortfolioOrchestrator', () => {
         breakdownService = module.get(
             PortfolioBreakdownService
         ) as jest.Mocked<PortfolioBreakdownService>;
-        subscriptionService = module.get(
-            SubscriptionService
-        ) as jest.Mocked<SubscriptionService>;
+        subscriptionService = module.get(SubscriptionService) as jest.Mocked<SubscriptionService>;
     });
 
     beforeEach(() => {
@@ -379,11 +377,10 @@ describe('PortfolioOrchestrator', () => {
         });
 
         it('builds a chip per color and marks the selected ones active', async () => {
-            const result = await orchestrator.getBreakdownView(
-                mockAuthenticatedRequest,
-                'color',
-                ['W', 'U']
-            );
+            const result = await orchestrator.getBreakdownView(mockAuthenticatedRequest, 'color', [
+                'W',
+                'U',
+            ]);
 
             expect(result.colorChips.map((c) => c.code)).toEqual(['W', 'U', 'B', 'R', 'G', 'C']);
             const active = result.colorChips.filter((c) => c.active).map((c) => c.code);
@@ -392,11 +389,10 @@ describe('PortfolioOrchestrator', () => {
         });
 
         it('chip href toggles its own color off and adds inactive ones in WUBRG order', async () => {
-            const result = await orchestrator.getBreakdownView(
-                mockAuthenticatedRequest,
-                'color',
-                ['W', 'U']
-            );
+            const result = await orchestrator.getBreakdownView(mockAuthenticatedRequest, 'color', [
+                'W',
+                'U',
+            ]);
             const chip = (code: string) => result.colorChips.find((c) => c.code === code)!;
 
             // active W -> removing it leaves U

@@ -342,10 +342,16 @@ export class CardRepository implements CardRepositoryPort {
         // set's most valuable card (#628) — the chase card people recognize,
         // rather than whatever happens to be numbered 001.
         //
-        // Value is the same expression the rest of the app calls a card's value
-        // (normal, falling back to foil); cards with no price row COALESCE to 0
-        // and lose to any priced card. sortNumber breaks ties, which keeps the
-        // old behavior for a set that has no prices at all.
+        // `inMain` leads so a pricey promo or variant can't outbid the base card
+        // it is a printing of, while a set with no main cards at all still gets a
+        // cover. Value is the same expression the rest of the app calls a card's
+        // value (normal, falling back to foil); cards with no price row COALESCE
+        // to 0 and lose to any priced card.
+        //
+        // sortNumber breaks ties, so a set with no prices at all resolves to its
+        // opening main-set card — not its opening card outright, which is what
+        // this returned before #628. The two differ only when a set's lowest
+        // sortNumber sits outside the main run.
         //
         // Built through the query builder rather than raw SQL so the column names
         // come from the entity metadata. There is no `img_src` column to select:
@@ -359,6 +365,7 @@ export class CardRepository implements CardRepositoryPort {
             .where(`${this.TABLE}.setCode IN (:...setCodes)`, { setCodes })
             .andWhere(`${this.TABLE}.scryfallId IS NOT NULL`)
             .orderBy(`${this.TABLE}.setCode`, 'ASC')
+            .addOrderBy(`${this.TABLE}.inMain`, 'DESC')
             .addOrderBy(PriceCalculationPolicy.cardValueExpression(false), 'DESC')
             .addOrderBy(`${this.TABLE}.sortNumber`, 'ASC')
             .getMany();
@@ -366,9 +373,7 @@ export class CardRepository implements CardRepositoryPort {
         return new Map(rows.map((r) => [r.setCode, buildScryfallImagePath(r.scryfallId)]));
     }
 
-    async findBySetCodeAndNumbers(
-        pairs: { setCode: string; number: string }[]
-    ): Promise<Card[]> {
+    async findBySetCodeAndNumbers(pairs: { setCode: string; number: string }[]): Promise<Card[]> {
         if (pairs.length === 0) return [];
         // Group by set so each set is one `number IN (...)` query, run in
         // parallel — a handful of queries instead of one per pair.

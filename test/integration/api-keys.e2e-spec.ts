@@ -114,7 +114,7 @@ describe('API Keys API (e2e)', () => {
     });
 
     describe('DELETE /api/v1/api-keys/:id', () => {
-        it('revokes the user\'s key (soft delete) and frees the active slot', async () => {
+        it("revokes the user's key (soft delete) and frees the active slot", async () => {
             const created = await request(app.getHttpServer())
                 .post('/api/v1/api-keys')
                 .set('Authorization', bearerToken)
@@ -127,10 +127,7 @@ describe('API Keys API (e2e)', () => {
                 .set('Authorization', bearerToken)
                 .expect(204);
 
-            const rows = await ds.query(
-                'SELECT revoked_at FROM api_key WHERE id = $1',
-                [keyId]
-            );
+            const rows = await ds.query('SELECT revoked_at FROM api_key WHERE id = $1', [keyId]);
             expect(rows[0].revoked_at).not.toBeNull();
 
             // Slot freed: can create a new active key.

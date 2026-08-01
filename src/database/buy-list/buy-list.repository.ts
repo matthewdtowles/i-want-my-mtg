@@ -25,11 +25,7 @@ export class BuyListRepository implements BuyListRepositoryPort {
         const items = await this.repository
             .createQueryBuilder('bl')
             .leftJoinAndSelect('bl.card', 'card')
-            .leftJoinAndSelect(
-                'card.prices',
-                'prices',
-                latestPriceCondition('prices', 'card')
-            )
+            .leftJoinAndSelect('card.prices', 'prices', latestPriceCondition('prices', 'card'))
             .leftJoinAndSelect('card.set', 'set')
             .where('bl.userId = :userId', { userId })
             .orderBy('bl.createdAt', 'DESC')

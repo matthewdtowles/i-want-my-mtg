@@ -27,7 +27,10 @@ export class RefreshTokenRepository implements RefreshTokenRepositoryPort {
     async revoke(id: number, when: Date): Promise<boolean> {
         // Conditional on revoked_at IS NULL so concurrent rotations of the same
         // token serialize on the row: only the first UPDATE matches and affects a row.
-        const result = await this.repository.update({ id, revokedAt: IsNull() }, { revokedAt: when });
+        const result = await this.repository.update(
+            { id, revokedAt: IsNull() },
+            { revokedAt: when }
+        );
         return (result.affected ?? 0) > 0;
     }
 

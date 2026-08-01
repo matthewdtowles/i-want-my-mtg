@@ -48,12 +48,7 @@ describe('Freemium gates (e2e)', () => {
                 `INSERT INTO subscription (user_id, stripe_customer_id, stripe_subscription_id,
                     stripe_price_id, status, plan, current_period_end, cancel_at_period_end)
                  VALUES ($1, $2, $3, $4, 'active', 'monthly', NOW() + INTERVAL '30 days', false)`,
-                [
-                    userId,
-                    `cus_test_${userId}`,
-                    `sub_test_${userId}`,
-                    `price_test_monthly_${userId}`,
-                ]
+                [userId, `cus_test_${userId}`, `sub_test_${userId}`, `price_test_monthly_${userId}`]
             );
         }
     }
@@ -108,10 +103,7 @@ describe('Freemium gates (e2e)', () => {
                 await ds.query('DELETE FROM subscription WHERE user_id = $1', [userId]);
                 await ds.query('DELETE FROM "transaction" WHERE user_id = $1', [userId]);
                 await ds.query('DELETE FROM price_alert WHERE user_id = $1', [userId]);
-                await ds.query(
-                    'DELETE FROM sealed_product_inventory WHERE user_id = $1',
-                    [userId]
-                );
+                await ds.query('DELETE FROM sealed_product_inventory WHERE user_id = $1', [userId]);
                 await ds.query('DELETE FROM sealed_product WHERE uuid = $1', [SEALED_UUID]);
                 await ds.query('DELETE FROM card WHERE id = $1', [EXTRA_CARD_ID]);
             } catch {

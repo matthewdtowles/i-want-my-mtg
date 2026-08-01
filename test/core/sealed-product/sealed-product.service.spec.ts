@@ -133,10 +133,7 @@ describe('SealedProductService', () => {
             ]);
             repository.findInventoryQuantitiesForUser.mockResolvedValue(map);
 
-            const result = await service.findInventoryQuantitiesForUser(42, [
-                'uuid-1',
-                'uuid-2',
-            ]);
+            const result = await service.findInventoryQuantitiesForUser(42, ['uuid-1', 'uuid-2']);
 
             expect(result).toBe(map);
             expect(repository.findInventoryQuantitiesForUser).toHaveBeenCalledWith(42, [

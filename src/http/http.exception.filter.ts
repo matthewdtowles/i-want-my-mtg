@@ -64,8 +64,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
                 toast: new Toast(clientMessage, ActionStatus.ERROR),
                 statusCode: status,
                 authenticated: false,
-                returnUrl:
-                    httpException instanceof UnauthorizedException ? request.url : undefined,
+                returnUrl: httpException instanceof UnauthorizedException ? request.url : undefined,
             });
         }
     }

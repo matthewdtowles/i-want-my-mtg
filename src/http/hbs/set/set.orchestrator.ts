@@ -222,8 +222,7 @@ export class SetOrchestrator {
                 breadcrumbs,
                 setList: await this.createSetMetaResponseDtos(userId, sets),
                 title: 'Upcoming Sets - I Want My MTG',
-                metaDescription:
-                    'Preview upcoming Magic: The Gathering sets before they release.',
+                metaDescription: 'Preview upcoming Magic: The Gathering sets before they release.',
                 indexable: true,
                 canonicalUrl: `${this.appUrl}/spoilers`,
             });
@@ -623,11 +622,10 @@ export class SetOrchestrator {
 
             let ownedQuantities = new Map<string, number>();
             if (userId) {
-                ownedQuantities =
-                    await this.sealedProductService.findInventoryQuantitiesForUser(
-                        userId,
-                        products.map((p: SealedProduct) => p.uuid)
-                    );
+                ownedQuantities = await this.sealedProductService.findInventoryQuantitiesForUser(
+                    userId,
+                    products.map((p: SealedProduct) => p.uuid)
+                );
             }
 
             return SealedProductHbsPresenter.toRows(products, ownedQuantities);

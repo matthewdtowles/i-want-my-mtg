@@ -53,8 +53,6 @@ export class SealedProductHbsPresenter {
      */
     private static toLabel(value: string | undefined): string | undefined {
         if (!value) return undefined;
-        return value
-            .replace(/_/g, ' ')
-            .replace(/\b\w/g, (c) => c.toUpperCase());
+        return value.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
     }
 }

@@ -12,11 +12,7 @@ import { SortOptions } from 'src/core/query/sort-options.enum';
 import { TransactionService } from 'src/core/transaction/transaction.service';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
 import { buildCardUrl, isAuthenticated, toStringRecord } from 'src/http/base/http.util';
-import {
-    buildBreadcrumbJsonLd,
-    buildCardJsonLd,
-    buildJsonLd,
-} from 'src/http/base/json-ld.util';
+import { buildBreadcrumbJsonLd, buildCardJsonLd, buildJsonLd } from 'src/http/base/json-ld.util';
 import { HttpErrorHandler } from 'src/http/http.error.handler';
 import { InventoryPresenter } from 'src/http/hbs/inventory/inventory.presenter';
 import { FilterView } from 'src/http/hbs/list/filter.view';

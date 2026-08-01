@@ -46,16 +46,11 @@ export class SealedProductService {
         userId: number,
         uuids: string[]
     ): Promise<Map<string, number>> {
-        this.LOGGER.debug(
-            `findInventoryQuantitiesForUser(user=${userId}, ${uuids.length} uuids)`
-        );
+        this.LOGGER.debug(`findInventoryQuantitiesForUser(user=${userId}, ${uuids.length} uuids)`);
         return await this.repository.findInventoryQuantitiesForUser(userId, uuids);
     }
 
-    async findInventoryItem(
-        uuid: string,
-        userId: number
-    ): Promise<SealedProductInventory | null> {
+    async findInventoryItem(uuid: string, userId: number): Promise<SealedProductInventory | null> {
         this.LOGGER.debug(`findInventoryItem(${uuid}, user=${userId})`);
         return await this.repository.findInventoryItem(uuid, userId);
     }

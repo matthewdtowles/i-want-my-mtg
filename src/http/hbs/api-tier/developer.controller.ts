@@ -1,14 +1,4 @@
-import {
-    Body,
-    Controller,
-    Get,
-    Post,
-    Query,
-    Render,
-    Req,
-    Res,
-    UseGuards,
-} from '@nestjs/common';
+import { Body, Controller, Get, Post, Query, Render, Req, Res, UseGuards } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Response } from 'express';
 import { ApiSubscriptionService } from 'src/core/api-tier/api-subscription.service';
@@ -158,7 +148,10 @@ export class DeveloperController {
             breadcrumbs: [
                 { label: 'Home', url: '/' },
                 { label: 'Developer Portal', url: '/developer' },
-                { label: 'AI Collection Assistant Tutorial', url: '/developer/guides/mcp-tutorial' },
+                {
+                    label: 'AI Collection Assistant Tutorial',
+                    url: '/developer/guides/mcp-tutorial',
+                },
             ],
         });
     }
@@ -190,7 +183,9 @@ export class DeveloperController {
         @Query('error') error?: string
     ): Promise<DeveloperPricingViewDto> {
         const userId = req.user?.id;
-        const currentTier = userId ? await this.apiSubscriptionService.getEffectiveTier(userId) : ApiTier.Free;
+        const currentTier = userId
+            ? await this.apiSubscriptionService.getEffectiveTier(userId)
+            : ApiTier.Free;
         const tiers: TierCardView[] = [
             {
                 tier: ApiTier.Free,

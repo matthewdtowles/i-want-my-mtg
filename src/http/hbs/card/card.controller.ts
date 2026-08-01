@@ -11,9 +11,7 @@ import { PriceHistoryResponseDto } from './dto/price-history-response.dto';
 export class CardController {
     private readonly LOGGER = getLogger(CardController.name);
 
-    constructor(
-        @Inject(CardOrchestrator) private readonly cardOrchestrator: CardOrchestrator
-    ) {}
+    constructor(@Inject(CardOrchestrator) private readonly cardOrchestrator: CardOrchestrator) {}
 
     @Get(':cardId/price-history')
     async getPriceHistory(

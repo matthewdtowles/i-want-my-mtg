@@ -27,7 +27,9 @@ export async function createTestApp(): Promise<INestApplication> {
     }).compile();
 
     const app = moduleFixture.createNestApplication({
-        logger: process.env.TEST_VERBOSE ? ['log', 'error', 'warn', 'debug', 'verbose'] : ['error', 'warn'],
+        logger: process.env.TEST_VERBOSE
+            ? ['log', 'error', 'warn', 'debug', 'verbose']
+            : ['error', 'warn'],
     });
 
     configureApp(app, VIEWS_DIR);

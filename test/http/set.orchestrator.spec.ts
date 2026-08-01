@@ -642,23 +642,15 @@ describe('SetOrchestrator', () => {
                     mockSealedProduct({ uuid: 'sp-1' }),
                 ]);
 
-                const result = await orchestrator.findBySetCode(
-                    unauthReq,
-                    'TST',
-                    mockQueryOptions
-                );
+                const result = await orchestrator.findBySetCode(unauthReq, 'TST', mockQueryOptions);
 
-                expect(
-                    sealedProductService.findInventoryQuantitiesForUser
-                ).not.toHaveBeenCalled();
+                expect(sealedProductService.findInventoryQuantitiesForUser).not.toHaveBeenCalled();
                 expect(result.set.sealedProducts).toHaveLength(1);
                 expect(result.set.sealedProducts[0].ownedQuantity).toBe(0);
             });
 
             it('does not fail the whole page when sealed fetch errors', async () => {
-                sealedProductService.findBySetCode.mockRejectedValue(
-                    new Error('sealed DB error')
-                );
+                sealedProductService.findBySetCode.mockRejectedValue(new Error('sealed DB error'));
 
                 const result = await orchestrator.findBySetCode(
                     mockAuthenticatedRequest,
@@ -674,15 +666,9 @@ describe('SetOrchestrator', () => {
             it('skips owned-quantity lookup when sealed list is empty', async () => {
                 sealedProductService.findBySetCode.mockResolvedValue([]);
 
-                await orchestrator.findBySetCode(
-                    mockAuthenticatedRequest,
-                    'TST',
-                    mockQueryOptions
-                );
+                await orchestrator.findBySetCode(mockAuthenticatedRequest, 'TST', mockQueryOptions);
 
-                expect(
-                    sealedProductService.findInventoryQuantitiesForUser
-                ).not.toHaveBeenCalled();
+                expect(sealedProductService.findInventoryQuantitiesForUser).not.toHaveBeenCalled();
             });
         });
 

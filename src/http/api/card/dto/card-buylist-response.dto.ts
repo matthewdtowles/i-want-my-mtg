@@ -21,7 +21,10 @@ export class BuylistFinishApiDto {
     @ApiProperty({ type: BuylistOfferApiDto, description: 'Highest offer for this finish' })
     readonly best: BuylistOfferApiDto;
 
-    @ApiProperty({ type: [BuylistOfferApiDto], description: 'All offers for this finish, best first' })
+    @ApiProperty({
+        type: [BuylistOfferApiDto],
+        description: 'All offers for this finish, best first',
+    })
     readonly offers: BuylistOfferApiDto[];
 }
 
@@ -29,7 +32,10 @@ export class CardBuylistApiResponseDto {
     @ApiProperty({ description: 'Card id' })
     readonly cardId: string;
 
-    @ApiProperty({ type: [BuylistFinishApiDto], description: 'Usable NM buylist offers grouped by finish' })
+    @ApiProperty({
+        type: [BuylistFinishApiDto],
+        description: 'Usable NM buylist offers grouped by finish',
+    })
     readonly finishes: BuylistFinishApiDto[];
 
     @ApiProperty({ description: 'True when any usable offer exists' })

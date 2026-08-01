@@ -141,7 +141,9 @@ export class ApiSubscriptionService {
                 cancelAtPeriodEnd: !!stripeSub.cancel_at_period_end,
             })
         );
-        this.LOGGER.log(`Synced API subscription for user ${existing.userId}: tier=${tier}, status=${stripeSub.status}.`);
+        this.LOGGER.log(
+            `Synced API subscription for user ${existing.userId}: tier=${tier}, status=${stripeSub.status}.`
+        );
         return true;
     }
 
@@ -193,7 +195,8 @@ export class ApiSubscriptionService {
         // Allow a webhook event to land before the user has an api_subscription row yet
         // (e.g. customer was created by consumer flow, then API checkout fires off and
         // the api_subscription upsert from getOrCreateCustomer hasn't been re-read).
-        const consumer = await this.consumerSubscriptionRepository.findByStripeCustomerId(customerId);
+        const consumer =
+            await this.consumerSubscriptionRepository.findByStripeCustomerId(customerId);
         if (!consumer) return null;
         return new ApiSubscription({
             userId: consumer.userId,

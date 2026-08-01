@@ -24,10 +24,7 @@ export class SealedProductOrchestrator {
         this.appUrl = this.configService.get<string>('APP_URL', 'http://localhost:3000');
     }
 
-    async findByUuid(
-        req: AuthenticatedRequest,
-        uuid: string
-    ): Promise<SealedProductDetailViewDto> {
+    async findByUuid(req: AuthenticatedRequest, uuid: string): Promise<SealedProductDetailViewDto> {
         this.LOGGER.debug(`findByUuid(${uuid})`);
         try {
             const product = await this.sealedProductService.findByUuid(uuid);

@@ -1166,10 +1166,15 @@ var AjaxUtils = (function () {
      */
     function fetchWithGate(url, options) {
         return fetch(url, options).then(function (res) {
-            return res.json().catch(function () { return null; }).then(function (body) {
-                var gated = handleGatedResponse(res, body);
-                return { ok: res.ok, gated: gated, status: res.status, body: body };
-            });
+            return res
+                .json()
+                .catch(function () {
+                    return null;
+                })
+                .then(function (body) {
+                    var gated = handleGatedResponse(res, body);
+                    return { ok: res.ok, gated: gated, status: res.status, body: body };
+                });
         });
     }
 

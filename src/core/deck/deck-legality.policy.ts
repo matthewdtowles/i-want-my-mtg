@@ -28,8 +28,6 @@ export class DeckLegalityPolicy {
         if (!entry) {
             return false;
         }
-        return (
-            entry.status === LegalityStatus.Legal || entry.status === LegalityStatus.Restricted
-        );
+        return entry.status === LegalityStatus.Legal || entry.status === LegalityStatus.Restricted;
     }
 }

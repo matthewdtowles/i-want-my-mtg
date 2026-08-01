@@ -210,9 +210,9 @@ describe('SealedProductOrchestrator', () => {
         it('throws NotFoundException when product does not exist', async () => {
             sealedProductService.findByUuid.mockResolvedValue(null);
 
-            await expect(
-                orchestrator.findByUuid(authenticatedReq, 'missing')
-            ).rejects.toThrow(NotFoundException);
+            await expect(orchestrator.findByUuid(authenticatedReq, 'missing')).rejects.toThrow(
+                NotFoundException
+            );
         });
     });
 });

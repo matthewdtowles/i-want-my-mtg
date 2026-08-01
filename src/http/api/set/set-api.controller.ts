@@ -62,7 +62,7 @@ export class SetApiController {
         name: 'baseOnly',
         required: false,
         type: Boolean,
-        description: 'Show only base/main sets',
+        description: 'Show only base/main sets. Defaults to true — pass false to include all sets.',
     })
     @ApiQuery({ name: 'q', required: false, type: String, description: 'Search query' })
     @ApiQuery({
@@ -192,7 +192,8 @@ export class SetApiController {
         name: 'baseOnly',
         required: false,
         type: Boolean,
-        description: 'Show only base set cards',
+        description:
+            'Show only base set cards. Defaults to true — pass false to include variant printings.',
     })
     @ApiQuery({
         name: 'rarity',

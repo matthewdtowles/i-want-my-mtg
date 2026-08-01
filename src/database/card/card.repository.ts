@@ -346,8 +346,12 @@ export class CardRepository implements CardRepositoryPort {
         // it is a printing of, while a set with no main cards at all still gets a
         // cover. Value is the same expression the rest of the app calls a card's
         // value (normal, falling back to foil); cards with no price row COALESCE
-        // to 0 and lose to any priced card. sortNumber breaks ties, which keeps
-        // the old behavior for a set that has no prices at all.
+        // to 0 and lose to any priced card.
+        //
+        // sortNumber breaks ties, so a set with no prices at all resolves to its
+        // opening main-set card — not its opening card outright, which is what
+        // this returned before #628. The two differ only when a set's lowest
+        // sortNumber sits outside the main run.
         //
         // Built through the query builder rather than raw SQL so the column names
         // come from the entity metadata. There is no `img_src` column to select:

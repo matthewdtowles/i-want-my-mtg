@@ -55,11 +55,15 @@ export interface CardRepositoryPort {
     findBySetCodeAndNumbers(pairs: { setCode: string; number: string }[]): Promise<Card[]>;
 
     /**
-     * Cover art tail (`img_src`) for each of the given sets, as a
-     * setCode -> imgSrc map. The cover is the set's most valuable main-set card
-     * (falling back to its most valuable card when the set has no main cards, and
-     * to its opening card when nothing in it is priced). Sets with no card image
-     * are simply absent from the map.
+     * Cover art for each of the given sets, as a setCode -> image-path-tail map.
+     * The tail has the same shape as a card's `imgSrc` and is derived from
+     * `scryfallId`; it is not a stored column.
+     *
+     * The cover is the set's most valuable main-set card. Two fallbacks, in
+     * order: a set with no main cards uses its most valuable card, and a set
+     * with no priced cards uses its opening main-set card (its opening card
+     * outright only when it also has no main cards). Sets with no card image are
+     * simply absent from the map.
      *
      * One query for the whole batch. It exists so a set list can carry its
      * artwork inline instead of every client fetching one card per set, which

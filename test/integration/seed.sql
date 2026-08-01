@@ -68,17 +68,34 @@ VALUES
     ('tst', 6.75, 6.75, 19.75, 19.75, CURRENT_DATE)
 ON CONFLICT (set_code, date) DO NOTHING;
 
--- Test user (password: TestPass1!)
--- bcrypt hash generated with 10 rounds
+-- Test users (password for all three: TestPass1!)
+-- bcrypt hash generated with 10 rounds.
+--
+-- ON CONFLICT DO UPDATE, not DO NOTHING: the seed must be able to *repair* a user a
+-- previous run left mutated, not just create a missing one. test-integ.sh drops the
+-- volume on entry so this normally hits an empty table, but a run against a reused
+-- database would otherwise inherit whatever the last run wrote.
+--
+-- Credentials are still not a shared fixture: any suite that changes a password must
+-- use pwchange@test.com, because the seed runs once per run and cannot undo a mutation
+-- between suites. See the comment on that user below.
 INSERT INTO users (email, name, password, role)
-VALUES ('integ@test.com', 'IntegTestUser', '$2b$10$fNiH5A76rU5uJun2HwtdX.buge2hb2urV/cZJpOfHRz1oamXu77la', 'user')
-ON CONFLICT (email) DO NOTHING;
+VALUES
+    ('integ@test.com', 'IntegTestUser', '$2b$10$fNiH5A76rU5uJun2HwtdX.buge2hb2urV/cZJpOfHRz1oamXu77la', 'user'),
+    ('mutation@test.com', 'MutationTestUser', '$2b$10$fNiH5A76rU5uJun2HwtdX.buge2hb2urV/cZJpOfHRz1oamXu77la', 'user'),
+    ('pwchange@test.com', 'PasswordChangeTestUser', '$2b$10$fNiH5A76rU5uJun2HwtdX.buge2hb2urV/cZJpOfHRz1oamXu77la', 'user')
+ON CONFLICT (email) DO UPDATE
+    SET password = EXCLUDED.password,
+        name = EXCLUDED.name,
+        role = EXCLUDED.role;
 
--- Disposable test user for mutation tests (password: TestPass1!)
--- Same bcrypt hash; this user can be freely modified/deleted without affecting other suites
-INSERT INTO users (email, name, password, role)
-VALUES ('mutation@test.com', 'MutationTestUser', '$2b$10$fNiH5A76rU5uJun2HwtdX.buge2hb2urV/cZJpOfHRz1oamXu77la', 'user')
-ON CONFLICT (email) DO NOTHING;
+-- integ@test.com     — read-mostly user shared by most suites (setup.ts TEST_USER).
+-- mutation@test.com  — non-credential mutations (profile name, subscription rows).
+-- pwchange@test.com  — owned solely by api-user's password test. Nothing else may log
+--                      in as it: the seed runs once per run, so a password rewritten
+--                      mid-run stays rewritten for every later suite, and Jest's file
+--                      order decides who runs later. That is what broke
+--                      freemium-gates with 14 × 401 (issue #620).
 
 -- Legality entries (required FK for some queries)
 INSERT INTO legality (card_id, format, status)

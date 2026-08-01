@@ -1,4 +1,4 @@
-import { resolveSort, sanitizeInt } from 'src/core/query/query.util';
+import { resolveSort, safeBoolean, sanitizeInt } from 'src/core/query/query.util';
 import { SortOptions, TRANSACTION_SORTS } from 'src/core/query/sort-options.enum';
 
 describe('sanitizeInt', () => {
@@ -45,5 +45,32 @@ describe('resolveSort', () => {
 
     it('returns undefined when no sort is requested', () => {
         expect(resolveSort(undefined, TRANSACTION_SORTS)).toBeUndefined();
+    });
+});
+
+describe('safeBoolean', () => {
+    it('parses the string and boolean forms of true and false', () => {
+        expect(safeBoolean('true')).toBe(true);
+        expect(safeBoolean('TRUE')).toBe(true);
+        expect(safeBoolean('1')).toBe(true);
+        expect(safeBoolean(true)).toBe(true);
+        expect(safeBoolean('false')).toBe(false);
+        expect(safeBoolean('False')).toBe(false);
+        expect(safeBoolean('0')).toBe(false);
+        expect(safeBoolean(false)).toBe(false);
+    });
+
+    it('defaults to false when the value is missing or unparseable', () => {
+        expect(safeBoolean(undefined)).toBe(false);
+        expect(safeBoolean(null)).toBe(false);
+        expect(safeBoolean('yes')).toBe(false);
+        expect(safeBoolean(['true'] as never)).toBe(false);
+    });
+
+    it('uses an explicit default when one is given', () => {
+        expect(safeBoolean(undefined, true)).toBe(true);
+        expect(safeBoolean('nonsense', true)).toBe(true);
+        // an explicit default never overrides a parseable value
+        expect(safeBoolean('false', true)).toBe(false);
     });
 });

@@ -31,6 +31,22 @@ describe('SafeQueryOptions — public catalog filters', () => {
         });
     });
 
+    describe('boolean defaults', () => {
+        // Both defaults live at the call site rather than inside safeBoolean, so a
+        // future boolean param defaults to off unless it deliberately opts in.
+        it('defaults ascend and baseOnly to true when omitted', () => {
+            const opts = new SafeQueryOptions({});
+            expect(opts.ascend).toBe(true);
+            expect(opts.baseOnly).toBe(true);
+        });
+
+        it('honors an explicit false for either', () => {
+            const opts = new SafeQueryOptions({ ascend: 'false', baseOnly: 'false' });
+            expect(opts.ascend).toBe(false);
+            expect(opts.baseOnly).toBe(false);
+        });
+    });
+
     describe('setCode', () => {
         it('lowercases set codes to match DB storage convention', () => {
             const opts = new SafeQueryOptions({ setCode: 'LEA' });

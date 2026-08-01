@@ -50,7 +50,12 @@ export function resolveSort(
     return sort && allowedSorts.includes(sort) ? sort : undefined;
 }
 
-export function safeBoolean(value: unknown, defaultValue: boolean = true): boolean {
+/**
+ * Parses a query param into a boolean. Defaults to `false` — a flag is off unless
+ * asked for. Callers that want the opposite must say so explicitly, so an
+ * on-by-default param is visible at its call site instead of hidden in here.
+ */
+export function safeBoolean(value: unknown, defaultValue: boolean = false): boolean {
     if (typeof value === 'boolean') return value;
     if (typeof value !== 'string') return defaultValue;
     const lower = value.toLowerCase();

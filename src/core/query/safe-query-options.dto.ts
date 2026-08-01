@@ -107,8 +107,8 @@ export class SafeQueryOptions implements QueryOptionsData {
 
     constructor(init?: RawQueryOptions, extra?: { includedSetTypes?: string[] | null }) {
         init = init || {};
-        this.ascend = safeBoolean(init.ascend);
-        this.baseOnly = safeBoolean(init.baseOnly);
+        this.ascend = safeBoolean(init.ascend, true);
+        this.baseOnly = safeBoolean(init.baseOnly, true);
         this.filter = safeSearchTerm(init.filter);
         this.finish = safeFinish(init.finish);
         this.format = safeFormat(init.format);

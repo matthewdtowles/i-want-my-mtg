@@ -7,10 +7,20 @@ const MUTATION_USER = {
     password: 'TestPass1!',
 };
 
+// Owned solely by the password test below. Rewriting a password is not reversible
+// within a run — the seed runs once, before any suite — so it must happen on a user
+// no other suite logs in as. Using MUTATION_USER here made freemium-gates fail with
+// 401s whenever Jest scheduled it after this file (issue #620).
+const PW_CHANGE_USER = {
+    email: 'pwchange@test.com',
+    password: 'TestPass1!',
+};
+
 describe('User API (e2e)', () => {
     let app: INestApplication;
     let bearerToken: string;
     let mutationBearerToken: string;
+    let pwChangeBearerToken: string;
 
     async function loginApi(
         testApp: INestApplication,
@@ -32,6 +42,7 @@ describe('User API (e2e)', () => {
         app = await createTestApp();
         bearerToken = await loginApi(app, TEST_USER);
         mutationBearerToken = await loginApi(app, MUTATION_USER);
+        pwChangeBearerToken = await loginApi(app, PW_CHANGE_USER);
     }, 30000);
 
     afterAll(async () => {
@@ -83,7 +94,7 @@ describe('User API (e2e)', () => {
         it('updates password', async () => {
             const res = await request(app.getHttpServer())
                 .patch('/api/v1/user/password')
-                .set('Authorization', mutationBearerToken)
+                .set('Authorization', pwChangeBearerToken)
                 .send({ password: 'NewTestPass1!' })
                 .expect(200);
 

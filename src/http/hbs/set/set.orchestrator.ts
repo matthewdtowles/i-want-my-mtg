@@ -18,7 +18,13 @@ import { Set } from 'src/core/set/set.entity';
 import { SetService } from 'src/core/set/set.service';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
 import { Breadcrumb } from 'src/http/base/breadcrumb';
-import { BASE_IMAGE_URL, completionRate, isAuthenticated, toDollar } from 'src/http/base/http.util';
+import {
+    BASE_IMAGE_URL,
+    buildQueryString,
+    completionRate,
+    isAuthenticated,
+    toDollar,
+} from 'src/http/base/http.util';
 import { CardPresenter } from 'src/http/hbs/card/card.presenter';
 import { HttpErrorHandler } from 'src/http/http.error.handler';
 import { ImportResultDto } from 'src/http/hbs/import/import-result.dto';
@@ -38,7 +44,7 @@ import {
     SetPriceHistoryPointDto,
     SetPriceHistoryResponseDto,
 } from './dto/set-price-history-response.dto';
-import { SetListViewDto } from './dto/set-list.view.dto';
+import { SetListViewDto, SetViewToggleView } from './dto/set-list.view.dto';
 import { SetMetaResponseDto } from './dto/set-meta.response.dto';
 import { SetPriceDto } from './dto/set-price.dto';
 import { SetPresenter } from './set.presenter';
@@ -132,6 +138,7 @@ export class SetOrchestrator {
             filter: new FilterView(options, baseUrl),
             tableHeadersRow: this.buildSetListTableHeaders(options, isAuthenticated(req)),
             view: this.selectedView(req),
+            viewToggle: this.buildViewToggle(options, baseUrl),
         });
     }
 
@@ -174,6 +181,7 @@ export class SetOrchestrator {
             filter: new FilterView(options, baseUrl),
             tableHeadersRow: this.buildSetListTableHeaders(options, isAuthenticated(req)),
             view: this.selectedView(req),
+            viewToggle: this.buildViewToggle(options, baseUrl),
         });
     }
 
@@ -184,6 +192,20 @@ export class SetOrchestrator {
      */
     private selectedView(req: AuthenticatedRequest): 'grid' | 'table' {
         return req.query?.view === 'table' ? 'table' : 'grid';
+    }
+
+    /**
+     * Hrefs for the two layout buttons. setListAjax.js intercepts the click, so
+     * these only get followed on a middle-click, an open-in-new-tab or with JS
+     * off - all cases where landing on an unfiltered page 1 would lose the
+     * visitor's place. Grid is the default layout, so it needs no `view` param.
+     */
+    private buildViewToggle(options: SafeQueryOptions, baseUrl: string): SetViewToggleView {
+        const query = buildQueryString(options);
+        return {
+            gridUrl: `${baseUrl}${query}`,
+            tableUrl: `${baseUrl}${query}${query ? '&' : '?'}view=table`,
+        };
     }
 
     async findSpoilersList(

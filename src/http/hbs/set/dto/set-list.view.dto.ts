@@ -2,6 +2,16 @@ import { ListView } from 'src/http/hbs/list/list.view';
 import { SetBlockGroup } from './set-block-group.dto';
 import { SetMetaResponseDto } from './set-meta.response.dto';
 
+/**
+ * Where each layout button points. Only followed when the click is not
+ * intercepted - a middle-click, an open-in-new-tab, or JS off - so both hrefs
+ * carry the current filter, sort and paging rather than resetting the list.
+ */
+export interface SetViewToggleView {
+    readonly gridUrl: string;
+    readonly tableUrl: string;
+}
+
 export class SetListViewDto extends ListView {
     readonly setList: SetMetaResponseDto[];
     readonly blockGroups: SetBlockGroup[];
@@ -21,6 +31,8 @@ export class SetListViewDto extends ListView {
      */
     readonly showViewToggle: boolean;
 
+    readonly viewToggle: SetViewToggleView;
+
     constructor(init: Partial<SetListViewDto>) {
         super(init);
         this.setList = init.setList || [];
@@ -28,5 +40,6 @@ export class SetListViewDto extends ListView {
         this.view = init.view === 'table' ? 'table' : 'grid';
         this.isTableView = this.view === 'table';
         this.showViewToggle = init.showViewToggle ?? true;
+        this.viewToggle = init.viewToggle ?? { gridUrl: '/sets', tableUrl: '/sets?view=table' };
     }
 }

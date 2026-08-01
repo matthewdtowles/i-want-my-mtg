@@ -291,6 +291,36 @@ describe('SetOrchestrator', () => {
             expect(table.isTableView).toBe(true);
         });
 
+        // The toggle hrefs are what a middle-click or a JS-off visitor actually
+        // follows, so they have to carry the list you were looking at (#629).
+        it('keeps filter, sort and paging in both view-toggle hrefs', async () => {
+            const options = new SafeQueryOptions({
+                page: '3',
+                limit: '50',
+                filter: 'ravnica',
+                sort: 'set.name',
+                ascend: 'true',
+                baseOnly: 'false',
+            });
+            setService.findSets.mockResolvedValue([mockSet]);
+            setService.totalSetsCount.mockResolvedValue(1);
+            inventoryService.inventoryTotalsForSets.mockResolvedValue(new Map());
+            inventoryService.ownedValuesForSets.mockResolvedValue(new Map());
+
+            const result = await orchestrator.findSetList(mockAuthenticatedRequest, [], options);
+
+            for (const url of [result.viewToggle.gridUrl, result.viewToggle.tableUrl]) {
+                expect(url).toContain('page=3');
+                expect(url).toContain('limit=50');
+                expect(url).toContain('filter=ravnica');
+                expect(url).toContain('sort=set.name');
+                expect(url).toContain('baseOnly=false');
+            }
+            expect(result.viewToggle.gridUrl.startsWith('/sets?')).toBe(true);
+            expect(result.viewToggle.gridUrl).not.toContain('view=');
+            expect(result.viewToggle.tableUrl).toContain('view=table');
+        });
+
         it('uses flat set pagination when sort is specified', async () => {
             const sortedOptions = new SafeQueryOptions({
                 page: '1',

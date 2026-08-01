@@ -182,13 +182,22 @@ describe('Sets API (e2e)', () => {
             }
         });
 
+        // baseOnly drops everything outside the main run — the seed's no. 305
+        // Test Dragon. Note the default is `true` (safeBoolean defaults to true),
+        // so it takes an explicit `baseOnly=false` to get the variant back.
         it('supports baseOnly parameter', async () => {
-            const res = await request(app.getHttpServer())
-                .get(`/api/v1/sets/${TEST_SET_CODE}/cards?baseOnly=true`)
-                .expect(200);
+            const numbersFor = async (query: string) => {
+                const res = await request(app.getHttpServer())
+                    .get(`/api/v1/sets/${TEST_SET_CODE}/cards${query}`)
+                    .expect(200);
+                expect(res.body.success).toBe(true);
+                return res.body.data.map((c: { number: string }) => c.number);
+            };
 
-            expect(res.body.success).toBe(true);
-            expect(Array.isArray(res.body.data)).toBe(true);
+            expect(await numbersFor('?baseOnly=true')).toEqual(['1', '2', '3', '4']);
+            expect(await numbersFor('?baseOnly=false')).toEqual(['1', '2', '3', '4', '305']);
+            // Omitting the parameter is base-only, not everything.
+            expect(await numbersFor('')).toEqual(['1', '2', '3', '4']);
         });
 
         describe('catalog filters', () => {

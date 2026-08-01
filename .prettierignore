@@ -3,3 +3,9 @@ dist
 build
 coverage
 *.min.js
+
+# Build output committed under src/. Prettier reformatting these is churn that
+# the next build undoes, which is what kept `format:check` off CI: the two files
+# alone were ~5k lines of the diff. app.css is NOT here — it is hand-written.
+src/http/public/css/tailwind.css
+src/http/public/css/mana.css

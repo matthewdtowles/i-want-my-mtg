@@ -3,7 +3,7 @@
 
 -- Test set
 INSERT INTO "set" (code, base_size, total_size, block, keyrune_code, name, parent_code, release_date, type, is_main)
-VALUES ('tst', 4, 4, NULL, 'tst', 'Test Set', NULL, '2024-01-01', 'expansion', true)
+VALUES ('tst', 4, 5, NULL, 'tst', 'Test Set', NULL, '2024-01-01', 'expansion', true)
 ON CONFLICT (code) DO NOTHING;
 
 -- Test cards in the set
@@ -14,7 +14,12 @@ VALUES
     ('00000000-0000-4000-a000-000000000001', 'Test Artist', true, true, '11111111-1111-4111-a111-111111111111', false, '{2}{W}', 'Test Angel', '1', 'Flying', 'rare', 'tst', 'Creature - Angel', 'normal', false, '001', true),
     ('00000000-0000-4000-a000-000000000002', 'Test Artist', true, true, '22222222-2222-4222-a222-222222222222', false, '{1}{U}', 'Test Sphinx', '2', 'Draw a card.', 'uncommon', 'tst', 'Creature - Sphinx', 'normal', false, '002', true),
     ('00000000-0000-4000-a000-000000000003', 'Test Artist', false, true, '33333333-3333-4333-a333-333333333333', false, '{B}', 'Test Zombie', '3', 'Deathtouch', 'common', 'tst', 'Creature - Zombie', 'normal', false, '003', true),
-    ('00000000-0000-4000-a000-000000000004', 'Test Artist', true, true, '44444444-4444-4444-a444-444444444444', false, '{R}', 'Test Dragon', '4', 'Haste', 'mythic', 'tst', 'Creature - Dragon', 'normal', false, '004', true)
+    ('00000000-0000-4000-a000-000000000004', 'Test Artist', true, true, '44444444-4444-4444-a444-444444444444', false, '{R}', 'Test Dragon', '4', 'Haste', 'mythic', 'tst', 'Creature - Dragon', 'normal', false, '004', true),
+    -- An extended-art variant of the chase card: outside the main set
+    -- (in_main = false) and priced above every main card. Set cover art must
+    -- still pick the base Test Dragon over this one, so anything that orders
+    -- covers by price alone fails here.
+    ('00000000-0000-4000-a000-000000000005', 'Test Artist', true, true, '55555555-5555-4555-a555-555555555555', false, '{R}', 'Test Dragon', '305', 'Haste', 'mythic', 'tst', 'Creature - Dragon', 'normal', true, '305', false)
 ON CONFLICT (id) DO NOTHING;
 
 -- Prices for test cards
@@ -23,7 +28,8 @@ VALUES
     ('00000000-0000-4000-a000-000000000001', 5.00, 10.00, CURRENT_DATE),
     ('00000000-0000-4000-a000-000000000002', 1.50, 3.00, CURRENT_DATE),
     ('00000000-0000-4000-a000-000000000003', 0.25, NULL, CURRENT_DATE),
-    ('00000000-0000-4000-a000-000000000004', 20.00, 40.00, CURRENT_DATE)
+    ('00000000-0000-4000-a000-000000000004', 20.00, 40.00, CURRENT_DATE),
+    ('00000000-0000-4000-a000-000000000005', 50.00, 90.00, CURRENT_DATE)
 ON CONFLICT (card_id, date) DO NOTHING;
 
 -- Current granular offers for test card 1: two buylist vendors (normal), one

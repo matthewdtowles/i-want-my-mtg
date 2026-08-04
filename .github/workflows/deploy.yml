@@ -5,6 +5,14 @@ on:
         branches: [main, develop]
     pull_request:
         branches: [main]
+    # Manual redeploy. setup-cron.sh re-resolves ghcr.io/matthewdtowles/scry:latest
+    # on every deploy, so the server only picks up a new scry binary when this
+    # workflow runs. When scry publishes after the web deploy that should have
+    # carried it -- e.g. the two repos' PRs merge out of order -- dispatching
+    # from main refreshes the binary without an empty commit to force a push.
+    # Jobs from `version` on are gated to refs/heads/main, so dispatching from
+    # any other branch runs the checks and stops short of deploying.
+    workflow_dispatch:
 
 jobs:
     quality:

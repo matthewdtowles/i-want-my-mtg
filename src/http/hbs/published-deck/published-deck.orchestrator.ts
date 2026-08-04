@@ -143,6 +143,9 @@ export class PublishedDeckOrchestrator {
             }
 
             const title = this.deckTitle(deck);
+            // Same representative card the list tile shows, so the deck keeps its
+            // face when opened. Undefined when it has none; the header collapses.
+            const cover = DeckCoverPolicy.pick({ name: title, format: deck.format }, cards);
             return new PublishedDeckDetailViewDto({
                 authenticated: !!userId,
                 indexable: true,
@@ -154,6 +157,10 @@ export class PublishedDeckOrchestrator {
                 ],
                 deckId: deck.id!,
                 deckTitle: title,
+                coverImgSrc: cover
+                    ? `${BASE_IMAGE_URL}/${CardImgType.ART_CROP}/front/${cover.imgSrc}`
+                    : undefined,
+                coverCardName: cover?.name,
                 deckColors: deckColorPips(cards),
                 tournamentName: deck.tournamentName ?? '',
                 date: this.formatDate(deck.tournamentDate),

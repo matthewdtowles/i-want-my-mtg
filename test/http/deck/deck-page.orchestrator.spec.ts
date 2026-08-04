@@ -362,6 +362,35 @@ describe('DeckPageOrchestrator', () => {
             expect(view.mainGroups[0].cards[0]).toMatchObject({ owned: 4, missing: 0 });
         });
 
+        it('carries the same cover art the list tile shows', async () => {
+            const arted = deckCard({
+                cardId: 'bolt',
+                quantity: 4,
+                card: { ...bolt.card, imgSrc: 'bolt.jpg' },
+            });
+            deckService.getDeck.mockResolvedValue(
+                new Deck({ id: 9, userId: 1, name: 'Burn', cards: [arted] })
+            );
+            buildabilityService.gapForDeck.mockResolvedValue(emptyGap);
+
+            const view = await orchestrator.buildDetailView(authedReq, 9);
+
+            expect(view.coverImgSrc).toContain('bolt.jpg');
+            expect(view.coverCardName).toBe('Lightning Bolt');
+        });
+
+        it('leaves the cover unset for a deck with no cards', async () => {
+            deckService.getDeck.mockResolvedValue(
+                new Deck({ id: 10, userId: 1, name: 'Empty', cards: [] })
+            );
+            buildabilityService.gapForDeck.mockResolvedValue(emptyGap);
+
+            const view = await orchestrator.buildDetailView(authedReq, 10);
+
+            expect(view.coverImgSrc).toBeUndefined();
+            expect(view.coverCardName).toBeUndefined();
+        });
+
         it('throws Not Found when the deck does not exist for this user', async () => {
             deckService.getDeck.mockResolvedValue(null);
 

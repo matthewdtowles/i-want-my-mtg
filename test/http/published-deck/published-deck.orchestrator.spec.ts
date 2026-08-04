@@ -290,6 +290,28 @@ describe('PublishedDeckOrchestrator', () => {
             expect(view.date).toBe('2/10/2026');
         });
 
+        it('carries the same cover art the list tile shows', async () => {
+            publishedDeckService.get.mockResolvedValue(
+                publishedDeck({
+                    cards: [deckCard({ card: { ...deckCard().card, imgSrc: 'bolt.jpg' } })],
+                })
+            );
+
+            const view = await orchestrator.buildDetailView(anonReq, 1);
+
+            expect(view.coverImgSrc).toContain('bolt.jpg');
+            expect(view.coverCardName).toBe('Lightning Bolt');
+        });
+
+        it('leaves the cover unset for a deck with no carded art', async () => {
+            publishedDeckService.get.mockResolvedValue(publishedDeck({ cards: [] }));
+
+            const view = await orchestrator.buildDetailView(anonReq, 1);
+
+            expect(view.coverImgSrc).toBeUndefined();
+            expect(view.coverCardName).toBeUndefined();
+        });
+
         it('throws Not Found for an unknown deck', async () => {
             publishedDeckService.get.mockResolvedValue(null);
 

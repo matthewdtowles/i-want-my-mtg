@@ -149,6 +149,10 @@ export class DeckPageOrchestrator {
                 gapByRow.set(`${g.cardId}|${g.isSideboard}`, g);
             }
 
+            // Same representative card the list tile shows, so the deck keeps its
+            // face when opened. Undefined for an empty deck; the header collapses.
+            const cover = DeckCoverPolicy.pick(deck, cards);
+
             return new DeckDetailViewDto({
                 authenticated: true,
                 title: `${deck.name} - Decks - I Want My MTG`,
@@ -159,6 +163,10 @@ export class DeckPageOrchestrator {
                 ],
                 deckId: deck.id!,
                 name: deck.name,
+                coverImgSrc: cover
+                    ? `${BASE_IMAGE_URL}/${CardImgType.ART_CROP}/front/${cover.imgSrc}`
+                    : undefined,
+                coverCardName: cover?.name,
                 format: deck.format ?? null,
                 formatLabel: deck.format ? this.capitalize(deck.format) : 'No format',
                 formatOptions: this.buildFormatOptions(deck.format ?? null),

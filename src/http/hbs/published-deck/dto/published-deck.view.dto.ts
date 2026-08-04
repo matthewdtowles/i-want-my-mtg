@@ -77,6 +77,10 @@ export interface PublishedDeckGroupView {
 export class PublishedDeckDetailViewDto extends BaseViewDto {
     readonly deckId: number;
     readonly deckTitle: string;
+    /** Art-crop URL of the deck's representative card; absent when it has none. */
+    readonly coverImgSrc?: string;
+    /** That card's name, for the image's alt text. */
+    readonly coverCardName?: string;
     readonly deckColors: DeckColorPip[];
     readonly tournamentName: string;
     readonly date: string;
@@ -102,6 +106,8 @@ export class PublishedDeckDetailViewDto extends BaseViewDto {
         super(init);
         this.deckId = init.deckId ?? 0;
         this.deckTitle = init.deckTitle ?? '';
+        this.coverImgSrc = init.coverImgSrc;
+        this.coverCardName = init.coverCardName;
         this.deckColors = init.deckColors ?? [];
         this.tournamentName = init.tournamentName ?? '';
         this.date = init.date ?? '';

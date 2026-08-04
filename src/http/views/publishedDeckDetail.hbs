@@ -1,17 +1,26 @@
 <link href="/public/css/mana.css?v={{assetVersion}}" rel="stylesheet" type="text/css" />
 <div class="content-wrapper py-6" data-published-deck-id="{{deckId}}">
     <div class="flex items-start justify-between mb-2 flex-wrap gap-3">
-        <div>
-            <h1 class="page-title">{{deckTitle}} {{>deckColors colors=deckColors class="ml-1 align-middle"}}</h1>
-            <p class="page-subtitle">
-                <span class="text-purple-600 dark:text-purple-400 font-semibold">{{formatLabel}}</span>
-                {{#if tournamentName}}<span class="mx-1">&middot;</span>{{tournamentName}}{{/if}}
-                {{#if date}}<span class="mx-1">&middot;</span>{{date}}{{/if}}
-                {{#if result}}<span class="mx-1">&middot;</span>{{result}}{{/if}}
-                <span class="mx-1">&middot;</span>
-                <span class="font-mono text-gray-900 dark:text-gray-100">{{estimatedValue}}</span>
-            </p>
-            {{#if player}}<p class="text-sm text-gray-500 mt-1">Piloted by {{player}}</p>{{/if}}
+        <div class="flex items-start gap-3">
+            {{#if coverImgSrc}}
+                {{!-- The deck's face, same card the list tile shows. Thumbnail, not a
+                      banner, so the card list and buildability panel stay above the fold. --}}
+                <img src="{{coverImgSrc}}" alt="Art from {{coverCardName}}" loading="lazy" decoding="async"
+                    width="626" height="457"
+                    class="h-14 w-20 shrink-0 rounded-md object-cover bg-gray-200 dark:bg-midnight-700" />
+            {{/if}}
+            <div>
+                <h1 class="page-title">{{deckTitle}} {{>deckColors colors=deckColors class="ml-1 align-middle"}}</h1>
+                <p class="page-subtitle">
+                    <span class="text-purple-600 dark:text-purple-400 font-semibold">{{formatLabel}}</span>
+                    {{#if tournamentName}}<span class="mx-1">&middot;</span>{{tournamentName}}{{/if}}
+                    {{#if date}}<span class="mx-1">&middot;</span>{{date}}{{/if}}
+                    {{#if result}}<span class="mx-1">&middot;</span>{{result}}{{/if}}
+                    <span class="mx-1">&middot;</span>
+                    <span class="font-mono text-gray-900 dark:text-gray-100">{{estimatedValue}}</span>
+                </p>
+                {{#if player}}<p class="text-sm text-gray-500 mt-1">Piloted by {{player}}</p>{{/if}}
+            </div>
         </div>
         <a href="/published-decks" class="btn btn-ghost text-sm">&larr; All decks</a>
     </div>

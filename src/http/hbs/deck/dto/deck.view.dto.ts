@@ -103,6 +103,10 @@ export interface DeckCardGroupView {
 export class DeckDetailViewDto extends BaseViewDto {
     readonly deckId: number;
     readonly name: string;
+    /** Art-crop URL of the deck's representative card; absent for an empty deck. */
+    readonly coverImgSrc?: string;
+    /** That card's name, for the image's alt text. */
+    readonly coverCardName?: string;
     readonly format: string | null;
     readonly formatLabel: string;
     readonly formatOptions: FormatOptionView[];
@@ -124,6 +128,8 @@ export class DeckDetailViewDto extends BaseViewDto {
         super(init);
         this.deckId = init.deckId ?? 0;
         this.name = init.name ?? '';
+        this.coverImgSrc = init.coverImgSrc;
+        this.coverCardName = init.coverCardName;
         this.format = init.format ?? null;
         this.formatLabel = init.formatLabel ?? '';
         this.formatOptions = init.formatOptions ?? [];

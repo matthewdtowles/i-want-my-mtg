@@ -1,16 +1,25 @@
 <link href="/public/css/mana.css?v={{assetVersion}}" rel="stylesheet" type="text/css" />
 <div class="content-wrapper py-6" data-deck-id="{{deckId}}" data-deck-format="{{format}}">
     <div class="flex items-start justify-between mb-2 flex-wrap gap-3">
-        <div>
-            <h1 class="page-title">{{name}} {{>deckColors colors=deckColors class="ml-1 align-middle"}}</h1>
-            <p class="page-subtitle">
-                <span class="text-purple-600 dark:text-purple-400 font-semibold">{{formatLabel}}</span>
-                <span class="mx-1">&middot;</span>
-                <span id="deck-main-count">{{mainCount}}</span> maindeck
-                <span id="deck-side-wrap" {{#unless sideCount}}class="hidden"{{/unless}}><span class="mx-1">&middot;</span><span id="deck-side-count">{{sideCount}}</span> sideboard</span>
-                <span class="mx-1">&middot;</span>
-                <span id="deck-est-value" class="font-mono text-gray-900 dark:text-gray-100">{{estimatedValue}}</span>
-            </p>
+        <div class="flex items-start gap-3">
+            {{#if coverImgSrc}}
+                {{!-- The deck's face, same card the list tile shows. Thumbnail, not a
+                      banner, so the card list and buildability panel stay above the fold. --}}
+                <img src="{{coverImgSrc}}" alt="Art from {{coverCardName}}" loading="lazy" decoding="async"
+                    width="626" height="457"
+                    class="h-14 w-20 shrink-0 rounded-md object-cover bg-gray-200 dark:bg-midnight-700" />
+            {{/if}}
+            <div>
+                <h1 class="page-title">{{name}} {{>deckColors colors=deckColors class="ml-1 align-middle"}}</h1>
+                <p class="page-subtitle">
+                    <span class="text-purple-600 dark:text-purple-400 font-semibold">{{formatLabel}}</span>
+                    <span class="mx-1">&middot;</span>
+                    <span id="deck-main-count">{{mainCount}}</span> maindeck
+                    <span id="deck-side-wrap" {{#unless sideCount}}class="hidden"{{/unless}}><span class="mx-1">&middot;</span><span id="deck-side-count">{{sideCount}}</span> sideboard</span>
+                    <span class="mx-1">&middot;</span>
+                    <span id="deck-est-value" class="font-mono text-gray-900 dark:text-gray-100">{{estimatedValue}}</span>
+                </p>
+            </div>
         </div>
         <a href="/decks" class="btn btn-ghost text-sm">&larr; All decks</a>
     </div>

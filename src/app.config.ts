@@ -3,6 +3,7 @@ import { NestExpressApplication } from '@nestjs/platform-express';
 import * as cookieParser from 'cookie-parser';
 import { create } from 'express-handlebars';
 import { join } from 'path';
+import { API_CORS_PATH, apiCors } from './http/api/shared/api-cors.middleware';
 import { HttpExceptionFilter } from './http/http.exception.filter';
 import { formatUsd } from './http/base/http.util';
 
@@ -56,6 +57,10 @@ export function configureApp(app: INestApplication, viewsDir: string): void {
     expressApp.engine('hbs', hbs.engine);
     expressApp.setViewEngine('hbs');
     expressApp.use(cookieParser());
+    // CORS for the public API only. Path-mounted rather than app.enableCors(),
+    // which is app-wide and would stamp the HBS routes too — see the middleware
+    // for why it is deliberately uncredentialed.
+    expressApp.use(API_CORS_PATH, apiCors);
     expressApp.useGlobalFilters(new HttpExceptionFilter());
     expressApp.useGlobalPipes(
         new ValidationPipe({

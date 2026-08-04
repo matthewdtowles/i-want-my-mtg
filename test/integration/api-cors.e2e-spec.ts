@@ -26,11 +26,17 @@ describe('API CORS (e2e)', () => {
             .expect(204);
 
         expect(res.headers['access-control-allow-origin']).toBe('*');
-        expect(res.headers['access-control-allow-methods']).toContain('GET');
-        expect(res.headers['access-control-allow-methods']).toContain('OPTIONS');
-        expect(res.headers['access-control-allow-headers']).toContain('Authorization');
-        expect(res.headers['access-control-allow-headers']).toContain('X-API-Key');
-        expect(res.headers['access-control-expose-headers']).toContain('X-RateLimit-Remaining');
+        // Assert every method and header the middleware hard-codes, so dropping
+        // one (Content-Type, X-RateLimit-Reset) fails here instead of in a client.
+        for (const method of ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS']) {
+            expect(res.headers['access-control-allow-methods']).toContain(method);
+        }
+        for (const header of ['Authorization', 'Content-Type', 'X-API-Key']) {
+            expect(res.headers['access-control-allow-headers']).toContain(header);
+        }
+        for (const header of ['X-RateLimit-Limit', 'X-RateLimit-Remaining', 'X-RateLimit-Reset']) {
+            expect(res.headers['access-control-expose-headers']).toContain(header);
+        }
     });
 
     it('allows a plain cross-origin GET', async () => {

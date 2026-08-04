@@ -13,11 +13,26 @@ const MAX_AGE_SECONDS = '86400';
  *
  * `/api/v1` accepts three auth modes: bearer JWT, API key, and the session
  * cookie the server-rendered frontend uses. Third-party browser clients only
- * ever use the first two, both of which are headers — so this deliberately
- * sends no `Access-Control-Allow-Credentials`. Without it a browser will not
- * attach the `authorization` cookie to a cross-origin request, which is what
- * keeps `Access-Control-Allow-Origin: *` from becoming a CSRF hole across every
- * authenticated route.
+ * ever use the first two, both of which are headers, so this deliberately sends
+ * no `Access-Control-Allow-Credentials`.
+ *
+ * What that actually buys, precisely, because it is easy to overstate:
+ *
+ * - For a **preflighted** request (`PATCH`, `DELETE`, a JSON `POST` - most of the
+ *   write surface here), the browser sees no `Allow-Credentials` on the preflight
+ *   response and never sends the real request. Nothing reaches the origin.
+ * - For a **simple** request (a plain cross-origin `GET`), there is no preflight.
+ *   The request still reaches the origin; the missing header only stops the
+ *   response from being handed to the calling script.
+ *
+ * So this header does not decide whether a cookie is *attached*. What keeps the
+ * `authorization` cookie off cross-site requests is its own `sameSite: 'lax'`
+ * (`src/http/hbs/auth/auth.cookie.util.ts`). The two work together: SameSite keeps
+ * the credential from riding along, and the absence of `Allow-Credentials` keeps
+ * `Access-Control-Allow-Origin: *` from granting any origin a readable,
+ * authenticated session. Loosening either one alone reopens CSRF across every
+ * authenticated route - do not set `sameSite: 'none'` on that cookie on the
+ * assumption that this middleware is covering it.
  *
  * Mounted on the Express instance at `API_CORS_PATH` rather than through
  * `app.enableCors()`, which is app-wide and would stamp the HBS routes too.

@@ -33,7 +33,7 @@ part: the two remaining 503 fixes are one console session, not a coding task.
 
 | | Item | Console work | Blocks |
 |---|---|---|---|
-| 🔴 | **[#621](https://github.com/matthewdtowles/i-want-my-mtg/issues/621)** — CloudFront caches nothing on `/api/*` | CloudFront → cache behavior for `/api/v1/sets*`, `/api/v1/cards*` | #616, and the edge half of #625 |
+| 🔴 | **[#621](https://github.com/matthewdtowles/i-want-my-mtg/issues/621)** — CloudFront caches nothing on `/api/*` | CloudFront → cache behavior for `/api/v1/sets*`, `/api/v1/cards*`, **with `OPTIONS` in the allowed methods** | #616, and the edge half of #625 |
 | 🔴 | **[#625](https://github.com/matthewdtowles/i-want-my-mtg/issues/625)** — no health-check monitoring on the web tier | UptimeRobot/Better Stack signup, *or* a CloudWatch 5xx alarm | nothing, but nothing surfaces the next outage without it |
 
 **#621 detail.** Six identical `/api/v1/sets` requests all returned `Miss`, so every
@@ -42,6 +42,13 @@ the origin buckle. Recipe and its cache-key hazard are in the issue; the hazard 
 that `GET /api/v1/sets` returns per-user `ownedTotal`, so a naive public cache leaks
 one user's owned counts to everyone. → verify: `x-cache: Hit from cloudfront` on a
 repeat, and a signed-in caller still gets its own `ownedTotal`.
+
+Add `OPTIONS` to the behavior's allowed methods while building it. The origin answers
+preflights as of [PR #633](https://github.com/matthewdtowles/i-want-my-mtg/pull/633),
+but they cannot reach it until the distribution forwards them - `OPTIONS
+/api/v1/sets` still returns `x-cache: Error from cloudfront`. `Origin` does **not**
+need to enter the cache key: #633 sends a constant `Access-Control-Allow-Origin: *`
+and no `Vary: Origin`, so the cache does not fragment per origin.
 
 **#625 detail.** #612 was found by *using the app*, not by an alert. The asymmetry to
 close: scry's cron already mails on failure, so the data pipeline is monitored and
@@ -55,14 +62,17 @@ deliberately. → verify: break it on purpose, confirm the alert arrives *and* c
 ```
 ✅ #620 + #631 (PR #632) ──► trustworthy CI under every PR below
 
-🔴 #621 CloudFront cache ──┬──► #616 CORS (headers must survive the distribution)
+🔴 #621 CloudFront cache ──┬──► #616 CORS (origin half done in PR #633; the
+                           │      distribution must forward OPTIONS before a live
+                           │      preflight works)
                            └──► #625 edge alarm (option 3 only)
    #622 trust proxy ───────── independent code; verify hop count against prod first
-   #623 browser review ─────► #624 deck detail thumbnail
+✅ #623 browser review ─────► ✅ #624 deck detail thumbnail (PR #633)
+                           └──► #634 deck list layout fixes the review found
 ```
 
-Nothing else is gated. #622, #623/#624 and the mobile Browse items can proceed in
-any order at any time.
+Nothing else is gated. #622, #634 and the mobile Browse items can proceed in any
+order at any time.
 
 ### Order of work
 
@@ -98,21 +108,37 @@ Web = this repo, Mobile = `i-want-my-mtg-mobile`. Each line has its own verifica
    the proxy hops — Lightsail may add one in front of CloudFront, and guessing wrong
    is a live bug in either direction. → verify: two client IPs get independent
    budgets; a forged `X-Forwarded-For` does not.
-5. **Web [#623](https://github.com/matthewdtowles/i-want-my-mtg/issues/623) — look
-   at the deck pages in a browser** *(~1h review)*, then
+5. ~~**Web [#623](https://github.com/matthewdtowles/i-want-my-mtg/issues/623) — look
+   at the deck pages in a browser**, then
    **[#624](https://github.com/matthewdtowles/i-want-my-mtg/issues/624) — deck detail
-   cover thumbnail** *(~2h)*. #618/#619/#629 shipped on tests alone, so no deck or
-   set page has been opened in a browser. #624 is already decided — a thumbnail beside
-   the `<h1>`, not a hero band, reusing `DeckCoverPolicy.pick` for no extra query — so
-   #623 closes on the review alone.
+   cover thumbnail**.~~ ✅ **[PR #633](https://github.com/matthewdtowles/i-want-my-mtg/pull/633).**
+   All four `DeckCoverPolicy` rungs behave against real data, including the two data
+   cases that were the point of looking: a commander sitting in the sideboard is
+   correctly not chosen, and a creature-less deck falls to its most valuable card.
+   #624 shipped as decided, a thumbnail beside the `<h1>` reusing
+   `DeckCoverPolicy.pick` for no extra query.
+   The review found two layout defects, filed as
+   **[#634](https://github.com/matthewdtowles/i-want-my-mtg/issues/634)** *(~2h)*: a
+   long deck name's scrim (124px) overflows the fixed `h-28` band (112px) and hides
+   the art entirely, and Load more scrolls ~1700px in one jump when it focuses the
+   first new card.
+   *Worth knowing before the next local review:* `/decks` first rendered completely
+   art-less because a **stale service worker** was serving old CSS with no `h-28` or
+   `object-cover`, collapsing every band to `height: 0`. Local dev pins `0.0.0-dev`,
+   so `sw.js` never purges. Now in CLAUDE.md.
 6. **Web [#616](https://github.com/matthewdtowles/i-want-my-mtg/issues/616) — CORS
-   on `/api/v1`.** *(~3h, **do after #621**)* Preflight 404s, so no browser-based
-   third-party client can use the paid API tiers. Not a 503 contributor — sequenced
-   here because it unblocks a paid product, not a live outage. Must be
-   `credentials: false`; `/api/v1` also accepts the session cookie, so credentialed
-   CORS would be a CSRF hole across every authenticated route. Sequenced after #621
-   so the new `OPTIONS` behavior is added against the final cache config rather than
-   one that is about to change.
+   on `/api/v1`.** *(origin half done in [PR #633](https://github.com/matthewdtowles/i-want-my-mtg/pull/633);
+   **still blocked on #621**)* Preflight 404s, so no browser-based third-party client
+   can use the paid API tiers. Not a 503 contributor - sequenced here because it
+   unblocks a paid product, not a live outage.
+   #633 adds `api-cors.middleware.ts`, path-mounted on `/api/v1` in `configureApp`
+   rather than `app.enableCors()` (app-wide, would stamp the HBS routes), with
+   `Access-Control-Allow-Origin: *` and **no** `Allow-Credentials` - `/api/v1` also
+   accepts the session cookie, so credentialed CORS would be a CSRF hole across every
+   authenticated route. Covered by `test/integration/api-cors.e2e-spec.ts`.
+   **Keep #616 open past that merge.** The origin is correct but the feature does not
+   work for a real browser client until #621 puts `OPTIONS` in the distribution's
+   allowed methods. → verify against production, not just the test suite.
 7. 🔴 **Web [#625](https://github.com/matthewdtowles/i-want-my-mtg/issues/625) —
    health-check monitoring.** *(AWS console / external service — see the red table.)*
    Last because the fixes above reduce the load that caused the 503s; but do not skip
@@ -161,7 +187,7 @@ remaining gap in the catalog API.
 
 Work merged since the store releases, listed because the **Now** board references it.
 
-- **Cover art across the catalog** — set DTOs carry `coverImgSrc` ([#615](https://github.com/matthewdtowles/i-want-my-mtg/pull/615)), deck list ([#618](https://github.com/matthewdtowles/i-want-my-mtg/pull/618)) and published-deck grids ([#619](https://github.com/matthewdtowles/i-want-my-mtg/pull/619)) show art-backed tiles, and `/sets` got mobile-style art tiles picked by each set's best card ([#629](https://github.com/matthewdtowles/i-want-my-mtg/pull/629), corrected in [#630](https://github.com/matthewdtowles/i-want-my-mtg/pull/630) to prefer a main-set card). **None of it has been opened in a browser** — that is [#623](https://github.com/matthewdtowles/i-want-my-mtg/issues/623). Deck *detail* pages were never covered: [#624](https://github.com/matthewdtowles/i-want-my-mtg/issues/624).
+- **Cover art across the catalog** — set DTOs carry `coverImgSrc` ([#615](https://github.com/matthewdtowles/i-want-my-mtg/pull/615)), deck list ([#618](https://github.com/matthewdtowles/i-want-my-mtg/pull/618)) and published-deck grids ([#619](https://github.com/matthewdtowles/i-want-my-mtg/pull/619)) show art-backed tiles, and `/sets` got mobile-style art tiles picked by each set's best card ([#629](https://github.com/matthewdtowles/i-want-my-mtg/pull/629), corrected in [#630](https://github.com/matthewdtowles/i-want-my-mtg/pull/630) to prefer a main-set card). The deck pages have now been reviewed in a browser and deck *detail* pages got their thumbnail ([#633](https://github.com/matthewdtowles/i-want-my-mtg/pull/633), closing [#623](https://github.com/matthewdtowles/i-want-my-mtg/issues/623) and [#624](https://github.com/matthewdtowles/i-want-my-mtg/issues/624)); the two layout defects that review turned up are [#634](https://github.com/matthewdtowles/i-want-my-mtg/issues/634). **`/sets` has still never been opened in a browser.**
 - **Card printings endpoint** — list a card's printings by set code and number ([#627](https://github.com/matthewdtowles/i-want-my-mtg/pull/627)). Mobile's half is [#108](https://github.com/matthewdtowles/i-want-my-mtg-mobile/issues/108).
 - **Inventory finish filter** — normal/foil on the inventory list ([#611](https://github.com/matthewdtowles/i-want-my-mtg/pull/611)).
 

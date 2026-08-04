@@ -71,6 +71,25 @@ The production Docker build (`target: production`) runs `npm run build:prod` whi
 
 The service worker (`src/http/public/sw.js`) uses a `__APP_VERSION__` placeholder that `build:sw` replaces with the version from `package.json`. When the version changes, the new SW activates and purges old caches. Versioning is automatic: CI computes the version from the squash-merged PR title (`feat:` → minor, `!` → major, anything else → patch — see `.github/scripts/next-version.sh`) and stamps it into the Docker image at build time. `package.json` stays at the `0.0.0-dev` placeholder; never bump it by hand.
 
+**Local dev consequence: the service worker never purges.** Because the local version
+is permanently `0.0.0-dev`, `sw.js` never sees a version change, so it keeps serving
+whatever CSS and JS it cached the first time - across rebuilds, container restarts and
+`build:css`. The failure looks like a broken template rather than a stale asset: during
+the #623 review, `/decks` rendered with every art band at `height: 0` and
+`object-fit: fill` because the cached stylesheet predated the `h-28` / `object-cover`
+utilities, so the deck-name scrim collapsed onto the row beneath it. Nothing was wrong
+with the code.
+
+If a page looks structurally broken locally and the classes exist in
+`src/http/public/css/tailwind.css`, unregister the worker and clear its caches before
+debugging anything else (DevTools → Application → Service Workers → Unregister, or from
+the console):
+
+```js
+(await navigator.serviceWorker.getRegistrations()).forEach(r => r.unregister());
+(await caches.keys()).forEach(k => caches.delete(k));
+```
+
 ### Scry ETL on the Production Server
 
 Scry is **not** run as a container in production. During deploy, `.github/scripts/setup-cron.sh` pulls `ghcr.io/matthewdtowles/scry:latest`, `docker cp`s the `/app/scry` binary out to `/opt/scripts/scry`, and then deletes the image. The cron jobs in `cron/i-want-my-mtg` invoke that binary directly via `cron/scry.sh` — they do not go through `docker compose`.
@@ -180,6 +199,30 @@ The orchestrator layer sits between controllers and services. It handles present
 
 - **`PriceCalculationPolicy`** (`src/core/pricing/`) — All pricing logic: card value calculation (normal price with foil fallback), inventory valuation, set price tiers (base_price, total_price, base_price_all, total_price_all)
 - **`AffiliateLinkPolicy`** (`src/core/affiliate/`) — Wraps TCGPlayer product URLs in our Impact partner shortlink (hardcoded constant `TCGPLAYER_AFFILIATE_BASE`). Same value is used in all environments since the shortlink is public (visible in every buy button's href) and doesn't differ between dev and prod. Called from card + sealed-product presenters. Raw product IDs come from Scry (MTGJSON `tcgplayerProductId` / `tcgplayerEtchedProductId`); URLs are never stored in affiliate-wrapped form.
+
+### CORS is scoped to `/api/v1` and is uncredentialed on purpose
+
+`apiCors` (`src/http/api/shared/api-cors.middleware.ts`) is path-mounted on
+`/api/v1` in `configureApp`. Two things about it are load-bearing:
+
+- **Never replace it with `app.enableCors()`.** That is app-wide and would stamp the
+  HBS routes too.
+- **Never add `credentials: true` or `Access-Control-Allow-Credentials`.** `/api/v1`
+  accepts three auth modes, and one of them is the `authorization` **cookie** the
+  server-rendered frontend uses (`ApiRateLimitGuard` has a whole
+  `COOKIE_USER_BURST_PER_MIN` path keyed on `request.user?.id`). Combined with
+  `Allow-Origin: *`, credentialed CORS would let any origin make authenticated
+  cross-site requests carrying a logged-in user's session, including writes. Third-party
+  clients authenticate with a bearer token or `X-API-Key`, both headers, so they never
+  need cookies.
+
+It lives in `configureApp` rather than `main.ts` so the integration test app boots with
+it; `test/integration/api-cors.e2e-spec.ts` asserts the preflight, the absent
+`Allow-Credentials` on a cookie-bearing cross-origin request, and that HBS routes carry
+no `Allow-Origin`.
+
+Because the origin header is a constant `*` with no `Vary: Origin`, `Origin` does not
+need to enter CloudFront's cache key.
 
 ### API error strings are an App Store surface (Guideline 3.1.1)
 

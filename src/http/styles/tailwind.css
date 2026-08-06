@@ -568,13 +568,30 @@
 }
 
 .settings-container {
-    @apply bg-white dark:bg-midnight-900 shadow-lg rounded-xl p-8 max-w-3xl w-full mx-auto mt-10
+    @apply bg-white dark:bg-midnight-900 shadow-lg rounded-xl p-5 sm:p-8 max-w-3xl w-full mx-auto mt-10
            border-t-4 border-teal-400 dark:border-teal-500;
+    /* The card is w-full, so on narrow screens it would otherwise run edge to edge. */
+    width: calc(100% - 1rem);
 }
 
 .docs-container {
-    @apply bg-white dark:bg-midnight-900 shadow-lg rounded-xl p-8 max-w-screen-2xl w-full mx-auto mt-10
+    @apply bg-white dark:bg-midnight-900 shadow-lg rounded-xl p-4 sm:p-6 lg:p-8 max-w-screen-2xl w-full mx-auto mt-10
            border-t-4 border-teal-400 dark:border-teal-500;
+    /* The card is w-full, so on narrow screens it would otherwise run edge to edge. */
+    width: calc(100% - 1rem);
+}
+
+/* Redoc's own sidebar is a fixed 260px and its layout only splits into
+   description + samples columns on a wide viewport, so give it every pixel the
+   card has. It is always light-themed, hence the white surface in both modes. */
+.redoc-panel {
+    @apply rounded-lg bg-white border border-gray-200 dark:border-midnight-700;
+    /* Redoc pins its menu with position: sticky - do not clip this box. */
+    overflow: visible;
+}
+
+.redoc-panel redoc {
+    @apply block w-full;
 }
 
 .verification-container {

@@ -1091,6 +1091,13 @@ img,
   margin-top: auto;
 }
 
+.line-clamp-2 {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
 .block {
   display: block;
 }
@@ -1568,6 +1575,10 @@ img,
 
 .whitespace-pre-line {
   white-space: pre-line;
+}
+
+.break-words {
+  overflow-wrap: break-word;
 }
 
 .break-all {
@@ -3915,7 +3926,7 @@ img,
   border-color: rgb(69 221 214 / var(--tw-border-opacity, 1));
   --tw-bg-opacity: 1;
   background-color: rgb(255 255 255 / var(--tw-bg-opacity, 1));
-  padding: 2rem;
+  padding: 1.25rem;
   --tw-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
   --tw-shadow-colored: 0 10px 15px -3px var(--tw-shadow-color), 0 4px 6px -4px var(--tw-shadow-color);
   box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
@@ -3926,6 +3937,17 @@ img,
   border-color: rgb(44 200 202 / var(--tw-border-opacity, 1));
   --tw-bg-opacity: 1;
   background-color: rgb(19 16 37 / var(--tw-bg-opacity, 1));
+}
+
+@media (min-width: 640px) {
+  .settings-container {
+    padding: 2rem;
+  }
+}
+
+.settings-container {
+  /* The card is w-full, so on narrow screens it would otherwise run edge to edge. */
+  width: calc(100% - 1rem);
 }
 
 .docs-container {
@@ -3940,7 +3962,7 @@ img,
   border-color: rgb(69 221 214 / var(--tw-border-opacity, 1));
   --tw-bg-opacity: 1;
   background-color: rgb(255 255 255 / var(--tw-bg-opacity, 1));
-  padding: 2rem;
+  padding: 1rem;
   --tw-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
   --tw-shadow-colored: 0 10px 15px -3px var(--tw-shadow-color), 0 4px 6px -4px var(--tw-shadow-color);
   box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
@@ -3951,6 +3973,51 @@ img,
   border-color: rgb(44 200 202 / var(--tw-border-opacity, 1));
   --tw-bg-opacity: 1;
   background-color: rgb(19 16 37 / var(--tw-bg-opacity, 1));
+}
+
+@media (min-width: 640px) {
+  .docs-container {
+    padding: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .docs-container {
+    padding: 2rem;
+  }
+}
+
+.docs-container {
+  /* The card is w-full, so on narrow screens it would otherwise run edge to edge. */
+  width: calc(100% - 1rem);
+}
+
+/* Redoc's own sidebar is a fixed 260px and its layout only splits into
+   description + samples columns on a wide viewport, so give it every pixel the
+   card has. It is always light-themed, hence the white surface in both modes. */
+
+.redoc-panel {
+  border-radius: 0.5rem;
+  border-width: 1px;
+  --tw-border-opacity: 1;
+  border-color: rgb(229 231 235 / var(--tw-border-opacity, 1));
+  --tw-bg-opacity: 1;
+  background-color: rgb(255 255 255 / var(--tw-bg-opacity, 1));
+}
+
+.redoc-panel:is(.dark *) {
+  --tw-border-opacity: 1;
+  border-color: rgb(36 30 69 / var(--tw-border-opacity, 1));
+}
+
+.redoc-panel {
+  /* Redoc pins its menu with position: sticky - do not clip this box. */
+  overflow: visible;
+}
+
+.redoc-panel redoc {
+  display: block;
+  width: 100%;
 }
 
 .verification-container {
@@ -5990,11 +6057,16 @@ img,
 }
 
 .block-label {
-  text-shadow: 0 0 6px rgba(168, 85, 247, 0.5), 0 0 12px rgba(168, 85, 247, 0.25);
+  text-shadow:
+        0 0 6px rgba(168, 85, 247, 0.5),
+        0 0 12px rgba(168, 85, 247, 0.25);
 }
 
 .dark .block-label {
-  text-shadow: 0 0 8px rgba(192, 132, 252, 0.6), 0 0 20px rgba(168, 85, 247, 0.35), 0 0 30px rgba(168, 85, 247, 0.15);
+  text-shadow:
+        0 0 8px rgba(192, 132, 252, 0.6),
+        0 0 20px rgba(168, 85, 247, 0.35),
+        0 0 30px rgba(168, 85, 247, 0.15);
 }
 
 /* No connector on the main/first set row */
@@ -6199,11 +6271,16 @@ img,
 }
 
 .set-grid-label {
-  text-shadow: 0 0 6px rgba(168, 85, 247, 0.5), 0 0 12px rgba(168, 85, 247, 0.25);
+  text-shadow:
+        0 0 6px rgba(168, 85, 247, 0.5),
+        0 0 12px rgba(168, 85, 247, 0.25);
 }
 
 .dark .set-grid-label {
-  text-shadow: 0 0 8px rgba(192, 132, 252, 0.6), 0 0 20px rgba(168, 85, 247, 0.35), 0 0 30px rgba(168, 85, 247, 0.15);
+  text-shadow:
+        0 0 8px rgba(192, 132, 252, 0.6),
+        0 0 20px rgba(168, 85, 247, 0.35),
+        0 0 30px rgba(168, 85, 247, 0.15);
 }
 
 /* Same proportions as the mobile app's hero tile. */
@@ -6801,7 +6878,7 @@ img,
   inset: 0px;
   background:
         radial-gradient(ellipse 60% 55% at 50% -10%, rgba(114, 51, 164, 0.28) 0%, transparent 70%),
-        radial-gradient(ellipse 40% 35% at 75% 60%, rgba(44, 200, 202, 0.10) 0%, transparent 70%);
+        radial-gradient(ellipse 40% 35% at 75% 60%, rgba(44, 200, 202, 0.1) 0%, transparent 70%);
 }
 
 :where(.flex,.pricing-hero-badge, .grid) > * {
@@ -7020,8 +7097,14 @@ img,
 .pricing-card.featured {
   --tw-border-opacity: 1;
   border-color: rgb(44 200 202 / var(--tw-border-opacity, 1));
-  background: linear-gradient(160deg, rgba(44, 200, 202, 0.06) 0%, var(--pricing-card-bg, #ffffff) 60%);
-  box-shadow: 0 0 40px rgba(44, 200, 202, 0.10), inset 0 1px 0 rgba(44, 200, 202, 0.15);
+  background: linear-gradient(
+        160deg,
+        rgba(44, 200, 202, 0.06) 0%,
+        var(--pricing-card-bg, #ffffff) 60%
+    );
+  box-shadow:
+        0 0 40px rgba(44, 200, 202, 0.1),
+        inset 0 1px 0 rgba(44, 200, 202, 0.15);
 }
 
 .dark .pricing-card.featured {
@@ -7599,7 +7682,9 @@ img,
 .pricing-faq-chevron {
   flex-shrink: 0;
   color: #9ca3af;
-  transition: transform 0.2s, color 0.15s;
+  transition:
+        transform 0.2s,
+        color 0.15s;
 }
 
 .pricing-faq-item[open] .pricing-faq-chevron {
@@ -7707,7 +7792,7 @@ img,
   position: absolute;
   inset: 0px;
   background:
-        radial-gradient(ellipse 65% 55% at 50% -10%, rgba(114, 51, 164, 0.30) 0%, transparent 70%),
+        radial-gradient(ellipse 65% 55% at 50% -10%, rgba(114, 51, 164, 0.3) 0%, transparent 70%),
         radial-gradient(ellipse 45% 40% at 80% 65%, rgba(44, 200, 202, 0.12) 0%, transparent 70%),
         radial-gradient(ellipse 35% 35% at 15% 70%, rgba(214, 74, 154, 0.08) 0%, transparent 70%);
 }
@@ -7890,8 +7975,8 @@ img,
   position: absolute;
   inset: 0px;
   background:
-        radial-gradient(ellipse 55% 70% at 50% -20%, rgba(114, 51, 164, 0.20) 0%, transparent 70%),
-        radial-gradient(ellipse 40% 50% at 85% 80%, rgba(44, 200, 202, 0.10) 0%, transparent 70%);
+        radial-gradient(ellipse 55% 70% at 50% -20%, rgba(114, 51, 164, 0.2) 0%, transparent 70%),
+        radial-gradient(ellipse 40% 50% at 85% 80%, rgba(44, 200, 202, 0.1) 0%, transparent 70%);
 }
 
 .app-page-header-inner {
@@ -7982,8 +8067,14 @@ img,
 .app-stat-tile--featured {
   --tw-border-opacity: 1;
   border-color: rgb(44 200 202 / var(--tw-border-opacity, 1));
-  background: linear-gradient(160deg, rgba(44, 200, 202, 0.08) 0%, var(--tile-bg, #ffffff) 70%);
-  box-shadow: 0 0 30px rgba(44, 200, 202, 0.10), inset 0 1px 0 rgba(44, 200, 202, 0.15);
+  background: linear-gradient(
+        160deg,
+        rgba(44, 200, 202, 0.08) 0%,
+        var(--tile-bg, #ffffff) 70%
+    );
+  box-shadow:
+        0 0 30px rgba(44, 200, 202, 0.1),
+        inset 0 1px 0 rgba(44, 200, 202, 0.15);
 }
 
 .dark .app-stat-tile--featured {
@@ -9317,4 +9408,3 @@ img,
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }
-

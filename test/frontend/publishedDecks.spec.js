@@ -24,7 +24,8 @@ function section(opts) {
               '<button type="button" class="deck-section-more">Load more Modern decks</button>' +
               '</div>'
             : '') +
-        '</section>';
+        '</section>' +
+        '<div id="aria-live-announcer"></div>';
     return {
         grid: document.querySelector('.deck-section-grid'),
         button: document.querySelector('.deck-section-more'),
@@ -80,6 +81,9 @@ function load() {
     if (handler) handler();
 }
 
+// jsdom has no layout, so it does not implement scrollIntoView.
+Element.prototype.scrollIntoView = function () {};
+
 /** Drain the fetch -> json() -> render promise chain. */
 function flush() {
     return new Promise(function (resolve) {
@@ -115,11 +119,29 @@ describe('publishedDecks "Load more"', function () {
         expect(global.fetch.mock.calls[1][0]).toContain('offset=24');
     });
 
-    it('moves focus to the first newly loaded card', async function () {
+    it('keeps focus on the button while there is more to load', async function () {
         var els = section({});
         respondWith({
             success: true,
             data: { items: [item(), item({ id: 2 })], nextOffset: 24, hasMore: true },
+        });
+        load();
+
+        els.button.click();
+        await flush();
+
+        // Moving focus into the grid scrolled the page ~1700px in one jump.
+        expect(document.activeElement).toBe(els.button);
+        expect(document.getElementById('aria-live-announcer').textContent).toContain(
+            '2 more decks'
+        );
+    });
+
+    it('moves focus to the first new card only once the button retires', async function () {
+        var els = section({});
+        respondWith({
+            success: true,
+            data: { items: [item(), item({ id: 2 })], nextOffset: 24, hasMore: false },
         });
         load();
 

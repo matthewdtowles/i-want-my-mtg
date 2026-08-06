@@ -80,22 +80,37 @@
                 state.nextOffset = data.nextOffset;
                 state.hasMore = !!data.hasMore;
 
+                announce((data.items || []).length + ' more decks loaded.');
+
                 if (state.hasMore) {
+                    // Keep focus on the button. It is still there, still under the
+                    // pointer, and moving focus into the grid scrolled the page far
+                    // enough that you lost both the button and the row you were
+                    // reading.
                     button.disabled = false;
                     button.textContent = label;
+                    button.focus({ preventScroll: true });
                 } else {
+                    // The button is going away, so focus has to land somewhere:
+                    // the first new card, scrolled by the smallest amount that
+                    // brings it into view rather than yanked to the top.
                     removeButton(button);
+                    if (first) {
+                        first.focus({ preventScroll: true });
+                        first.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+                    }
                 }
-                // Land focus on the first new card, so keyboard and screen-reader
-                // users are taken to what appeared rather than left on a button
-                // that just moved down the page. No preventScroll: the point is
-                // for the browser to bring the new content into view.
-                if (first) first.focus();
             })
             .catch(function () {
                 state.loading = false;
                 removeButton(button);
             });
+    }
+
+    /** Tell screen readers what arrived, since focus no longer moves to it. */
+    function announce(message) {
+        var region = document.getElementById('aria-live-announcer');
+        if (region) region.textContent = message;
     }
 
     /** Drop the button (and its centering wrapper) once there is nothing left. */
@@ -212,7 +227,9 @@
         scrim.className =
             'absolute inset-x-0 bottom-0 block bg-gradient-to-t from-black/80 to-transparent px-3 pt-8 pb-2';
         var title = document.createElement('span');
-        title.className = 'block font-display font-semibold text-base text-white drop-shadow';
+        title.className =
+            'font-display font-semibold text-base text-white drop-shadow line-clamp-2 break-words';
+        title.title = item.title;
         title.textContent = item.title;
         scrim.appendChild(title);
         art.appendChild(scrim);

@@ -52,7 +52,11 @@
                                 class="absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" />
                         {{/if}}
                         <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent px-4 pt-8 pb-2">
-                            <span class="font-display font-semibold text-lg text-white drop-shadow">{{name}}</span>
+                            {{!-- Clamped: the scrim grows with the name but the band does
+                                  not, so an unclamped long name covers the art entirely.
+                                  The full name is on the detail page. --}}
+                            <span title="{{name}}"
+                                class="font-display font-semibold text-lg text-white drop-shadow line-clamp-2 break-words">{{name}}</span>
                         </div>
                     </a>
                     <div class="p-4">

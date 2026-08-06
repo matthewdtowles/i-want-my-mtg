@@ -91,6 +91,13 @@ function flush() {
     });
 }
 
+/** Wait out a timer, for the deferred live-region announcement. */
+function settle(ms) {
+    return new Promise(function (resolve) {
+        setTimeout(resolve, ms);
+    });
+}
+
 describe('publishedDecks "Load more"', function () {
     afterEach(function () {
         delete global.fetch;
@@ -132,6 +139,8 @@ describe('publishedDecks "Load more"', function () {
 
         // Moving focus into the grid scrolled the page ~1700px in one jump.
         expect(document.activeElement).toBe(els.button);
+        // announce() clears then sets on a timeout, so repeated loads re-announce.
+        await settle(150);
         expect(document.getElementById('aria-live-announcer').textContent).toContain(
             '2 more decks'
         );

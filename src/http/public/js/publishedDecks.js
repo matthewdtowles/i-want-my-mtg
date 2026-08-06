@@ -107,10 +107,18 @@
             });
     }
 
-    /** Tell screen readers what arrived, since focus no longer moves to it. */
+    /**
+     * Tell screen readers what arrived, since focus no longer moves to it.
+     * Cleared first, then set on a timeout: successive loads produce the same
+     * message and a live region will not re-announce unchanged text.
+     */
     function announce(message) {
         var region = document.getElementById('aria-live-announcer');
-        if (region) region.textContent = message;
+        if (!region) return;
+        region.textContent = '';
+        setTimeout(function () {
+            region.textContent = message;
+        }, 100);
     }
 
     /** Drop the button (and its centering wrapper) once there is nothing left. */

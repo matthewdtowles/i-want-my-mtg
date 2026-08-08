@@ -3,6 +3,19 @@ SHELL=/bin/bash
 HOME=/home/ubuntu
 PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
+# Every time below is UTC because the host runs Etc/UTC - not because cron is
+# pinned to it. Do not "fix" that with a CRON_TZ=UTC line: Ubuntu's cron
+# (3.0pl1-184ubuntu2) has no such setting - the string does not appear in
+# /usr/sbin/cron at all - and `man 5 crontab` LIMITATIONS is explicit that a TZ
+# set here "will affect only the commands executed in the crontab, not the
+# execution of the crontab tasks themselves". Such a line would read as a
+# guarantee while doing nothing.
+#
+# So the host timezone is load-bearing. If it ever moves off UTC these
+# schedules move with it, and the ingest drifts off MTGJSON's ~06:10 UTC
+# publish window - which is the exact failure the 08:00 slot below exists to
+# avoid.
+
 # Where cron mails job output.
 #
 # Every job below redirects stdout - and only stdout - to its own log. scry

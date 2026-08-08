@@ -3,6 +3,19 @@ SHELL=/bin/bash
 HOME=/home/ubuntu
 PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
+# Every time below is UTC because the host runs Etc/UTC - not because cron is
+# pinned to it. Do not "fix" that with a CRON_TZ=UTC line: Ubuntu's cron
+# (3.0pl1-184ubuntu2) has no such setting - the string does not appear in
+# /usr/sbin/cron at all - and `man 5 crontab` LIMITATIONS is explicit that a TZ
+# set here "will affect only the commands executed in the crontab, not the
+# execution of the crontab tasks themselves". Such a line would read as a
+# guarantee while doing nothing.
+#
+# So the host timezone is load-bearing. If it ever moves off UTC these
+# schedules move with it, and the ingest drifts off MTGJSON's ~06:10 UTC
+# publish window - which is the exact failure the 08:00 slot below exists to
+# avoid.
+
 # Where cron mails job output.
 #
 # Every job below redirects stdout - and only stdout - to its own log. scry
@@ -15,8 +28,20 @@ PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 # ingests. Requires a working local MTA.
 MAILTO=legal@iwantmymtg.net
 
-# Scryfall data ingestion (daily at 2 AM)
-0 2 * * * ubuntu /opt/scripts/scry.sh >> /var/log/i-want-my-mtg/ingestion.log
+# MTGJSON data ingestion (daily at 08:00 UTC).
+#
+# Must stay after MTGJSON's daily rebuild, which lands at ~06:10 UTC
+# (2026-08-07: AllPricesToday.json, AllPrintings.json and AllPrices.json all
+# had last-modified between 06:09:55 and 06:10:14 UTC). This used to run at
+# 02:00 UTC - four hours early - so every run ingested the *previous* day's
+# price file and the catalog was permanently one day behind. That put the
+# steady state exactly on `scry health`'s one-day staleness threshold, with no
+# slack: when MTGJSON skipped its 2026-08-06 build, two consecutive runs read
+# the same 2026-08-05 file and the 06:00 health check paged.
+#
+# The ~2h margin absorbs a late upstream build; anything later than that leaves
+# the catalog a day old, which health now tolerates.
+0 8 * * * ubuntu /opt/scripts/scry.sh >> /var/log/i-want-my-mtg/ingestion.log
 
 # Price history retention cleanup (weekly, Sunday at 3 AM)
 0 3 * * 0 ubuntu /opt/scripts/scry.sh retention >> /var/log/i-want-my-mtg/retention.log
@@ -24,17 +49,20 @@ MAILTO=legal@iwantmymtg.net
 # Published tournament-deck ingest (daily at 3:30 AM; fetches the prior 2 days)
 30 3 * * * ubuntu /opt/scripts/scry.sh ingest-decks --days 2 >> /var/log/i-want-my-mtg/decks.log
 
-# Price alert processing (daily at 2:15 AM, after ingestion completes)
-15 2 * * * ubuntu curl -sSf -X POST -H "x-api-key: $(grep '^INTERNAL_API_KEY=' /home/ubuntu/.env | cut -d= -f2- | sed 's/^"//;s/"$//')" http://localhost/api/v1/price-alerts/process >> /var/log/i-want-my-mtg/price-alerts.log
+# Price alert processing (daily at 08:15 UTC, after ingestion completes)
+15 8 * * * ubuntu curl -sSf -X POST -H "x-api-key: $(grep '^INTERNAL_API_KEY=' /home/ubuntu/.env | cut -d= -f2- | sed 's/^"//;s/"$//')" http://localhost/api/v1/price-alerts/process >> /var/log/i-want-my-mtg/price-alerts.log
 
-# Portfolio summary refresh (daily at 2:30 AM, 30 min after ingestion)
-30 2 * * * ubuntu /opt/scripts/scry.sh portfolio-summary >> /var/log/i-want-my-mtg/portfolio.log
+# Portfolio summary refresh (daily at 08:30 UTC, 30 min after ingestion)
+30 8 * * * ubuntu /opt/scripts/scry.sh portfolio-summary >> /var/log/i-want-my-mtg/portfolio.log
 
-# Data freshness check (daily at 6 AM, well after the ingest window).
+# Data freshness check (daily at 10:00 UTC, well after the ingest window).
 # `scry health` exits non-zero when the newest price row is more than a day
-# old. Prices carry MTGJSON's file date, not the ingest date, so a healthy
-# catalog checked at 06:00 is one day old - two days means a run was missed.
-0 6 * * * ubuntu /opt/scripts/scry.sh health >> /var/log/i-want-my-mtg/health.log
+# old. Prices carry MTGJSON's file date, not the ingest date; now that the
+# ingest runs after the upstream publish, a healthy catalog checked here is
+# same-day, and one day old means a single upstream build was skipped.
+# Must stay after the 08:00 ingest - at its old 06:00 slot it would now run
+# two hours *before* the ingest and read the prior day's catalog every time.
+0 10 * * * ubuntu /opt/scripts/scry.sh health >> /var/log/i-want-my-mtg/health.log
 
 # Log cleanup (weekly, Sunday at 4 AM)
 0 4 * * 0 ubuntu /opt/scripts/clean_logs.sh >> /var/log/i-want-my-mtg/cleanup.log

@@ -380,6 +380,10 @@ needs filesystem access the browser cannot give.
 
 ### 7.3 Import Inventory by Picture
 
+Full plan: [docs/7.3-card-scanning-plan.md](docs/7.3-card-scanning-plan.md) - staging,
+repo split (no new repo; web owns the API and schema, scry builds the fingerprint index,
+mobile owns capture), and the issues to file.
+
 - [ ] Research card recognition APIs/libraries (Scryfall image matching, ML models)
 - [ ] Design image upload and processing flow
 - [ ] Implement image capture UI (web + mobile)

@@ -43,6 +43,14 @@ MAILTO=legal@iwantmymtg.net
 # the catalog a day old, which health now tolerates.
 0 8 * * * ubuntu /opt/scripts/scry.sh >> /var/log/i-want-my-mtg/ingestion.log
 
+# Ingest retry (daily at 09:00 UTC, one hour after the ingest slot).
+#
+# Runs `scry health` first and only re-ingests when the catalog is actually
+# stale, so a healthy night is one cheap query and no mail. Sits between the
+# 08:00 ingest and the 10:00 health check on purpose: a wedged run gets a
+# second chance before the check that pages on it. See cron/ingest-retry.sh.
+0 9 * * * ubuntu /opt/scripts/ingest-retry.sh >> /var/log/i-want-my-mtg/ingestion.log
+
 # Price history retention cleanup (weekly, Sunday at 3 AM)
 0 3 * * 0 ubuntu /opt/scripts/scry.sh retention >> /var/log/i-want-my-mtg/retention.log
 

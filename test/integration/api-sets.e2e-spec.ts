@@ -31,6 +31,26 @@ describe('Sets API (e2e)', () => {
             expect(res.body.meta).toHaveProperty('totalPages');
         });
 
+        it('omits a set that holds no cards', async () => {
+            const res = await request(app.getHttpServer())
+                .get('/api/v1/sets?limit=100')
+                .expect(200);
+
+            const codes = res.body.data.map((s: { code: string }) => s.code);
+            expect(codes).toContain('tst');
+            expect(codes).not.toContain('mty');
+        });
+
+        it('leaves a card-less set out of the pagination total too', async () => {
+            const res = await request(app.getHttpServer())
+                .get('/api/v1/sets?limit=100')
+                .expect(200);
+
+            // A total that counted 'mty' while the page omitted it would show a
+            // page of N-1 rows claiming N, and a trailing empty page.
+            expect(res.body.meta.total).toBe(res.body.data.length);
+        });
+
         it('supports pagination parameters', async () => {
             const res = await request(app.getHttpServer())
                 .get('/api/v1/sets?page=1&limit=1')

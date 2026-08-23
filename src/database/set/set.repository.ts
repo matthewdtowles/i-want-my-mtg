@@ -41,6 +41,7 @@ export class SetRepository implements SetRepositoryPort {
             )
             .where(`${this.TABLE}.releaseDate <= CURRENT_DATE`);
         this.applyBaseFilter(qb, options);
+        this.applyNonEmptyFilter(qb);
         this.queryHelper.applyFilters(qb, options.filter);
         const result = await qb.getRawOne();
         const count = Number(result?.count ?? 0);
@@ -55,6 +56,7 @@ export class SetRepository implements SetRepositoryPort {
             .select(`COALESCE(${this.TABLE}.parentCode, ${this.TABLE}.code)`, 'block_key')
             .where(`${this.TABLE}.releaseDate <= CURRENT_DATE`);
         this.applyBaseFilter(qb, options);
+        this.applyNonEmptyFilter(qb);
         this.queryHelper.applyFilters(qb, options.filter);
         qb.groupBy('block_key');
 
@@ -93,6 +95,7 @@ export class SetRepository implements SetRepositoryPort {
             })
             .andWhere(`${this.TABLE}.releaseDate <= CURRENT_DATE`);
         this.applyBaseFilter(qb, options);
+        this.applyNonEmptyFilter(qb);
         qb.orderBy(`${this.TABLE}.isMain`, 'DESC');
         qb.addOrderBy(`${this.TABLE}.releaseDate`, 'ASC', 'NULLS LAST');
         qb.addOrderBy(`${this.TABLE}.name`, 'ASC', 'NULLS LAST');
@@ -108,6 +111,7 @@ export class SetRepository implements SetRepositoryPort {
             .leftJoinAndSelect(`${this.TABLE}.setPrice`, 'setPrice')
             .where(`${this.TABLE}.releaseDate <= CURRENT_DATE`);
         this.applyBaseFilter(qb, options);
+        this.applyNonEmptyFilter(qb);
         this.queryHelper.applyFilters(qb, options.filter);
         this.queryHelper.applyPagination(qb, options);
         this.addSetOrdering(qb, options);
@@ -145,6 +149,7 @@ export class SetRepository implements SetRepositoryPort {
             .createQueryBuilder(this.TABLE)
             .where(`${this.TABLE}.releaseDate <= CURRENT_DATE`);
         this.applyBaseFilter(qb, options);
+        this.applyNonEmptyFilter(qb);
         this.queryHelper.applyFilters(qb, options.filter);
         const count = await qb.getCount();
         this.LOGGER.debug(`Total sets: ${count}.`);
@@ -218,6 +223,28 @@ export class SetRepository implements SetRepositoryPort {
      * empty array, return no rows (the user has explicitly cleared all
      * types).
      */
+    /**
+     * Exclude sets that hold no cards.
+     *
+     * Scry prunes these at the end of every successful ingest, so in the steady
+     * state there are none. But a run that dies partway leaves them behind: it
+     * writes the set list first and the cards second, so an ingest that fails
+     * mid-card-stream - as the 2026-08-22 one did - adds every set MTGJSON
+     * lists and then never fills most of them in. Those sets are then real rows
+     * until the next successful run, and the set list rendered them as
+     * browsable sets with nothing inside.
+     *
+     * Cheap: `idx_card_set_code_sort_number` makes the EXISTS an index-only
+     * probe, and it stops at the first row. Applied to the listings and their
+     * counts together so pagination totals stay consistent. Deliberately not
+     * applied to `findSpoilerSets` (unreleased sets have no cards yet, by
+     * definition) or to `findByCode` (a direct link to a set should still
+     * resolve rather than silently 404).
+     */
+    private applyNonEmptyFilter(qb: SelectQueryBuilder<SetOrmEntity>): void {
+        qb.andWhere(`EXISTS (SELECT 1 FROM card WHERE card.set_code = ${this.TABLE}.code)`);
+    }
+
     private applyBaseFilter(qb: SelectQueryBuilder<SetOrmEntity>, options: SafeQueryOptions): void {
         if (!options.baseOnly) return;
         const types = options.includedSetTypes;

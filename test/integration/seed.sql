@@ -6,6 +6,14 @@ INSERT INTO "set" (code, base_size, total_size, block, keyrune_code, name, paren
 VALUES ('tst', 4, 5, NULL, 'tst', 'Test Set', NULL, '2024-01-01', 'expansion', true)
 ON CONFLICT (code) DO NOTHING;
 
+-- A released set that holds no cards. Scry prunes these at the end of a
+-- successful ingest, but an ingest that dies mid-card-stream leaves them
+-- behind, so the set listings must not render them regardless. No card rows
+-- reference 'mty' anywhere in this file - that is the whole point of it.
+INSERT INTO "set" (code, base_size, total_size, block, keyrune_code, name, parent_code, release_date, type, is_main)
+VALUES ('mty', 0, 0, NULL, 'mty', 'Empty Test Set', NULL, '2024-01-01', 'expansion', true)
+ON CONFLICT (code) DO NOTHING;
+
 -- Test cards in the set
 -- scryfall_id (not img_src) drives the card image now (6.8b): the web derives
 -- the path tail '{a}/{b}/{scryfall_id}.jpg' from it at read time.

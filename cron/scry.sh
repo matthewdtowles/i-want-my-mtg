@@ -14,7 +14,15 @@ COMMAND="${1:-ingest}"
 # Locked per command, so ingest-decks is not blocked by a long ingest.
 LOCK_FILE="/var/lock/scry-${COMMAND//[^a-zA-Z0-9]/_}.lock"
 # A healthy full ingest finishes in well under 10 minutes.
-TIMEOUT_SECONDS="${SCRY_TIMEOUT_SECONDS:-3600}"
+#
+# This is the outermost of three nested deadlines, and it is the worst one to
+# hit: it SIGTERMs the process, so all you learn is that it overran. Inside it,
+# scry enforces its own whole-command deadline (SCRY_COMMAND_TIMEOUT_SECONDS,
+# 1800s) and logs the phase it wedged in, and inside that Postgres enforces
+# statement_timeout and lock_timeout per query. So this is set above scry's own
+# deadline but not far above it - enough slack for scry to fail and report
+# first, not the hour the 2026-08-22 wedge spent here saying nothing.
+TIMEOUT_SECONDS="${SCRY_TIMEOUT_SECONDS:-2400}"
 
 echo "$(date -u +%Y-%m-%dT%H:%M:%SZ) Starting scry.sh with args: ${*:-ingest}"
 

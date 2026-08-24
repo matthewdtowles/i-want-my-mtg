@@ -171,8 +171,15 @@ taking effect, the server may still be on the old binary:
 
 ```bash
 ls -la /opt/scripts/scry          # mtime should match the last web deploy
-/opt/scripts/scry.sh --version
+/opt/scripts/scry.sh --version    # prints the banner first, version last
 ```
+
+Compare that against scry's newest release (`gh release list --repo
+matthewdtowles/scry --limit 1`). They drift whenever scry publishes *after* the
+web deploy that would have carried it - on 2026-08-23 the server ran 5.18.3 for
+a day while 5.18.5 was published, so two merged fixes were live nowhere. Every
+deploy log now ends the cron setup with `Installed scry version: …`, so you can
+also read it from the last CI run instead of SSH-ing in.
 
 Refresh it without a full web deploy:
 

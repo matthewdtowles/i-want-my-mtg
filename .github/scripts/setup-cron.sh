@@ -55,6 +55,20 @@ cleanup_docker
 trap - EXIT
 sudo chmod 755 /opt/scripts/scry
 
+# Record which scry actually landed.
+#
+# This deploy is the ONLY thing that refreshes the binary - a new scry release
+# does not reach the server on its own - so "which scry is running" is decided
+# here and nowhere else. Without this line nothing said, and the server sat on
+# 5.18.3 for a day while 5.18.5 was published, with two fixes built, released
+# and simply not live. Now every deploy log states the version, so comparing it
+# against scry's latest release is a glance rather than an SSH session.
+#
+# `scry --version` prints its startup banner first and the version last, and it
+# needs no DATABASE_URL, so it is safe to call directly here rather than through
+# the scry.sh wrapper.
+log_info "Installed scry version: $(/opt/scripts/scry --version 2>&1 | tail -1)"
+
 # Set log directory and file permissions
 sudo chown ubuntu:ubuntu /var/log/i-want-my-mtg
 sudo touch /var/log/i-want-my-mtg/ingestion.log /var/log/i-want-my-mtg/retention.log /var/log/i-want-my-mtg/cleanup.log /var/log/i-want-my-mtg/portfolio.log /var/log/i-want-my-mtg/price-alerts.log /var/log/i-want-my-mtg/health.log

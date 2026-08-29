@@ -22,9 +22,12 @@ sudo chmod 644 /etc/cron.d/i-want-my-mtg
 sudo cp ~/cron/scry.sh /opt/scripts/scry.sh
 sudo chmod 755 /opt/scripts/scry.sh
 
-# Install ingest retry script
-sudo cp ~/cron/ingest-retry.sh /opt/scripts/ingest-retry.sh
-sudo chmod 755 /opt/scripts/ingest-retry.sh
+# Install the gated ingest chain
+sudo cp ~/cron/ingest-chain.sh /opt/scripts/ingest-chain.sh
+sudo chmod 755 /opt/scripts/ingest-chain.sh
+# The retry it replaced ran once a day off `scry health`, which tolerates a
+# one-day-old catalog and so never fired. Remove any copy left by an older deploy.
+sudo rm -f /opt/scripts/ingest-retry.sh
 
 # Install log cleanup script
 sudo cp ~/cron/clean_logs.sh /opt/scripts/clean_logs.sh

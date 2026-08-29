@@ -3,10 +3,16 @@
 What to do when the nightly Scry ingest fails, hangs, or the site is showing
 stale prices. Every block below is meant to be pasted as-is.
 
-The whole pipeline is one cron job: `/opt/scripts/scry.sh ingest` at **08:00
-UTC daily**, logging to `/var/log/i-want-my-mtg/ingestion.log`. If it does not
-finish, `/opt/scripts/ingest-retry.sh` gets a second attempt at 09:00 UTC, and
-`scry health` pages at 10:00 UTC if the catalog is still stale.
+The whole pipeline is one cron job, `/opt/scripts/ingest-chain.sh`, run **at
+the top of every hour** and logging to `/var/log/i-want-my-mtg/ingestion.log`.
+Most hours it does nothing: it asks `scry has-new-prices` whether upstream is
+serving data newer than ours (a 200-byte range read) and exits quietly if not.
+When there is new data it runs ingest, then price alerts, then portfolio
+summary, in that order. `scry health` reports catalog freshness at 10:00 UTC.
+
+Because it is hourly, **a single failed hour is not an incident** - the next
+hour retries. Investigate when several consecutive hours fail, or when the
+newest price date stops advancing for more than a day or two.
 
 ## 0. Get on the box
 

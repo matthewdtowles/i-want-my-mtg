@@ -32,7 +32,15 @@ echo "$(date -u +%Y-%m-%dT%H:%M:%SZ) ingest-chain: checking for new price data..
 # One chain at a time. A run that outlives the hour must not have the next one
 # start on top of it; skipping is correct here and not worth mailing about,
 # because the following hour will pick it up.
-exec 9>"$LOCK_FILE"
+# Open the lock file explicitly rather than letting a failure fall through.
+# A missing /var/lock, a permissions change or a full disk makes this fail, and
+# `flock` then reports "Bad file descriptor" - which the check below would have
+# read as "previous run still going" and answered with exit 0, skipping every
+# hour forever behind a reassuring log line.
+if ! exec 9>"$LOCK_FILE"; then
+    echo "ERROR: cannot open lock file $LOCK_FILE; not running the pipeline." >&2
+    exit 1
+fi
 if ! flock -n 9; then
     echo "ingest-chain: previous run still going; skipping this hour."
     exit 0
@@ -64,9 +72,18 @@ fi
 # ingest, but a failure still needs to reach the mail.
 echo "$(date -u +%Y-%m-%dT%H:%M:%SZ) ingest-chain: price alerts"
 api_key=$(grep '^INTERNAL_API_KEY=' /home/ubuntu/.env | cut -d= -f2- | sed 's/^"//;s/"$//')
-if ! curl -sSf -X POST -H "x-api-key: $api_key" \
+# Bounded, like every other step. The scry.sh calls inherit its `timeout`; this
+# curl has no such wrapper, and it is now inside the chain's single flock. An
+# unbounded request that hangs - the app accepting the connection and never
+# answering - would hold that lock forever, and every following hour would take
+# the `flock -n` branch and exit 0 quietly. Ingestion would stop with nothing
+# mailed until the 10:00 health check noticed the catalog going stale. As its
+# own cron job a hang only cost that one invocation; inside the chain it costs
+# the pipeline, so the ceiling has to be explicit. 10 minutes is far beyond a
+# local API call and well under scry.sh's 2400s.
+if ! curl -sSf --connect-timeout 10 --max-time 600 -X POST -H "x-api-key: $api_key" \
         http://localhost/api/v1/price-alerts/process >> "$LOG_DIR/price-alerts.log"; then
-    echo "ERROR: price-alert processing failed after a successful ingest." >&2
+    echo "ERROR: price-alert processing failed or timed out after a successful ingest." >&2
     status=1
 fi
 

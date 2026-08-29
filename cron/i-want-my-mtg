@@ -28,28 +28,24 @@ PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 # ingests. Requires a working local MTA.
 MAILTO=legal@iwantmymtg.net
 
-# MTGJSON data ingestion (daily at 08:00 UTC).
+# MTGJSON pipeline (hourly, gated).
 #
-# Must stay after MTGJSON's daily rebuild, which lands at ~06:10 UTC
-# (2026-08-07: AllPricesToday.json, AllPrintings.json and AllPrices.json all
-# had last-modified between 06:09:55 and 06:10:14 UTC). This used to run at
-# 02:00 UTC - four hours early - so every run ingested the *previous* day's
-# price file and the catalog was permanently one day behind. That put the
-# steady state exactly on `scry health`'s one-day staleness threshold, with no
-# slack: when MTGJSON skipped its 2026-08-06 build, two consecutive runs read
-# the same 2026-08-05 file and the 06:00 health check paged.
+# Runs `scry has-new-prices` first - a 200-byte range read of the head of
+# AllPricesToday.json - and does nothing unless upstream is serving data newer
+# than ours. When it is, it runs ingest, then price alerts, then the portfolio
+# summary, sequentially, because each depends on the one before it.
 #
-# The ~2h margin absorbs a late upstream build; anything later than that leaves
-# the catalog a day old, which health now tolerates.
-0 8 * * * ubuntu /opt/scripts/scry.sh >> /var/log/i-want-my-mtg/ingestion.log
-
-# Ingest retry (daily at 09:00 UTC, one hour after the ingest slot).
+# This replaced four jobs on fixed times (ingest 08:00, price alerts 08:15,
+# portfolio 08:30, retry 09:00). Every one of those times encoded a guess about
+# when MTGJSON publishes, and the guess was wrong: a probe polling every 10
+# minutes from 2026-08-28 saw no new build for 22 hours, nine of them past the
+# assumed window. The 08:00 run kept downloading 550MB to rediscover the
+# previous day's data and mailing about it, and the 09:00 retry never fired
+# because `scry health` tolerates a one-day-old catalog.
 #
-# Runs `scry health` first and only re-ingests when the catalog is actually
-# stale, so a healthy night is one cheap query and no mail. Sits between the
-# 08:00 ingest and the 10:00 health check on purpose: a wedged run gets a
-# second chance before the check that pages on it. See cron/ingest-retry.sh.
-0 9 * * * ubuntu /opt/scripts/ingest-retry.sh >> /var/log/i-want-my-mtg/ingestion.log
+# Hourly costs ~5KB a day and picks up a publish within the hour, whenever it
+# lands. Nothing is mailed on the hours with nothing to do.
+0 * * * * ubuntu /opt/scripts/ingest-chain.sh >> /var/log/i-want-my-mtg/ingestion.log
 
 # Price history retention cleanup (weekly, Sunday at 3 AM)
 0 3 * * 0 ubuntu /opt/scripts/scry.sh retention >> /var/log/i-want-my-mtg/retention.log
@@ -57,19 +53,13 @@ MAILTO=legal@iwantmymtg.net
 # Published tournament-deck ingest (daily at 3:30 AM; fetches the prior 2 days)
 30 3 * * * ubuntu /opt/scripts/scry.sh ingest-decks --days 2 >> /var/log/i-want-my-mtg/decks.log
 
-# Price alert processing (daily at 08:15 UTC, after ingestion completes)
-15 8 * * * ubuntu curl -sSf -X POST -H "x-api-key: $(grep '^INTERNAL_API_KEY=' /home/ubuntu/.env | cut -d= -f2- | sed 's/^"//;s/"$//')" http://localhost/api/v1/price-alerts/process >> /var/log/i-want-my-mtg/price-alerts.log
-
-# Portfolio summary refresh (daily at 08:30 UTC, 30 min after ingestion)
-30 8 * * * ubuntu /opt/scripts/scry.sh portfolio-summary >> /var/log/i-want-my-mtg/portfolio.log
-
 # Data freshness check (daily at 10:00 UTC, well after the ingest window).
 # `scry health` exits non-zero when the newest price row is more than a day
 # old. Prices carry MTGJSON's file date, not the ingest date; now that the
 # ingest runs after the upstream publish, a healthy catalog checked here is
 # same-day, and one day old means a single upstream build was skipped.
-# Must stay after the 08:00 ingest - at its old 06:00 slot it would now run
-# two hours *before* the ingest and read the prior day's catalog every time.
+# The ingest is now hourly and gated, so there is no slot to sit after; this
+# is simply a daily read of how fresh the catalog ended up.
 0 10 * * * ubuntu /opt/scripts/scry.sh health >> /var/log/i-want-my-mtg/health.log
 
 # Log cleanup (weekly, Sunday at 4 AM)

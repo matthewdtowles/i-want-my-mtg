@@ -1,0 +1,14 @@
+{
+  "Name": "IwmmPublicCatalog",
+  "Comment": "Public catalog API paths. Keyed on query string only and honors origin Cache-Control.",
+  "MinTTL": 0,
+  "DefaultTTL": 60,
+  "MaxTTL": 3600,
+  "ParametersInCacheKeyAndForwardedToOrigin": {
+    "EnableAcceptEncodingGzip": true,
+    "EnableAcceptEncodingBrotli": true,
+    "HeadersConfig": { "HeaderBehavior": "none" },
+    "CookiesConfig": { "CookieBehavior": "none" },
+    "QueryStringsConfig": { "QueryStringBehavior": "all" }
+  }
+}

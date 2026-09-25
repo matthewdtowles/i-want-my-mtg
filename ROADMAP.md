@@ -43,6 +43,16 @@ that `GET /api/v1/sets` returns per-user `ownedTotal`, so a naive public cache l
 one user's owned counts to everyone. → verify: `x-cache: Hit from cloudfront` on a
 repeat, and a signed-in caller still gets its own `ownedTotal`.
 
+*Progress (2026-09-21):* the two cache policies are drafted as JSON in
+`infra/cloudfront/cache-policies/`, following the split in the
+[#621 comment](https://github.com/matthewdtowles/i-want-my-mtg/issues/621): the
+public catalog paths ignore cookies and `Authorization`, and `/api/v1/sets` itself
+keys on them. The public paths also get an origin request policy so API-key and
+RapidAPI callers are still identified on a cache miss; `infra/cloudfront/README.md`
+has the behavior order and settings. Not applied yet: on 2026-09-24 the origin sent `public, max-age=60` and
+CloudFront still answered `Miss`. Test with a GET (`curl -s -o /dev/null -D -`), not
+`curl -I`: the app marks every non-GET response `no-store`, including HEAD.
+
 Add `OPTIONS` to the behavior's allowed methods while building it. The origin answers
 preflights as of [PR #633](https://github.com/matthewdtowles/i-want-my-mtg/pull/633),
 but they cannot reach it until the distribution forwards them - `OPTIONS
@@ -68,11 +78,10 @@ deliberately. → verify: break it on purpose, confirm the alert arrives *and* c
                            └──► #625 edge alarm (option 3 only)
    #622 trust proxy ───────── independent code; verify hop count against prod first
 ✅ #623 browser review ─────► ✅ #624 deck detail thumbnail (PR #633)
-                           └──► #634 deck list layout fixes the review found
+                           └──► ✅ #634 deck list layout fixes the review found
 ```
 
-Nothing else is gated. #622, #634 and the mobile Browse items can proceed in any
-order at any time.
+Nothing else is gated. #622 can proceed at any time.
 
 ### Order of work
 
@@ -121,7 +130,7 @@ Web = this repo, Mobile = `i-want-my-mtg-mobile`. Each line has its own verifica
    **[#634](https://github.com/matthewdtowles/i-want-my-mtg/issues/634)** *(~2h)*: a
    long deck name's scrim (124px) overflows the fixed `h-28` band (112px) and hides
    the art entirely, and Load more scrolls ~1700px in one jump when it focuses the
-   first new card.
+   first new card. ✅ #634 is closed.
    *Worth knowing before the next local review:* `/decks` first rendered completely
    art-less because a **stale service worker** was serving old CSS with no `h-28` or
    `object-cover`, collapsing every band to `height: 0`. Local dev pins `0.0.0-dev`,
@@ -143,12 +152,9 @@ Web = this repo, Mobile = `i-want-my-mtg-mobile`. Each line has its own verifica
    health-check monitoring.** *(AWS console / external service — see the red table.)*
    Last because the fixes above reduce the load that caused the 503s; but do not skip
    it, because none of them make the *next* occurrence visible.
-8. **Mobile Browse polish** — [#96](https://github.com/matthewdtowles/i-want-my-mtg-mobile/issues/96)
-   sort by set value *(~1h, no backend work: `SET_SORTS` already has
-   `SortOptions.SET_BASE_PRICE`)*, then [#95](https://github.com/matthewdtowles/i-want-my-mtg-mobile/issues/95)
-   group by block *(~half a day, `?group=block` already exists)*. **They interact:**
-   the API disables block grouping whenever `sort` is set, so the UI has to treat
-   grouping and sorting as mutually exclusive.
+8. ~~**Mobile Browse polish** — [#96](https://github.com/matthewdtowles/i-want-my-mtg-mobile/issues/96)
+   sort by set value, then [#95](https://github.com/matthewdtowles/i-want-my-mtg-mobile/issues/95)
+   group by block.~~ ✅ **Mobile [PR #119](https://github.com/matthewdtowles/i-want-my-mtg-mobile/pull/119).**
 
 **Newly filed on mobile, unsequenced:**
 [#104](https://github.com/matthewdtowles/i-want-my-mtg-mobile/issues/104) (no
@@ -165,7 +171,8 @@ images), [#112](https://github.com/matthewdtowles/i-want-my-mtg-mobile/issues/11
 Browse to owned sets) is the only mobile item needing backend work — `ownedTotal`
 is computed *after* pagination, so filtering on it has to move into the query. Its
 own issue calls it "worth doing only if the set list actually feels unwieldy".
-Revisit after #95/#96 land; file the backend half here first if it goes ahead.
+#95/#96 have landed (mobile #119), so this is now a judgment call; file the backend
+half here first if it goes ahead.
 
 > **Standing rule from the 3.1.1 saga:** no `4xx` body on a path the mobile app can
 > reach may contain "Premium", "Upgrade", "Free plan", a tier name, or a pricing URL.
@@ -187,9 +194,10 @@ remaining gap in the catalog API.
 
 Work merged since the store releases, listed because the **Now** board references it.
 
-- **Cover art across the catalog** — set DTOs carry `coverImgSrc` ([#615](https://github.com/matthewdtowles/i-want-my-mtg/pull/615)), deck list ([#618](https://github.com/matthewdtowles/i-want-my-mtg/pull/618)) and published-deck grids ([#619](https://github.com/matthewdtowles/i-want-my-mtg/pull/619)) show art-backed tiles, and `/sets` got mobile-style art tiles picked by each set's best card ([#629](https://github.com/matthewdtowles/i-want-my-mtg/pull/629), corrected in [#630](https://github.com/matthewdtowles/i-want-my-mtg/pull/630) to prefer a main-set card). The deck pages have now been reviewed in a browser and deck *detail* pages got their thumbnail ([#633](https://github.com/matthewdtowles/i-want-my-mtg/pull/633), closing [#623](https://github.com/matthewdtowles/i-want-my-mtg/issues/623) and [#624](https://github.com/matthewdtowles/i-want-my-mtg/issues/624)); the two layout defects that review turned up are [#634](https://github.com/matthewdtowles/i-want-my-mtg/issues/634). **`/sets` has still never been opened in a browser.**
+- **Cover art across the catalog** — set DTOs carry `coverImgSrc` ([#615](https://github.com/matthewdtowles/i-want-my-mtg/pull/615)), deck list ([#618](https://github.com/matthewdtowles/i-want-my-mtg/pull/618)) and published-deck grids ([#619](https://github.com/matthewdtowles/i-want-my-mtg/pull/619)) show art-backed tiles, and `/sets` got mobile-style art tiles picked by each set's best card ([#629](https://github.com/matthewdtowles/i-want-my-mtg/pull/629), corrected in [#630](https://github.com/matthewdtowles/i-want-my-mtg/pull/630) to prefer a main-set card). The deck pages have now been reviewed in a browser and deck *detail* pages got their thumbnail ([#633](https://github.com/matthewdtowles/i-want-my-mtg/pull/633), closing [#623](https://github.com/matthewdtowles/i-want-my-mtg/issues/623) and [#624](https://github.com/matthewdtowles/i-want-my-mtg/issues/624)); the two layout defects that review turned up, [#634](https://github.com/matthewdtowles/i-want-my-mtg/issues/634), are fixed. **`/sets` has still never been opened in a browser.**
 - **Card printings endpoint** — list a card's printings by set code and number ([#627](https://github.com/matthewdtowles/i-want-my-mtg/pull/627)). Mobile's half is [#108](https://github.com/matthewdtowles/i-want-my-mtg-mobile/issues/108).
 - **Inventory finish filter** — normal/foil on the inventory list ([#611](https://github.com/matthewdtowles/i-want-my-mtg/pull/611)).
+- **Ingest reliability (Aug 2026)** - the ingest now runs hourly and only when MTGJSON's price file has a newer build date, with nested timeouts so a wedged query fails loudly, and no pruning after a failed ingest ([#641](https://github.com/matthewdtowles/i-want-my-mtg/pull/641), [#642](https://github.com/matthewdtowles/i-want-my-mtg/pull/642), [#643](https://github.com/matthewdtowles/i-want-my-mtg/pull/643); scry #73-#76). Details in `CLAUDE.md` and `docs/ingest-runbook.md`.
 
 ### Phase 1: Foundation & Infrastructure
 

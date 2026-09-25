@@ -1,13 +1,16 @@
 {
   "Name": "IwmmPublicCatalogIdentity",
-  "Comment": "Public catalog API paths. Passes the API key and RapidAPI headers to the origin so rate limits and usage counting still see who is calling on a cache miss. Not part of the cache key, so every caller shares the same cached response.",
+  "Comment": "Public catalog API paths. Passes the caller's credentials to the origin so rate limits and usage counting still see who is calling on a cache miss. Not part of the cache key, so every caller shares the same cached response; signed in responses come back private, no-store and are never stored.",
   "HeadersConfig": {
     "HeaderBehavior": "whitelist",
     "Headers": {
-      "Quantity": 3,
-      "Items": ["X-API-Key", "X-RapidAPI-Proxy-Secret", "X-RapidAPI-User"]
+      "Quantity": 4,
+      "Items": ["Authorization", "X-API-Key", "X-RapidAPI-Proxy-Secret", "X-RapidAPI-User"]
     }
   },
-  "CookiesConfig": { "CookieBehavior": "none" },
+  "CookiesConfig": {
+    "CookieBehavior": "whitelist",
+    "Cookies": { "Quantity": 1, "Items": ["authorization"] }
+  },
   "QueryStringsConfig": { "QueryStringBehavior": "none" }
 }

@@ -47,8 +47,8 @@ repeat, and a signed-in caller still gets its own `ownedTotal`.
 `infra/cloudfront/cache-policies/`, following the split in the
 [#621 comment](https://github.com/matthewdtowles/i-want-my-mtg/issues/621): the
 public catalog paths ignore cookies and `Authorization`, and `/api/v1/sets` itself
-keys on them. The public paths also get an origin request policy so API-key and
-RapidAPI callers are still identified on a cache miss; `infra/cloudfront/README.md`
+keys on them. The public paths also get an origin request policy so signed-in, API-key
+and RapidAPI callers are still identified on a cache miss; `infra/cloudfront/README.md`
 has the behavior order and settings. Not applied yet: on 2026-09-24 the origin sent `public, max-age=60` and
 CloudFront still answered `Miss`. Test with a GET (`curl -s -o /dev/null -D -`), not
 `curl -I`: the app marks every non-GET response `no-store`, including HEAD.

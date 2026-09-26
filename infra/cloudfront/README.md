@@ -9,7 +9,7 @@ These files are the policies to create in the CloudFront console. Nothing here i
 | 1 | `/api/v1/sets` | `IwmmCatalogIndexAuthAware` | none | GET, HEAD, OPTIONS |
 | 2 | `/api/v1/sets/*` | `IwmmPublicCatalog` | `IwmmPublicCatalogIdentity` | GET, HEAD, OPTIONS |
 | 3 | `/api/v1/cards*` | `IwmmPublicCatalog` | `IwmmPublicCatalogIdentity` | GET, HEAD, OPTIONS |
-| last | `/api/*` (existing) | unchanged | unchanged | unchanged |
+| last | Default (`*`, existing) | unchanged | unchanged | unchanged |
 
 - **1** varies per user, so the login header and cookie are part of the cache key. Signed-in responses come back `private, no-store` and are never stored.
 - **2 and 3** return the same data to everyone. The cache key is the query string only. The origin request policy still passes the caller's credentials (`Authorization`, `X-API-Key`, the RapidAPI headers and the `authorization` cookie) on a cache miss, so rate limits and usage counting see who is calling. Forwarding credentials outside the cache key is safe here because these responses do not vary by user, and signed-in responses come back `private, no-store` with a minimum TTL of 0, so CloudFront neither stores them nor shares them between simultaneous requests.

@@ -33,32 +33,19 @@ part: the two remaining 503 fixes are one console session, not a coding task.
 
 | | Item | Console work | Blocks |
 |---|---|---|---|
-| 🔴 | **[#621](https://github.com/matthewdtowles/i-want-my-mtg/issues/621)** — CloudFront caches nothing on `/api/*` | CloudFront → cache behavior for `/api/v1/sets*`, `/api/v1/cards*`, **with `OPTIONS` in the allowed methods** | #616, and the edge half of #625 |
+| ✅ | **[#621](https://github.com/matthewdtowles/i-want-my-mtg/issues/621)** — CloudFront caches nothing on `/api/*` | Done 2026-09-26 with the AWS CLI; see below | — |
 | 🔴 | **[#625](https://github.com/matthewdtowles/i-want-my-mtg/issues/625)** — no health-check monitoring on the web tier | UptimeRobot/Better Stack signup, *or* a CloudWatch 5xx alarm | nothing, but nothing surfaces the next outage without it |
 
-**#621 detail.** Six identical `/api/v1/sets` requests all returned `Miss`, so every
-catalog request reaches the single Lightsail container — that is the load that makes
-the origin buckle. Recipe and its cache-key hazard are in the issue; the hazard is
-that `GET /api/v1/sets` returns per-user `ownedTotal`, so a naive public cache leaks
-one user's owned counts to everyone. → verify: `x-cache: Hit from cloudfront` on a
-repeat, and a signed-in caller still gets its own `ownedTotal`.
-
-*Progress (2026-09-21):* the two cache policies are drafted as JSON in
-`infra/cloudfront/cache-policies/`, following the split in the
-[#621 comment](https://github.com/matthewdtowles/i-want-my-mtg/issues/621): the
-public catalog paths ignore cookies and `Authorization`, and `/api/v1/sets` itself
-keys on them. The public paths also get an origin request policy so signed-in, API-key
-and RapidAPI callers are still identified on a cache miss; `infra/cloudfront/README.md`
-has the behavior order and settings. Not applied yet: on 2026-09-24 the origin sent `public, max-age=60` and
-CloudFront still answered `Miss`. Test with a GET (`curl -s -o /dev/null -D -`), not
-`curl -I`: the app marks every non-GET response `no-store`, including HEAD.
-
-Add `OPTIONS` to the behavior's allowed methods while building it. The origin answers
-preflights as of [PR #633](https://github.com/matthewdtowles/i-want-my-mtg/pull/633),
-but they cannot reach it until the distribution forwards them - `OPTIONS
-/api/v1/sets` still returns `x-cache: Error from cloudfront`. `Origin` does **not**
-need to enter the cache key: #633 sends a constant `Access-Control-Allow-Origin: *`
-and no `Vary: Origin`, so the cache does not fragment per origin.
+**#621 done (2026-09-26).** Four behaviors now sit above the default one, applied with
+the AWS CLI from the policies in `infra/cloudfront/` (behavior order and reasoning in
+`infra/cloudfront/README.md`). `/api/v1/sets` and `/api/v1/sets/*/sealed-products` vary
+per user, so their cache key includes the caller's credentials; `/api/v1/sets/*` and
+`/api/v1/cards*` are shared by everyone and still forward credentials on a miss for rate
+limiting. Verified live: repeat requests return `Hit`, a request carrying a login header
+never gets the shared copy, a preflight returns 204, and signed-in owned totals still
+show in the app. **Any new route under those public paths that reads `req.user` needs its
+own behavior**, which is how sealed products was caught after the first apply. Watch
+#612 for a few days before closing it.
 
 **#625 detail.** #612 was found by *using the app*, not by an alert. The asymmetry to
 close: scry's cron already mails on failure, so the data pipeline is monitored and
@@ -72,9 +59,7 @@ deliberately. → verify: break it on purpose, confirm the alert arrives *and* c
 ```
 ✅ #620 + #631 (PR #632) ──► trustworthy CI under every PR below
 
-🔴 #621 CloudFront cache ──┬──► #616 CORS (origin half done in PR #633; the
-                           │      distribution must forward OPTIONS before a live
-                           │      preflight works)
+✅ #621 CloudFront cache ──┬──► ✅ #616 CORS (preflight verified in production)
                            └──► #625 edge alarm (option 3 only)
    #622 trust proxy ───────── independent code; verify hop count against prod first
 ✅ #623 browser review ─────► ✅ #624 deck detail thumbnail (PR #633)
@@ -105,9 +90,8 @@ Web = this repo, Mobile = `i-want-my-mtg-mobile`. Each line has its own verifica
    rides along — `safeBoolean` defaulted to `true`, so `baseOnly` silently filtered;
    the default moved to the call site and the Swagger text now says so. Everything
    below now lands on a suite whose result means something.
-3. 🔴 **Web [#621](https://github.com/matthewdtowles/i-want-my-mtg/issues/621) —
-   CloudFront caching.** *(AWS console, ~1–2h — see the red table above.)* The single
-   highest-leverage 503 fix.
+3. ~~**Web [#621](https://github.com/matthewdtowles/i-want-my-mtg/issues/621) —
+   CloudFront caching.**~~ ✅ **Applied 2026-09-26** (see the #621 note above).
 4. **Web [#622](https://github.com/matthewdtowles/i-want-my-mtg/issues/622) — set
    `trust proxy`.** *(small diff, security-sensitive, ~2h)* `request.ip` is a
    CloudFront edge IP, so the 60/min anonymous bucket is shared per POP. Scope note:
@@ -135,19 +119,11 @@ Web = this repo, Mobile = `i-want-my-mtg-mobile`. Each line has its own verifica
    art-less because a **stale service worker** was serving old CSS with no `h-28` or
    `object-cover`, collapsing every band to `height: 0`. Local dev pins `0.0.0-dev`,
    so `sw.js` never purges. Now in CLAUDE.md.
-6. **Web [#616](https://github.com/matthewdtowles/i-want-my-mtg/issues/616) — CORS
-   on `/api/v1`.** *(origin half done in [PR #633](https://github.com/matthewdtowles/i-want-my-mtg/pull/633);
-   **still blocked on #621**)* Preflight 404s, so no browser-based third-party client
-   can use the paid API tiers. Not a 503 contributor - sequenced here because it
-   unblocks a paid product, not a live outage.
-   #633 adds `api-cors.middleware.ts`, path-mounted on `/api/v1` in `configureApp`
-   rather than `app.enableCors()` (app-wide, would stamp the HBS routes), with
-   `Access-Control-Allow-Origin: *` and **no** `Allow-Credentials` - `/api/v1` also
-   accepts the session cookie, so credentialed CORS would be a CSRF hole across every
-   authenticated route. Covered by `test/integration/api-cors.e2e-spec.ts`.
-   **Keep #616 open past that merge.** The origin is correct but the feature does not
-   work for a real browser client until #621 puts `OPTIONS` in the distribution's
-   allowed methods. → verify against production, not just the test suite.
+6. ~~**Web [#616](https://github.com/matthewdtowles/i-want-my-mtg/issues/616) — CORS
+   on `/api/v1`.**~~ ✅ The origin half shipped in [PR #633](https://github.com/matthewdtowles/i-want-my-mtg/pull/633)
+   (`Access-Control-Allow-Origin: *`, deliberately no `Allow-Credentials`); the edge half
+   landed with #621. A live preflight to `/api/v1/sets` now returns 204 with the CORS
+   headers instead of `Error from cloudfront`.
 7. 🔴 **Web [#625](https://github.com/matthewdtowles/i-want-my-mtg/issues/625) —
    health-check monitoring.** *(AWS console / external service — see the red table.)*
    Last because the fixes above reduce the load that caused the 503s; but do not skip

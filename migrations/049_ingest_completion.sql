@@ -12,11 +12,13 @@
 -- step succeeded, and the gate compares against this table instead of price.
 -- A partial failure leaves no row, so the next hourly check retries it.
 --
--- The seed marks the build already in the database as complete so the first
--- hourly check after this deploy does not re-run a finished ingest (and re-send
--- its price alerts). It only runs while the table is empty: migrations replay
--- on every deploy, and re-seeding each time would mark whatever build was
--- present as complete, including one from a failed run.
+-- The seed marks the last finished build as complete so the first hourly check
+-- after this deploy does not re-run a finished ingest (and re-send its price
+-- alerts). It reads set_price_history rather than price because only a
+-- successful ingest writes it (post-ingest updates are skipped on failure), and
+-- its date is the price build date (MAX(price.date) per set), not the clock -
+-- so a deploy on a day whose ingest failed partway does not bless that build.
+-- It only runs while the table is empty: migrations replay on every deploy.
 --
 -- Ordering: this migration must be live before a web deploy pulls a scry image
 -- that reads it. The standard deploy order already guarantees that --
@@ -32,7 +34,7 @@ CREATE TABLE IF NOT EXISTS public.ingest_completion (
 );
 
 INSERT INTO public.ingest_completion (price_date)
-SELECT max(date) FROM public.price
+SELECT max(date) FROM public.set_price_history
 WHERE NOT EXISTS (SELECT 1 FROM public.ingest_completion)
 HAVING max(date) IS NOT NULL;
 

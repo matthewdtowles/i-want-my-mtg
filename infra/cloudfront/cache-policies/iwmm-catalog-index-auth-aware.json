@@ -1,6 +1,6 @@
 {
   "Name": "IwmmCatalogIndexAuthAware",
-  "Comment": "GET /api/v1/sets varies by user. Auth is part of the cache key, so anonymous callers share one entry and signed in responses, which the origin marks private no-store, are never stored.",
+  "Comment": "GET /api/v1/sets varies by user, so auth is in the cache key. Signed-in responses are private, no-store.",
   "MinTTL": 0,
   "DefaultTTL": 60,
   "MaxTTL": 3600,

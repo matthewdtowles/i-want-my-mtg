@@ -1,6 +1,6 @@
 {
   "Name": "IwmmPublicCatalogIdentity",
-  "Comment": "Public catalog API paths. Passes the caller's credentials to the origin so rate limits and usage counting still see who is calling on a cache miss. Not part of the cache key, so every caller shares the same cached response; signed in responses come back private, no-store and are never stored.",
+  "Comment": "Public catalog paths. Forwards caller credentials on a miss for rate limits; not in the cache key.",
   "HeadersConfig": {
     "HeaderBehavior": "whitelist",
     "Headers": {

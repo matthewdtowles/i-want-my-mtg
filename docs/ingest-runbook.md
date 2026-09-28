@@ -6,7 +6,9 @@ stale prices. Every block below is meant to be pasted as-is.
 The whole pipeline is one cron job, `/opt/scripts/ingest-chain.sh`, run **at
 the top of every hour** and logging to `/var/log/i-want-my-mtg/ingestion.log`.
 Most hours it does nothing: it asks `scry has-new-prices` whether upstream is
-serving data newer than ours (a 200-byte range read) and exits quietly if not.
+serving a build newer than the last *complete* ingest (a 200-byte range read,
+compared against the `ingest_completion` table) and exits quietly if not. A run
+that fails partway records nothing there, so the next hour retries it.
 When there is new data it runs ingest, then price alerts, then portfolio
 summary, in that order. `scry health` reports catalog freshness at 10:00 UTC.
 

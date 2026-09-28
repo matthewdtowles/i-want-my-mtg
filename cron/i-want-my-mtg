@@ -31,8 +31,8 @@ MAILTO=legal@iwantmymtg.net
 # MTGJSON pipeline (hourly, gated).
 #
 # Runs `scry has-new-prices` first - a 200-byte range read of the head of
-# AllPricesToday.json - and does nothing unless upstream is serving data newer
-# than ours. When it is, it runs ingest, then price alerts, then the portfolio
+# AllPricesToday.json - and does nothing unless upstream is serving a build newer
+# than the last complete ingest. When it is, it runs ingest, then price alerts, then the portfolio
 # summary, sequentially, because each depends on the one before it.
 #
 # This replaced four jobs on fixed times (ingest 08:00, price alerts 08:15,

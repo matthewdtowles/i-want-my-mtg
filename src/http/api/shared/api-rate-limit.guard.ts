@@ -7,6 +7,7 @@ import {
     OnModuleDestroy,
 } from '@nestjs/common';
 import { Response } from 'express';
+import { isIPv6 } from 'net';
 import { ApiSubscriptionService } from 'src/core/api-tier/api-subscription.service';
 import { ApiTier } from 'src/core/api-tier/api-tier.enum';
 import { getTierLimits } from 'src/core/api-tier/api-tier-limits';
@@ -74,7 +75,7 @@ export class ApiRateLimitGuard implements CanActivate, OnModuleDestroy {
         }
         return this.checkBurst(
             this.ipBursts,
-            request.ip || 'unknown',
+            request.ip ? ipBucket(request.ip) : 'unknown',
             IP_BURST_PER_MIN,
             `IP ${request.ip}`
         );
@@ -158,4 +159,24 @@ export class ApiRateLimitGuard implements CanActivate, OnModuleDestroy {
         sweep(this.apiKeyBursts);
         sweep(this.ipBursts);
     }
+}
+
+/**
+ * One IPv6 host usually holds a whole /64, so counting each address separately would
+ * hand it a fresh budget on every request. IPv6 callers share one bucket per /64;
+ * IPv4, including the `::ffff:` form Node reports for IPv4 connections, is per address.
+ */
+function ipBucket(ip: string): string {
+    if (!isIPv6(ip)) return ip;
+    const mapped = /^::ffff:(\d+\.\d+\.\d+\.\d+)$/i.exec(ip);
+    if (mapped) return mapped[1];
+    const [head, tail] = ip.split('::');
+    const headGroups = head ? head.split(':') : [];
+    const tailGroups = tail ? tail.split(':') : [];
+    const zeros = tail === undefined ? 0 : 8 - headGroups.length - tailGroups.length;
+    const groups = [...headGroups, ...Array(zeros).fill('0'), ...tailGroups];
+    return `${groups
+        .slice(0, 4)
+        .map((g) => parseInt(g, 16).toString(16))
+        .join(':')}::/64`;
 }

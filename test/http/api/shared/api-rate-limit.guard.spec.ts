@@ -60,6 +60,30 @@ describe('ApiRateLimitGuard', () => {
             await expect(guard.canActivate(ctx)).rejects.toBeInstanceOf(HttpException);
         });
 
+        it('counts every address in an IPv6 /64 against one budget', async () => {
+            for (let i = 1; i <= 60; i++) {
+                const { ctx } = makeContext({ ip: `2001:db8:1:2::${i.toString(16)}` });
+                await expect(guard.canActivate(ctx)).resolves.toBe(true);
+            }
+            const { ctx } = makeContext({ ip: '2001:0DB8:0001:0002:ffff:ffff:ffff:ffff' });
+            await expect(guard.canActivate(ctx)).rejects.toBeInstanceOf(HttpException);
+
+            const other = makeContext({ ip: '2001:db8:1:3::1' });
+            await expect(guard.canActivate(other.ctx)).resolves.toBe(true);
+        });
+
+        it('counts IPv4 addresses separately, including the ::ffff: form', async () => {
+            for (let i = 0; i < 60; i++) {
+                const { ctx } = makeContext({ ip: '::ffff:1.2.3.4' });
+                await expect(guard.canActivate(ctx)).resolves.toBe(true);
+            }
+            const { ctx } = makeContext({ ip: '1.2.3.4' });
+            await expect(guard.canActivate(ctx)).rejects.toBeInstanceOf(HttpException);
+
+            const other = makeContext({ ip: '::ffff:1.2.3.5' });
+            await expect(guard.canActivate(other.ctx)).resolves.toBe(true);
+        });
+
         it('does not call usage repo or sub service for anon traffic', async () => {
             const { ctx } = makeContext({ ip: '5.5.5.5' });
             await guard.canActivate(ctx);

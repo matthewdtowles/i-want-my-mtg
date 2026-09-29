@@ -269,4 +269,5 @@ jobs:
                   STRIPE_PRICE_API_DEVELOPER: ${{ secrets.STRIPE_PRICE_API_DEVELOPER }}
                   STRIPE_PRICE_API_BUSINESS: ${{ secrets.STRIPE_PRICE_API_BUSINESS }}
                   RAPIDAPI_PROXY_SECRET: ${{ secrets.RAPIDAPI_PROXY_SECRET }}
+                  CLOUDFRONT_ORIGIN_SECRET: ${{ secrets.CLOUDFRONT_ORIGIN_SECRET }}
               run: ./.github/scripts/deploy.sh

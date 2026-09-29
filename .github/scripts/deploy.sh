@@ -91,6 +91,9 @@ echo "STRIPE_PRICE_API_BUSINESS=\"$STRIPE_PRICE_API_BUSINESS\"" >> .env
 # RapidAPI marketplace proxy (optional — guard is dormant when unset)
 echo "RAPIDAPI_PROXY_SECRET=\"${RAPIDAPI_PROXY_SECRET:-}\"" >> .env
 
+# Header our CloudFront distribution adds (optional - visitor addresses are ignored when unset)
+echo "CLOUDFRONT_ORIGIN_SECRET=\"${CLOUDFRONT_ORIGIN_SECRET:-}\"" >> .env
+
 # Generate internal API key for cron-triggered endpoints
 log_info "Generating INTERNAL_API_KEY..."
 echo "INTERNAL_API_KEY=\"$(openssl rand -base64 32)\"" >> .env

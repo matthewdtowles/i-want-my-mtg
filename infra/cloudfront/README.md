@@ -16,6 +16,10 @@ These files are the policies to create in the CloudFront console. Nothing here i
 - **3 and 4** return the same data to everyone. The cache key is the query string only. The origin request policy still passes the caller's credentials (`Authorization`, `X-API-Key`, the RapidAPI headers and the `authorization` cookie) on a cache miss, so rate limits and usage counting see who is calling. Forwarding credentials outside the cache key is safe here because these responses do not vary by user (any new route under these paths that reads `req.user` needs its own rule, like 2), and signed-in responses come back `private, no-store` with a minimum TTL of 0, so CloudFront neither stores them nor shares them between simultaneous requests.
 - `OPTIONS` lets browser preflights reach the origin (#616).
 
+## Origin secret header
+
+On the distribution's origin, add a custom header `X-Origin-Verify` whose value matches the `CLOUDFRONT_ORIGIN_SECRET` GitHub secret (32+ random bytes, e.g. `openssl rand -hex 32`). The server only believes `X-Forwarded-For` when that header matches, because CloudFront's addresses are shared by every CloudFront customer. Without it, anonymous API callers share a rate-limit bucket per CloudFront address (#622).
+
 ## Known limits
 
 - RapidAPI traffic to paths 1 and 2 counts as anonymous on a cache miss, because those behaviors have no origin request policy.

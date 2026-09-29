@@ -4,6 +4,8 @@ import * as cookieParser from 'cookie-parser';
 import { create } from 'express-handlebars';
 import { join } from 'path';
 import { API_CORS_PATH, apiCors } from './http/api/shared/api-cors.middleware';
+import { cloudFrontOriginCheck } from './http/cloudfront-origin.middleware';
+import { CLOUDFRONT_ORIGIN_FACING_RANGES } from './http/cloudfront-origin-ranges';
 import { HttpExceptionFilter } from './http/http.exception.filter';
 import { formatUsd } from './http/base/http.util';
 
@@ -16,6 +18,15 @@ const { version } = require(join(__dirname, '..', 'package.json'));
  */
 export function configureApp(app: INestApplication, viewsDir: string): void {
     const expressApp = app as NestExpressApplication;
+
+    // request.ip is the visitor's address only when the connection comes from
+    // CloudFront. Never set this to true or a hop count: the server is also reachable
+    // directly (the uptime check uses that), so trusting X-Forwarded-For from any
+    // peer would let a caller pick its own address and dodge the IP rate limit (#622).
+    // CloudFront's addresses serve every CloudFront customer, so the check below also
+    // requires our distribution's secret header.
+    expressApp.set('trust proxy', CLOUDFRONT_ORIGIN_FACING_RANGES);
+    expressApp.use(cloudFrontOriginCheck(process.env.CLOUDFRONT_ORIGIN_SECRET));
 
     expressApp.useStaticAssets(join(viewsDir, '..', 'public'), {
         prefix: '/public/',

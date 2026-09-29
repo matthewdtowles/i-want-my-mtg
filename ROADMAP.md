@@ -34,7 +34,7 @@ part: the two remaining 503 fixes are one console session, not a coding task.
 | | Item | Console work | Blocks |
 |---|---|---|---|
 | ✅ | **[#621](https://github.com/matthewdtowles/i-want-my-mtg/issues/621)** — CloudFront caches nothing on `/api/*` | Done 2026-09-26 with the AWS CLI; see below | — |
-| 🔴 | **[#625](https://github.com/matthewdtowles/i-want-my-mtg/issues/625)** — no health-check monitoring on the web tier | UptimeRobot/Better Stack signup, *or* a CloudWatch 5xx alarm | nothing, but nothing surfaces the next outage without it |
+| ✅ | **[#625](https://github.com/matthewdtowles/i-want-my-mtg/issues/625)** — no health-check monitoring on the web tier | Done 2026-09-29 with the AWS CLI; see below | — |
 
 **#621 done (2026-09-26).** Four behaviors now sit above the default one, applied with
 the AWS CLI from the policies in `infra/cloudfront/` (behavior order and reasoning in
@@ -47,12 +47,14 @@ show in the app. **Any new route under those public paths that reads `req.user` 
 own behavior**, which is how sealed products was caught after the first apply. Watch
 #612 for a few days before closing it.
 
-**#625 detail.** #612 was found by *using the app*, not by an alert. The asymmetry to
-close: scry's cron already mails on failure, so the data pipeline is monitored and
-the tier serving that data is not. Option 1 (external uptime service) needs no code
-and no second host. Option 3 (CloudWatch alarm on the distribution's 5xx rate) is
-worth pairing with it once #621 makes the distribution something we manage
-deliberately. → verify: break it on purpose, confirm the alert arrives *and* clears.
+**#625 done (2026-09-29).** A Route 53 health check requests
+`/api/v1/sets?page=1&limit=1` straight from the Lightsail server (skipping CloudFront's
+cached copy) from 3 regions every 30 seconds, and a CloudWatch alarm on CloudFront's 5xx
+rate covers what users see. Both email `legal@iwantmymtg.net` in 3 of the last 5 minutes,
+and again on recovery; setup and reasoning in `infra/monitoring/`. Verified by breaking
+the check on purpose: both alarms fired and cleared, and every email arrived. Doing that
+found the `legal@` mail forwarder timing out on every message (3 seconds, 128 MB), which
+had been losing cron failure emails too; it now has 30 seconds and 256 MB.
 
 ### Dependency flow
 
@@ -60,7 +62,7 @@ deliberately. → verify: break it on purpose, confirm the alert arrives *and* c
 ✅ #620 + #631 (PR #632) ──► trustworthy CI under every PR below
 
 ✅ #621 CloudFront cache ──┬──► ✅ #616 CORS (preflight verified in production)
-                           └──► #625 edge alarm (option 3 only)
+                           └──► ✅ #625 uptime alarms (origin check + edge 5xx)
    #622 trust proxy ───────── independent code; verify hop count against prod first
 ✅ #623 browser review ─────► ✅ #624 deck detail thumbnail (PR #633)
                            └──► ✅ #634 deck list layout fixes the review found
@@ -124,10 +126,8 @@ Web = this repo, Mobile = `i-want-my-mtg-mobile`. Each line has its own verifica
    (`Access-Control-Allow-Origin: *`, deliberately no `Allow-Credentials`); the edge half
    landed with #621. A live preflight to `/api/v1/sets` now returns 204 with the CORS
    headers instead of `Error from cloudfront`.
-7. 🔴 **Web [#625](https://github.com/matthewdtowles/i-want-my-mtg/issues/625) —
-   health-check monitoring.** *(AWS console / external service — see the red table.)*
-   Last because the fixes above reduce the load that caused the 503s; but do not skip
-   it, because none of them make the *next* occurrence visible.
+7. ~~**Web [#625](https://github.com/matthewdtowles/i-want-my-mtg/issues/625) —
+   health-check monitoring.**~~ ✅ **Applied 2026-09-29** (see the #625 note above).
 8. ~~**Mobile Browse polish** — [#96](https://github.com/matthewdtowles/i-want-my-mtg-mobile/issues/96)
    sort by set value, then [#95](https://github.com/matthewdtowles/i-want-my-mtg-mobile/issues/95)
    group by block.~~ ✅ **Mobile [PR #119](https://github.com/matthewdtowles/i-want-my-mtg-mobile/pull/119).**

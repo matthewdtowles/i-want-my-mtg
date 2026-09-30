@@ -68,6 +68,7 @@ Match the last line against these:
 | `command exceeded its 1800s deadline` | Scry's own deadline fired. The line above it names the phase. | Section 4. |
 | `exceeded 2400s and was killed` | Scry did not even manage to fail on its own. | Section 3, then section 4. |
 | `already running (lock ...); skipping this run` | A previous run never exited and still holds the lock. | Section 3. |
+| `Failed to read from stream: ...` after `Gave up on ...` or `cannot be resumed` | MTGJSON dropped the download and scry could not pick it back up: five reconnects failed, or the file was republished mid-download. A single drop that resumed logs `Resumed ... at byte N` and is harmless. | Nothing; the next hourly run retries. Section 4 if you want it sooner. |
 | `Scry complete` | The run was fine. The staleness is upstream - MTGJSON skipped a build. | Nothing to fix. |
 | Anything with `error` / `Failed to` | A real error. Read it; it names the phase. | Depends on the error. |
 

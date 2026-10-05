@@ -22,11 +22,14 @@ services:
         env_file:
             - .env
         restart: unless-stopped
+        # 30MB covered only ~4 hours on 2026-10-05, so the logs had already
+        # rotated past the start of the incident. 250MB is a few days of
+        # request lines; the root volume has >30GB free.
         logging:
             driver: 'json-file'
             options:
-                max-size: '10m'
-                max-file: '3'
+                max-size: '50m'
+                max-file: '5'
 
     # Scry - ETL Application
     etl:

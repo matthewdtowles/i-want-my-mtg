@@ -12,7 +12,8 @@ import { configureApp } from './app.config';
 import { ApiModule } from './http/api/api.module';
 import { buildPublicSpec } from './http/api/openapi-public-spec';
 import { CorrelationIdMiddleware } from './logger/correlation-id.middleware';
-import { GlobalAppLogger } from './logger/global-app-logger';
+import { requestLog } from './logger/request-log.middleware';
+import { getLogger, GlobalAppLogger } from './logger/global-app-logger';
 import { UserContextInterceptor } from './logger/user-context.interceptor';
 
 const STRIPE_WEBHOOK_PATH = '/api/v1/billing/webhooks/stripe';
@@ -149,6 +150,7 @@ async function bootstrap() {
     }
 
     app.use(new CorrelationIdMiddleware().use);
+    app.use(requestLog(getLogger('HttpAccess')));
     app.useGlobalInterceptors(new UserContextInterceptor());
     await app.listen(3000);
 }

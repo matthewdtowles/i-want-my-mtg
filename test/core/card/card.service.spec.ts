@@ -472,4 +472,78 @@ describe('CardService', () => {
             expect(result.get('b')).toHaveLength(1);
         });
     });
+
+    describe('coverImagesForSets', () => {
+        const HOUR = 60 * 60 * 1000;
+        let covers: jest.Mock;
+        let fresh: CardService;
+
+        beforeEach(() => {
+            jest.useFakeTimers({ now: new Date('2026-10-05T12:00:00Z') });
+            covers = jest.fn(async (codes: string[]) => {
+                // 'nocover' stands in for a set with no card that has art.
+                return new Map(codes.filter((c) => c !== 'nocover').map((c) => [c, `${c}.jpg`]));
+            });
+            fresh = new CardService(
+                { findCoverImagesForSets: covers } as unknown as CardRepositoryPort,
+                mockPriceHistoryRepository as unknown as PriceHistoryRepositoryPort,
+                mockGranularPriceRepository as unknown as GranularPriceRepositoryPort
+            );
+        });
+
+        afterEach(() => jest.useRealTimers());
+
+        it('returns covers keyed by normalized set code', async () => {
+            const result = await fresh.coverImagesForSets(['ABC', 'def']);
+
+            expect(covers).toHaveBeenCalledWith(['abc', 'def']);
+            expect(result).toEqual(
+                new Map([
+                    ['abc', 'abc.jpg'],
+                    ['def', 'def.jpg'],
+                ])
+            );
+        });
+
+        it('serves repeat requests from memory without querying again', async () => {
+            await fresh.coverImagesForSets(['abc', 'def']);
+            const result = await fresh.coverImagesForSets(['def', 'abc']);
+
+            expect(covers).toHaveBeenCalledTimes(1);
+            expect(result.get('abc')).toBe('abc.jpg');
+            expect(result.get('def')).toBe('def.jpg');
+        });
+
+        it('queries only the sets it has not seen', async () => {
+            await fresh.coverImagesForSets(['abc']);
+            const result = await fresh.coverImagesForSets(['abc', 'xyz']);
+
+            expect(covers).toHaveBeenLastCalledWith(['xyz']);
+            expect([...result.keys()].sort()).toEqual(['abc', 'xyz']);
+        });
+
+        it('remembers a set has no cover instead of asking again', async () => {
+            await fresh.coverImagesForSets(['nocover']);
+            const result = await fresh.coverImagesForSets(['nocover']);
+
+            expect(covers).toHaveBeenCalledTimes(1);
+            expect(result.has('nocover')).toBe(false);
+        });
+
+        it('looks covers up again after an hour so the daily ingest shows through', async () => {
+            await fresh.coverImagesForSets(['abc']);
+            jest.advanceTimersByTime(HOUR - 1);
+            await fresh.coverImagesForSets(['abc']);
+            expect(covers).toHaveBeenCalledTimes(1);
+
+            jest.advanceTimersByTime(1);
+            await fresh.coverImagesForSets(['abc']);
+            expect(covers).toHaveBeenCalledTimes(2);
+        });
+
+        it('does not query for an empty list', async () => {
+            expect(await fresh.coverImagesForSets([])).toEqual(new Map());
+            expect(covers).not.toHaveBeenCalled();
+        });
+    });
 });

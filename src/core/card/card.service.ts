@@ -9,9 +9,21 @@ import { GranularPriceRepositoryPort } from './ports/granular-price.repository.p
 import { PriceHistoryRepositoryPort } from './ports/price-history.repository.port';
 import { Price } from './price.entity';
 
+/**
+ * Covers only change when the daily ingest reprices a set, but the query behind
+ * them reads every card in the requested sets plus their prices: ~0.3s warm and
+ * 1.3s cold on prod, on every home and /sets render. On 2026-10-05 it was what
+ * all 10 pool connections were running when the overloaded DB stopped answering.
+ * An hour keeps a new day's covers at most an hour late.
+ */
+const COVER_CACHE_TTL_MS = 60 * 60 * 1000;
+
 @Injectable()
 export class CardService {
     private readonly LOGGER = getLogger(CardService.name);
+    // Keyed by normalized set code. `img: null` records a set with no cover,
+    // so it is not looked up again on every render.
+    private readonly coverCache = new Map<string, { img: string | null; expires: number }>();
 
     constructor(
         @Inject(CardRepositoryPort) private readonly repository: CardRepositoryPort,
@@ -59,8 +71,24 @@ export class CardService {
      */
     async coverImagesForSets(setCodes: string[]): Promise<Map<string, string>> {
         const normalized = setCodes.map(normalizeSetCode).filter(Boolean);
-        this.LOGGER.debug(`Find cover images for ${normalized.length} sets.`);
-        return await this.repository.findCoverImagesForSets(normalized);
+        const now = Date.now();
+        const missing = normalized.filter((code) => !(this.coverCache.get(code)?.expires > now));
+        this.LOGGER.debug(
+            `Find cover images for ${normalized.length} sets (${missing.length} not cached).`
+        );
+        if (missing.length > 0) {
+            const found = await this.repository.findCoverImagesForSets(missing);
+            const expires = now + COVER_CACHE_TTL_MS;
+            for (const code of missing) {
+                this.coverCache.set(code, { img: found.get(code) ?? null, expires });
+            }
+        }
+        const result = new Map<string, string>();
+        for (const code of normalized) {
+            const img = this.coverCache.get(code)?.img;
+            if (img) result.set(code, img);
+        }
+        return result;
     }
 
     async findBySetCodeAndNumber(code: string, number: string): Promise<Card | null> {

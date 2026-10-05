@@ -14,6 +14,18 @@ on:
     # any other branch runs the checks and stops short of deploying.
     workflow_dispatch:
 
+# One release at a time on main. On 2026-10-05 two merges a few seconds apart
+# deployed at once: one run's `docker compose down` removed the container while
+# the other's cleanup deleted the compose file it had just put in place, so
+# `docker compose up` found no config and prod stayed down until a re-run. The
+# version, tag and `:latest` push race the same way. A queued run waits rather
+# than cancelling the one in progress, and every other ref gets its own group.
+# GitHub keeps one pending run per group, so a third quick merge replaces the
+# second's pending run; it deploys main's head, which includes that commit.
+concurrency:
+    group: ${{ github.ref == 'refs/heads/main' && 'release-main' || format('ci-{0}', github.run_id) }}
+    cancel-in-progress: false
+
 jobs:
     quality:
         runs-on: ubuntu-latest

@@ -124,7 +124,8 @@ jobs:
               run: npx jest --config test/jest-e2e.json --runInBand
 
     e2e-test:
-        runs-on: ubuntu-latest
+        # Playwright's browser install does not support ubuntu-latest's 26.04 image yet.
+        runs-on: ubuntu-24.04
         steps:
             - name: Checkout
               uses: actions/checkout@v6

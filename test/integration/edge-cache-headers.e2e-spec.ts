@@ -85,7 +85,7 @@ describe('Edge cache headers (e2e)', () => {
         });
     });
 
-    it('a missing card returns no cache header, so the edge default TTL of 0 applies', async () => {
+    it('a missing card returns no cache header, so the edge holds it only for its 10-second error TTL', async () => {
         const res = await request(app.getHttpServer()).get(`/card/${TEST_CARD_SET_CODE}/99999`);
         expect(res.status).toBe(404);
         expect(res.headers['cache-control']).toBeUndefined();

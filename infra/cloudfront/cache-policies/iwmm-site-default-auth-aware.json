@@ -1,0 +1,20 @@
+{
+  "Name": "IwmmSiteDefaultAuthAware",
+  "Comment": "Default behavior. Caches only what the origin marks public; credentials are in the cache key, and a missing Cache-Control means no caching.",
+  "MinTTL": 0,
+  "DefaultTTL": 0,
+  "MaxTTL": 3600,
+  "ParametersInCacheKeyAndForwardedToOrigin": {
+    "EnableAcceptEncodingGzip": true,
+    "EnableAcceptEncodingBrotli": true,
+    "HeadersConfig": {
+      "HeaderBehavior": "whitelist",
+      "Headers": { "Quantity": 2, "Items": ["Authorization", "X-API-Key"] }
+    },
+    "CookiesConfig": {
+      "CookieBehavior": "whitelist",
+      "Cookies": { "Quantity": 1, "Items": ["authorization"] }
+    },
+    "QueryStringsConfig": { "QueryStringBehavior": "all" }
+  }
+}

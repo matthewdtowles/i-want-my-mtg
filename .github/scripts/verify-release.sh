@@ -43,7 +43,8 @@ pass "app is responding"
 # Substring match instead of `echo | grep -q`: grep -q exits at the first
 # match, and under pipefail the echo's resulting EPIPE fails the pipeline
 # even when the version IS present.
-html=$(curl -fsS --max-time 10 "$APP_URL/")
+# A unique query param bypasses CloudFront's cached copy of the home page.
+html=$(curl -fsS --max-time 10 "$APP_URL/?verify=$(date +%s)")
 [[ "$html" == *"?v=$EXPECTED_VERSION"* ]] \
     || fail "HTML does not reference assets at ?v=$EXPECTED_VERSION (found: $(echo "$html" | grep -oE '\?v=[0-9a-zA-Z.\-]+' | sort -u | tr '\n' ' '))"
 pass "HTML references ?v=$EXPECTED_VERSION"

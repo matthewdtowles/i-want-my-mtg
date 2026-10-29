@@ -139,7 +139,17 @@ export class HomeController {
     @Get('robots.txt')
     @Header('Content-Type', 'text/plain')
     getRobotsTxt(): string {
+        // SEO and AI-training crawlers that send no visitors. Together they made about a
+        // quarter of all /card requests reaching the origin (#612).
         return [
+            'User-agent: AhrefsBot',
+            'User-agent: SemrushBot',
+            'User-agent: MJ12bot',
+            'User-agent: Barkrowler',
+            'User-agent: Reflectionbot',
+            'User-agent: PetalBot',
+            'Disallow: /',
+            '',
             'User-agent: *',
             'Allow: /',
             '',

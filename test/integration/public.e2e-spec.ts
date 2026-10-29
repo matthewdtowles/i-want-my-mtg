@@ -31,6 +31,16 @@ describe('Public endpoints (e2e)', () => {
             expect(res.text).toContain('Disallow: /auth');
             expect(res.text).toContain('Disallow: /inventory');
         });
+
+        it('GET /robots.txt shuts out SEO crawlers but leaves search engines on the * rules', async () => {
+            const res = await request(app.getHttpServer()).get('/robots.txt').expect(200);
+            const groups = res.text.split('\n\n');
+            const blocked = groups.find((g) => g.includes('User-agent: AhrefsBot'));
+            expect(blocked).toContain('User-agent: SemrushBot');
+            expect(blocked?.split('\n')).toContain('Disallow: /');
+            expect(blocked).not.toContain('User-agent: *');
+            expect(res.text).not.toMatch(/Googlebot|bingbot/i);
+        });
     });
 
     describe('Sets', () => {

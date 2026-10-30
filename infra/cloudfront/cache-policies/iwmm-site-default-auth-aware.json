@@ -1,6 +1,6 @@
 {
   "Name": "IwmmSiteDefaultAuthAware",
-  "Comment": "Default behavior. Caches only what the origin marks public; credentials are in the cache key, and a missing Cache-Control means no caching.",
+  "Comment": "Default behavior. Caches only what the origin marks public; every credential is in the cache key.",
   "MinTTL": 0,
   "DefaultTTL": 0,
   "MaxTTL": 3600,

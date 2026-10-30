@@ -1,0 +1,20 @@
+{
+  "Name": "IwmmSiteDefaultAuthAware",
+  "Comment": "Default behavior. Caches only what the origin marks public; every credential is in the cache key.",
+  "MinTTL": 0,
+  "DefaultTTL": 0,
+  "MaxTTL": 3600,
+  "ParametersInCacheKeyAndForwardedToOrigin": {
+    "EnableAcceptEncodingGzip": true,
+    "EnableAcceptEncodingBrotli": true,
+    "HeadersConfig": {
+      "HeaderBehavior": "whitelist",
+      "Headers": { "Quantity": 2, "Items": ["Authorization", "X-API-Key"] }
+    },
+    "CookiesConfig": {
+      "CookieBehavior": "whitelist",
+      "Cookies": { "Quantity": 1, "Items": ["authorization"] }
+    },
+    "QueryStringsConfig": { "QueryStringBehavior": "all" }
+  }
+}

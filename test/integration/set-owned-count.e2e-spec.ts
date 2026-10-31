@@ -114,6 +114,17 @@ describe('Set owned count (e2e)', () => {
             expect(res.text).toMatch(/stat-value">4<span[^>]*>\/4</);
         });
 
+        it("the set page's Show All view counts every card against the total", async () => {
+            const res = await request(app.getHttpServer())
+                .get('/sets/tst?baseOnly=false')
+                .set('Cookie', cookie)
+                .expect(200);
+            expect(res.text).toMatch(
+                /data-owned-scope="all"><span class="stat-value">5<span[^>]*>\/5</
+            );
+            expect(res.text).toMatch(/data-owned-scope="base" class="hidden">/);
+        });
+
         it('the set list API counts base cards only', async () => {
             const res = await request(app.getHttpServer())
                 .get('/api/v1/sets?filter=Test%20Set')
@@ -134,6 +145,16 @@ describe('Set owned count (e2e)', () => {
                 .set('Cookie', cookie)
                 .expect(200);
             expect(res.text).toMatch(/id="owned-count">0 \/ 4</);
+        });
+
+        it("the set page's Show All view counts the variant", async () => {
+            const res = await request(app.getHttpServer())
+                .get('/sets/tst?baseOnly=false')
+                .set('Cookie', cookie)
+                .expect(200);
+            expect(res.text).toMatch(
+                /data-owned-scope="all"><span class="stat-value">1<span[^>]*>\/5</
+            );
         });
 
         it('the set tile still shows the value owned', async () => {

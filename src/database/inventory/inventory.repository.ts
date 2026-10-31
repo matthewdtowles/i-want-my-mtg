@@ -184,9 +184,14 @@ export class InventoryRepository implements InventoryRepositoryPort {
         return totalValue;
     }
 
-    // Counts toward Set.effectiveSize: base cards for a main set, every card otherwise, so
-    // owning variants can't push a set past its size (e.g. "292 / 291").
-    async totalInventoryCardsForSet(userId: number, setCode: string): Promise<number> {
+    // With baseOnly, counts toward Set.effectiveSize: base cards for a main set, every card
+    // otherwise, so owning variants can't push a set past its size (e.g. "292 / 291").
+    // Without it, counts every card toward totalSize.
+    async totalInventoryCardsForSet(
+        userId: number,
+        setCode: string,
+        baseOnly: boolean = true
+    ): Promise<number> {
         this.LOGGER.debug(`Counting total inventory items for user ${userId} in set ${setCode}.`);
         const queryResult = await this.repository.query(
             `
@@ -196,7 +201,7 @@ export class InventoryRepository implements InventoryRepositoryPort {
             JOIN "set" s ON s.code = c.set_code
             WHERE i.user_id = $1
             AND c.set_code = $2
-            AND (c.in_main OR NOT s.is_main)
+            ${baseOnly ? 'AND (c.in_main OR NOT s.is_main)' : ''}
             `,
             [userId, setCode]
         );

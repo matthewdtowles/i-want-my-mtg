@@ -654,9 +654,10 @@ export class SetOrchestrator {
         // users run the three reads together rather than in series (P3).
         let inventory: Inventory[] = [];
         let ownedTotal = 0;
+        let ownedTotalAll = 0;
         let ownedValueRaw = 0;
         if (isAuthed) {
-            [inventory, ownedTotal, ownedValueRaw] = await Promise.all([
+            [inventory, ownedTotal, ownedTotalAll, ownedValueRaw] = await Promise.all([
                 setPayloadSize > 0
                     ? this.inventoryService.findByCards(
                           userId,
@@ -664,6 +665,8 @@ export class SetOrchestrator {
                       )
                     : Promise.resolve([] as Inventory[]),
                 this.inventoryService.totalInventoryItemsForSet(userId, set.code),
+                // The "Show All" view measures completion against every card, bonus included.
+                this.inventoryService.totalInventoryItemsForSet(userId, set.code, false),
                 this.inventoryService.ownedValueForSet(userId, set.code),
             ]);
         }
@@ -678,10 +681,12 @@ export class SetOrchestrator {
             block: set.block ?? set.name,
             code: set.code,
             completionRate: completionRate(ownedTotal, effectiveSize),
+            completionRateAll: completionRate(ownedTotalAll, set.totalSize),
             keyruneCode: set.keyruneCode ?? set.code,
             name: set.name,
             ownedValue: toDollar(ownedValueRaw),
             ownedTotal,
+            ownedTotalAll,
             prices: this.createSetPriceDto(set.prices),
             releaseDate: set.releaseDate,
             tags: SetTypeMapper.mapSetTypeToTags(set),

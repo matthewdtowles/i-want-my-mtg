@@ -60,6 +60,7 @@ document.addEventListener('DOMContentLoaded', function () {
             // List view - render table as before
             if (binderMachine) binderMachine.deactivate();
             renderTable(resultsEl, cards);
+            updateOwnedScope();
         },
         errorMessage: 'Failed to load cards',
         onSuccess: function (data, meta, done) {
@@ -188,6 +189,16 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function restoreListDefaults() {
         page.state.limit = 25;
+    }
+
+    // Owned and Completion follow the Show All toggle: base cards against the base size, or
+    // every card against the total. Without a toggle the server already chose the scope.
+    function updateOwnedScope() {
+        if (!document.getElementById('base-only-wrapper')) return;
+        var scope = page.state.baseOnly ? 'base' : 'all';
+        document.querySelectorAll('[data-owned-scope]').forEach(function (el) {
+            el.classList.toggle('hidden', el.dataset.ownedScope !== scope);
+        });
     }
 
     function updateUIForView(view) {

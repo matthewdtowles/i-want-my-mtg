@@ -119,9 +119,13 @@ export class InventoryService {
         return result;
     }
 
-    async totalInventoryItemsForSet(userId: number, setCode: string): Promise<number> {
+    async totalInventoryItemsForSet(
+        userId: number,
+        setCode: string,
+        baseOnly: boolean = true
+    ): Promise<number> {
         this.LOGGER.debug(`Get total inventory items for ${userId} in set ${setCode}.`);
-        const result = await this.repository.totalInventoryCardsForSet(userId, setCode);
+        const result = await this.repository.totalInventoryCardsForSet(userId, setCode, baseOnly);
         this.LOGGER.debug(
             `Total inventory items for user ${userId} in set ${setCode} is ${result}.`
         );

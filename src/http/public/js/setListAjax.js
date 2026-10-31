@@ -157,7 +157,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (set.tags && set.tags.length) {
             html += '<span class="set-tile-tags">' + AjaxUtils.renderTags(set.tags) + '</span>';
         }
-        if (authenticated && set.ownedTotal) {
+        if (authenticated && set.ownedValue) {
             html +=
                 '<span class="set-tile-owned">' +
                 AjaxUtils.toDollar(set.ownedValue) +

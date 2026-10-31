@@ -83,9 +83,10 @@ export interface InventoryRepositoryPort {
     /**
      * @param {number} userId
      * @param {string} setCode
+     * @param {boolean} [baseOnly=true] count only the cards that make up Set.effectiveSize
      * @returns total number of cards in set owned by user
      */
-    totalInventoryCardsForSet(userId: number, setCode: string): Promise<number>;
+    totalInventoryCardsForSet(userId: number, setCode: string, baseOnly?: boolean): Promise<number>;
 
     /**
      * Get total inventory item counts for multiple sets in a single query.

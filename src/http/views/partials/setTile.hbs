@@ -19,9 +19,9 @@
     {{#if tags.length}}
         <span class="set-tile-tags">{{>tags item=this}}</span>
     {{/if}}
-    {{#if @root.authenticated}}{{#if ownedTotal}}
+    {{#if @root.authenticated}}{{#unless (eq ownedValue '-')}}
         <span class="set-tile-owned">{{ownedValue}} owned</span>
-    {{/if}}{{/if}}
+    {{/unless}}{{/if}}
     <span class="set-tile-scrim">
         <i class="ss ss-{{keyruneCode}} set-tile-symbol" aria-hidden="true"></i>
         <span class="set-tile-body">

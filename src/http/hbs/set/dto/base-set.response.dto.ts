@@ -23,6 +23,8 @@ export class BaseSetResponseDto {
         this.block = init.block || init.name || '';
         this.code = init.code || '';
         this.completionRate = init.completionRate ?? 0;
+        // Set.effectiveSize, so the size shown is the one completion is measured against.
+        this.effectiveSize = init.effectiveSize ?? 0;
         this.isMain = init.isMain ?? true;
         this.keyruneCode = init.keyruneCode || '';
         this.name = init.name || '';
@@ -34,8 +36,5 @@ export class BaseSetResponseDto {
         this.totalSize = init.totalSize ?? 0;
         this.url = init.url || '';
         this.tags = init.tags || [];
-
-        // Use totalSize when baseSize is 0 (bonus-only sets)
-        this.effectiveSize = this.baseSize > 0 ? this.baseSize : this.totalSize;
     }
 }

@@ -221,6 +221,28 @@ describe('SetOrchestrator', () => {
             );
         });
 
+        // A non-main set like The Lord of the Rings (286 base, 853 total) shows and completes
+        // against every card, so the tile must say 853, not 286.
+        it('sizes a non-main set by its total, the size completion uses', async () => {
+            const ltr = new Set({ ...mockSet, baseSize: 286, isMain: false, totalSize: 853 });
+            setService.totalBlockGroups.mockResolvedValue(1);
+            setService.findBlockGroupKeys.mockResolvedValue(['TST']);
+            setService.findSetsByBlockKeys.mockResolvedValue([ltr]);
+            setService.findMultiSetBlockKeys.mockResolvedValue([]);
+            inventoryService.inventoryTotalsForSets.mockResolvedValue(new Map([['TST', 853]]));
+            inventoryService.ownedValuesForSets.mockResolvedValue(new Map());
+            cardService.coverImagesForSets.mockResolvedValue(new Map());
+
+            const result = await orchestrator.findSetList(
+                mockAuthenticatedRequest,
+                [],
+                mockQueryOptions
+            );
+
+            expect(result.setList[0].effectiveSize).toBe(853);
+            expect(result.setList[0].completionRate).toBe(100);
+        });
+
         // A set with no priced cards (or no cards at all) still renders — the
         // tile just falls back to a plain background.
         it('leaves coverImgSrc undefined when a set has no cover', async () => {
@@ -697,6 +719,23 @@ describe('SetOrchestrator', () => {
                 'TST',
                 expect.objectContaining({ baseOnly: false })
             );
+        });
+
+        it('sizes a non-main set by its total, the size completion uses', async () => {
+            const ltr = new Set({ ...mockSet, baseSize: 286, isMain: false, totalSize: 853 });
+            setService.findByCode.mockResolvedValue(ltr);
+            cardService.findBySet.mockResolvedValue([mockCard]);
+            inventoryService.findByCards.mockResolvedValue([]);
+            inventoryService.totalInventoryItemsForSet.mockResolvedValue(0);
+            inventoryService.ownedValueForSet.mockResolvedValue(0);
+
+            const result = await orchestrator.findBySetCode(
+                mockAuthenticatedRequest,
+                'TST',
+                new SafeQueryOptions({})
+            );
+
+            expect(result.set.effectiveSize).toBe(853);
         });
     });
 

@@ -4,7 +4,11 @@
 
 if (!window.matchMedia) {
     window.matchMedia = function () {
-        return { matches: false, addEventListener: function () {}, removeEventListener: function () {} };
+        return {
+            matches: false,
+            addEventListener: function () {},
+            removeEventListener: function () {},
+        };
     };
 }
 
@@ -17,7 +21,11 @@ var capturedState = null;
 window.AjaxUtils = {
     initListPage: function (config) {
         capturedConfig = config;
-        return { container: config.container, state: capturedState, fetchAndRender: function () {} };
+        return {
+            container: config.container,
+            state: capturedState,
+            fetchAndRender: function () {},
+        };
     },
     setupViewToggleInterceptor: function () {},
     updateViewToggle: function () {},
@@ -57,7 +65,8 @@ require('../../src/http/public/js/setListUtils.js');
 beforeEach(function () {
     capturedConfig = null;
     capturedState = { page: 1, limit: 25, view: 'grid' };
-    document.body.innerHTML = '<div id="set-list-ajax" data-authenticated="false"><div id="filter-results"></div></div>';
+    document.body.innerHTML =
+        '<div id="set-list-ajax" data-authenticated="false"><div id="filter-results"></div></div>';
 });
 
 function loadSetListAjax(view) {
@@ -87,8 +96,22 @@ describe('setListAjax renderTable', function () {
         var config = loadSetListAjax('table');
         var resultsEl = getResultsEl();
         var sets = [
-            { code: 'mid', name: 'Midnight Hunt', keyruneCode: 'mid', tags: [], prices: { basePrice: 50 }, releaseDate: '2021-09-24' },
-            { code: 'neo', name: 'Neon Dynasty', keyruneCode: 'neo', tags: [], prices: { basePrice: 40 }, releaseDate: '2022-02-18' },
+            {
+                code: 'mid',
+                name: 'Midnight Hunt',
+                keyruneCode: 'mid',
+                tags: [],
+                prices: { basePrice: 50 },
+                releaseDate: '2021-09-24',
+            },
+            {
+                code: 'neo',
+                name: 'Neon Dynasty',
+                keyruneCode: 'neo',
+                tags: [],
+                prices: { basePrice: 40 },
+                releaseDate: '2022-02-18',
+            },
         ];
 
         config.renderContent(resultsEl, sets, { page: 1, limit: 25, total: 2, totalPages: 1 });
@@ -103,8 +126,28 @@ describe('setListAjax renderTable', function () {
         var config = loadSetListAjax('table');
         var resultsEl = getResultsEl();
         var sets = [
-            { code: 'mid', name: 'Midnight Hunt', block: 'Innistrad', parentCode: null, isMain: true, keyruneCode: 'mid', tags: [], prices: { basePrice: 50 }, releaseDate: '2021-09-24' },
-            { code: 'mic', name: 'MH Commander', block: 'Innistrad', parentCode: 'mid', isMain: false, keyruneCode: 'mic', tags: [], prices: { basePrice: 10 }, releaseDate: '2021-09-24' },
+            {
+                code: 'mid',
+                name: 'Midnight Hunt',
+                block: 'Innistrad',
+                parentCode: null,
+                isMain: true,
+                keyruneCode: 'mid',
+                tags: [],
+                prices: { basePrice: 50 },
+                releaseDate: '2021-09-24',
+            },
+            {
+                code: 'mic',
+                name: 'MH Commander',
+                block: 'Innistrad',
+                parentCode: 'mid',
+                isMain: false,
+                keyruneCode: 'mic',
+                tags: [],
+                prices: { basePrice: 10 },
+                releaseDate: '2021-09-24',
+            },
         ];
         var meta = { page: 1, limit: 25, total: 1, totalPages: 1, multiSetBlockKeys: ['mid'] };
 
@@ -133,7 +176,17 @@ describe('setListAjax renderTable', function () {
         var config = loadSetListAjax('table');
         var resultsEl = getResultsEl();
         var sets = [
-            { code: 'neo', name: 'Neon Dynasty', block: 'Kamigawa', parentCode: null, isMain: true, keyruneCode: 'neo', tags: [], prices: { basePrice: 40 }, releaseDate: '2022-02-18' },
+            {
+                code: 'neo',
+                name: 'Neon Dynasty',
+                block: 'Kamigawa',
+                parentCode: null,
+                isMain: true,
+                keyruneCode: 'neo',
+                tags: [],
+                prices: { basePrice: 40 },
+                releaseDate: '2022-02-18',
+            },
         ];
         var meta = { page: 1, limit: 25, total: 1, totalPages: 1, multiSetBlockKeys: [] };
 
@@ -151,12 +204,58 @@ describe('setListAjax renderTable', function () {
         var config = loadSetListAjax('table');
         var resultsEl = getResultsEl();
         var sets = [
-            { code: 'mid', name: 'Midnight Hunt', block: 'Innistrad', parentCode: null, isMain: true, keyruneCode: 'mid', tags: [], prices: { basePrice: 50 }, releaseDate: '2021-09-24' },
-            { code: 'mic', name: 'MH Commander', block: 'Innistrad', parentCode: 'mid', isMain: false, keyruneCode: 'mic', tags: [], prices: { basePrice: 10 }, releaseDate: '2021-09-24' },
-            { code: 'neo', name: 'Neon Dynasty', block: 'Kamigawa', parentCode: null, isMain: true, keyruneCode: 'neo', tags: [], prices: { basePrice: 40 }, releaseDate: '2022-02-18' },
-            { code: 'nec', name: 'ND Commander', block: 'Kamigawa', parentCode: 'neo', isMain: false, keyruneCode: 'nec', tags: [], prices: { basePrice: 8 }, releaseDate: '2022-02-18' },
+            {
+                code: 'mid',
+                name: 'Midnight Hunt',
+                block: 'Innistrad',
+                parentCode: null,
+                isMain: true,
+                keyruneCode: 'mid',
+                tags: [],
+                prices: { basePrice: 50 },
+                releaseDate: '2021-09-24',
+            },
+            {
+                code: 'mic',
+                name: 'MH Commander',
+                block: 'Innistrad',
+                parentCode: 'mid',
+                isMain: false,
+                keyruneCode: 'mic',
+                tags: [],
+                prices: { basePrice: 10 },
+                releaseDate: '2021-09-24',
+            },
+            {
+                code: 'neo',
+                name: 'Neon Dynasty',
+                block: 'Kamigawa',
+                parentCode: null,
+                isMain: true,
+                keyruneCode: 'neo',
+                tags: [],
+                prices: { basePrice: 40 },
+                releaseDate: '2022-02-18',
+            },
+            {
+                code: 'nec',
+                name: 'ND Commander',
+                block: 'Kamigawa',
+                parentCode: 'neo',
+                isMain: false,
+                keyruneCode: 'nec',
+                tags: [],
+                prices: { basePrice: 8 },
+                releaseDate: '2022-02-18',
+            },
         ];
-        var meta = { page: 1, limit: 25, total: 2, totalPages: 1, multiSetBlockKeys: ['mid', 'neo'] };
+        var meta = {
+            page: 1,
+            limit: 25,
+            total: 2,
+            totalPages: 1,
+            multiSetBlockKeys: ['mid', 'neo'],
+        };
 
         config.renderContent(resultsEl, sets, meta);
 
@@ -168,11 +267,21 @@ describe('setListAjax renderTable', function () {
     });
 
     it('should include owned value column when authenticated', function () {
-        document.body.innerHTML = '<div id="set-list-ajax" data-authenticated="true"><div id="filter-results"></div></div>';
+        document.body.innerHTML =
+            '<div id="set-list-ajax" data-authenticated="true"><div id="filter-results"></div></div>';
         var config = loadSetListAjax('table');
         var resultsEl = getResultsEl();
         var sets = [
-            { code: 'mid', name: 'Midnight Hunt', keyruneCode: 'mid', tags: [], prices: { basePrice: 50 }, releaseDate: '2021-09-24', ownedValue: 25.5, completionRate: 40 },
+            {
+                code: 'mid',
+                name: 'Midnight Hunt',
+                keyruneCode: 'mid',
+                tags: [],
+                prices: { basePrice: 50 },
+                releaseDate: '2021-09-24',
+                ownedValue: 25.5,
+                completionRate: 40,
+            },
         ];
 
         config.renderContent(resultsEl, sets, { page: 1, limit: 25, total: 1, totalPages: 1 });
@@ -193,6 +302,7 @@ describe('setListAjax renderGrid', function () {
         releaseDate: '2021-09-24',
         baseSize: 277,
         totalSize: 391,
+        isMain: true,
         coverImgSrc: 'a/b/cover.jpg',
     };
 
@@ -200,7 +310,12 @@ describe('setListAjax renderGrid', function () {
         var config = loadSetListAjax();
         var resultsEl = getResultsEl();
 
-        config.renderContent(resultsEl, [GRID_SET], { page: 1, limit: 25, total: 1, totalPages: 1 });
+        config.renderContent(resultsEl, [GRID_SET], {
+            page: 1,
+            limit: 25,
+            total: 1,
+            totalPages: 1,
+        });
 
         var tiles = resultsEl.querySelectorAll('a.set-tile');
         expect(tiles.length).toBe(1);
@@ -212,7 +327,12 @@ describe('setListAjax renderGrid', function () {
         var config = loadSetListAjax();
         var resultsEl = getResultsEl();
 
-        config.renderContent(resultsEl, [GRID_SET], { page: 1, limit: 25, total: 1, totalPages: 1 });
+        config.renderContent(resultsEl, [GRID_SET], {
+            page: 1,
+            limit: 25,
+            total: 1,
+            totalPages: 1,
+        });
 
         var img = resultsEl.querySelector('.set-tile-art');
         expect(img.getAttribute('src')).toBe(
@@ -235,10 +355,25 @@ describe('setListAjax renderGrid', function () {
         var config = loadSetListAjax();
         var resultsEl = getResultsEl();
 
-        config.renderContent(resultsEl, [GRID_SET], { page: 1, limit: 25, total: 1, totalPages: 1 });
+        config.renderContent(resultsEl, [GRID_SET], {
+            page: 1,
+            limit: 25,
+            total: 1,
+            totalPages: 1,
+        });
 
         expect(resultsEl.querySelector('.set-tile-sub').textContent).toContain('2021');
         expect(resultsEl.querySelector('.set-tile-sub').textContent).toContain('277');
+    });
+
+    it('counts every card for a non-main set, as its completion does', function () {
+        var config = loadSetListAjax();
+        var resultsEl = getResultsEl();
+        var ltr = Object.assign({}, GRID_SET, { baseSize: 286, totalSize: 853, isMain: false });
+
+        config.renderContent(resultsEl, [ltr], { page: 1, limit: 25, total: 1, totalPages: 1 });
+
+        expect(resultsEl.querySelector('.set-tile-sub').textContent).toContain('853 cards');
     });
 
     it('labels block groups instead of indenting rows', function () {
@@ -265,7 +400,8 @@ describe('setListAjax renderGrid', function () {
     });
 
     it('badges owned value only when authenticated and the set is owned', function () {
-        document.body.innerHTML = '<div id="set-list-ajax" data-authenticated="true"><div id="filter-results"></div></div>';
+        document.body.innerHTML =
+            '<div id="set-list-ajax" data-authenticated="true"><div id="filter-results"></div></div>';
         var config = loadSetListAjax();
         var resultsEl = getResultsEl();
         var sets = [

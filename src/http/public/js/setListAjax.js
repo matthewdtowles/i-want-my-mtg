@@ -142,7 +142,8 @@ document.addEventListener('DOMContentLoaded', function () {
         var url = '/sets/' + encodeURIComponent(set.code.toLowerCase());
         var name = AjaxUtils.escapeHtml(set.name);
         var keyruneCode = AjaxUtils.escapeHtml(set.keyruneCode || set.code);
-        var cardCount = set.baseSize || set.totalSize || 0;
+        // Set.effectiveSize: the size completion is measured against.
+        var cardCount = (set.isMain ? set.baseSize : set.totalSize) || 0;
         var year = (set.releaseDate || '').slice(0, 4);
 
         var html = '<a href="' + url + '" class="set-tile group">';

@@ -184,32 +184,34 @@ export class InventoryRepository implements InventoryRepositoryPort {
         return totalValue;
     }
 
-    // With baseOnly, counts toward Set.effectiveSize: base cards for a main set, every card
+    // `base` counts toward Set.effectiveSize: base cards for a main set, every card
     // otherwise, so owning variants can't push a set past its size (e.g. "292 / 291").
-    // Without it, counts every card toward totalSize.
+    // `all` counts every card toward totalSize. One scan serves both.
     async totalInventoryCardsForSet(
         userId: number,
-        setCode: string,
-        baseOnly: boolean = true
-    ): Promise<number> {
+        setCode: string
+    ): Promise<{ base: number; all: number }> {
         this.LOGGER.debug(`Counting total inventory items for user ${userId} in set ${setCode}.`);
         const queryResult = await this.repository.query(
             `
-            SELECT COUNT(DISTINCT i.card_id) AS total
+            SELECT COUNT(DISTINCT i.card_id) FILTER (WHERE c.in_main OR NOT s.is_main) AS base,
+                   COUNT(DISTINCT i.card_id) AS all_cards
             FROM inventory i
             JOIN card c ON i.card_id = c.id
             JOIN "set" s ON s.code = c.set_code
             WHERE i.user_id = $1
             AND c.set_code = $2
-            ${baseOnly ? 'AND (c.in_main OR NOT s.is_main)' : ''}
             `,
             [userId, setCode]
         );
-        const count = Number(queryResult[0]?.total ?? 0);
+        const counts = {
+            base: Number(queryResult[0]?.base ?? 0),
+            all: Number(queryResult[0]?.all_cards ?? 0),
+        };
         this.LOGGER.debug(
-            `Total inventory items for userId: ${userId} in set ${setCode} is ${count}.`
+            `Inventory items for userId: ${userId} in set ${setCode}: ${counts.base} base, ${counts.all} all.`
         );
-        return count;
+        return counts;
     }
 
     async totalInventoryCardsForSets(

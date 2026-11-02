@@ -119,17 +119,17 @@ export class InventoryService {
         return result;
     }
 
-    async totalInventoryItemsForSet(
+    async totalInventoryItemsForSet(userId: number, setCode: string): Promise<number> {
+        return (await this.ownedCountsForSet(userId, setCode)).base;
+    }
+
+    /** Owned cards toward Set.effectiveSize (`base`) and toward totalSize (`all`). */
+    async ownedCountsForSet(
         userId: number,
-        setCode: string,
-        baseOnly: boolean = true
-    ): Promise<number> {
-        this.LOGGER.debug(`Get total inventory items for ${userId} in set ${setCode}.`);
-        const result = await this.repository.totalInventoryCardsForSet(userId, setCode, baseOnly);
-        this.LOGGER.debug(
-            `Total inventory items for user ${userId} in set ${setCode} is ${result}.`
-        );
-        return result;
+        setCode: string
+    ): Promise<{ base: number; all: number }> {
+        this.LOGGER.debug(`Get owned counts for ${userId} in set ${setCode}.`);
+        return this.repository.totalInventoryCardsForSet(userId, setCode);
     }
 
     async totalOwnedValue(userId: number): Promise<number> {

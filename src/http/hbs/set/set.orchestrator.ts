@@ -654,23 +654,24 @@ export class SetOrchestrator {
         // high-traffic page instead of querying with userId 0 (B12). Signed-in
         // users run the three reads together rather than in series (P3).
         let inventory: Inventory[] = [];
-        let ownedTotal = 0;
-        let ownedTotalAll = 0;
+        let owned = { base: 0, all: 0 };
         let ownedValueRaw = 0;
         if (isAuthed) {
-            [inventory, ownedTotal, ownedTotalAll, ownedValueRaw] = await Promise.all([
+            [inventory, owned, ownedValueRaw] = await Promise.all([
                 setPayloadSize > 0
                     ? this.inventoryService.findByCards(
                           userId,
                           cards.map((c) => c.id)
                       )
                     : Promise.resolve([] as Inventory[]),
-                this.inventoryService.totalInventoryItemsForSet(userId, set.code),
-                // The "Show All" view measures completion against every card, bonus included.
-                this.inventoryService.totalInventoryItemsForSet(userId, set.code, false),
+                // `all` is for the "Show All" view, which measures completion against
+                // every card, bonus included.
+                this.inventoryService.ownedCountsForSet(userId, set.code),
                 this.inventoryService.ownedValueForSet(userId, set.code),
             ]);
         }
+        const ownedTotal = owned.base;
+        const ownedTotalAll = owned.all;
 
         const effectiveSize = set.effectiveSize;
         // Build the card→quantity map once; it was previously rebuilt for every

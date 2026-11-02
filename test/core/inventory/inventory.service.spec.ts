@@ -36,6 +36,7 @@ describe('InventoryService', () => {
         findByCards: jest.fn(),
         findByUser: jest.fn(),
         delete: jest.fn(),
+        totalInventoryCardsForSet: jest.fn(),
         totalInventoryCardsForSets: jest.fn(),
         totalInventoryValuesForSets: jest.fn(),
         findAllForExport: jest.fn(),
@@ -292,6 +293,23 @@ describe('InventoryService', () => {
             const result = await service.findAllForUser(null, mockQueryOptions);
             expect(repository.findByUser).not.toHaveBeenCalled();
             expect(result).toEqual([]);
+        });
+    });
+
+    describe('ownedCountsForSet', () => {
+        it('returns base and all counts from one repository call', async () => {
+            repository.totalInventoryCardsForSet.mockResolvedValue({ base: 281, all: 853 });
+
+            const result = await service.ownedCountsForSet(1, 'ltr');
+
+            expect(repository.totalInventoryCardsForSet).toHaveBeenCalledTimes(1);
+            expect(result).toEqual({ base: 281, all: 853 });
+        });
+
+        it('totalInventoryItemsForSet returns the base count', async () => {
+            repository.totalInventoryCardsForSet.mockResolvedValue({ base: 281, all: 853 });
+
+            expect(await service.totalInventoryItemsForSet(1, 'ltr')).toBe(281);
         });
     });
 

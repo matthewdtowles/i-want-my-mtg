@@ -111,9 +111,12 @@ export class CardRepository implements CardRepositoryPort {
             .leftJoinAndSelect(`${this.TABLE}.set`, 'set')
             .where(`${this.TABLE}.name = :name`, { name });
 
-        // Use price-desc helper for "other printings" sorted by value
+        // Use price-desc helper for "other printings" sorted by value. Many printings
+        // share a price (hundreds of basic lands), so card.id breaks ties: Postgres
+        // doesn't promise tied rows the same order from one page's query to the next.
         this.queryHelperPriceDesc.applyPagination(qb, options);
         this.queryHelperPriceDesc.applyOrdering(qb, options);
+        qb.addOrderBy(`${this.TABLE}.id`, 'ASC');
 
         const cards = (await qb.getMany()).map(CardMapper.toCore);
         this.LOGGER.debug(`Found ${cards.length} cards with name: ${name}.`);

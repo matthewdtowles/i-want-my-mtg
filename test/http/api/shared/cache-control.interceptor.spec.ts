@@ -1,7 +1,10 @@
 import { CallHandler, ExecutionContext } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { of } from 'rxjs';
-import { CacheControlInterceptor } from 'src/http/api/shared/cache-control.interceptor';
+import {
+    CacheControlInterceptor,
+    SHARED_CACHE_TTL_KEY,
+} from 'src/http/api/shared/cache-control.interceptor';
 
 function createMockContext(
     overrides: { method?: string; user?: { id: number }; existingCacheControl?: string } = {}
@@ -85,6 +88,20 @@ describe('CacheControlInterceptor', () => {
             expect(setHeader).toHaveBeenCalledWith(
                 'Cache-Control',
                 expect.stringContaining('max-age=120')
+            );
+            done();
+        });
+    });
+
+    it('adds s-maxage for shared caches from SharedCacheTTL, keeping the browser max-age', (done) => {
+        jest.spyOn(reflector, 'getAllAndOverride').mockImplementation((key) =>
+            key === SHARED_CACHE_TTL_KEY ? 3600 : undefined
+        );
+        const { context, setHeader } = createMockContext();
+        interceptor.intercept(context, createNext()).subscribe(() => {
+            expect(setHeader).toHaveBeenCalledWith(
+                'Cache-Control',
+                'public, max-age=60, s-maxage=3600, stale-while-revalidate=300'
             );
             done();
         });

@@ -11,6 +11,7 @@ import { AppModule } from './app.module';
 import { configureApp } from './app.config';
 import { ApiModule } from './http/api/api.module';
 import { buildPublicSpec } from './http/api/openapi-public-spec';
+import { staleChromeBlock } from './http/stale-chrome-block.middleware';
 import { CorrelationIdMiddleware } from './logger/correlation-id.middleware';
 import { requestLog } from './logger/request-log.middleware';
 import { getLogger, GlobalAppLogger } from './logger/global-app-logger';
@@ -151,6 +152,8 @@ async function bootstrap() {
 
     app.use(new CorrelationIdMiddleware().use);
     app.use(requestLog(getLogger('HttpAccess')));
+    // After requestLog, so each request it turns away is still logged with its 403.
+    app.use(staleChromeBlock());
     app.useGlobalInterceptors(new UserContextInterceptor());
     await app.listen(3000);
 }

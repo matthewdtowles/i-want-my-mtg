@@ -34,6 +34,14 @@ export function buildTypeOrmOptions(configService: ConfigService): TypeOrmModule
             // server cannot deliver its own cancel.
             statement_timeout: 30000,
             query_timeout: 35000,
+            // statement_timeout can't stop a query that is blocked sending rows to
+            // a client that vanished without closing: Postgres won't cancel a
+            // backend mid-write. On 2026-11-01 a deploy stopped the web container
+            // during two such queries, and they held their locks on card for six
+            // minutes, until killed by hand, failing two deploy attempts.
+            // tcp_user_timeout has the server drop a connection whose data has gone
+            // unacknowledged for 30s.
+            options: '-c tcp_user_timeout=30000',
         },
     };
 

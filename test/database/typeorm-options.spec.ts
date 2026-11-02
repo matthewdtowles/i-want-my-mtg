@@ -25,6 +25,10 @@ describe('buildTypeOrmOptions', () => {
             expect(extra.query_timeout).toBe(35000);
         });
 
+        it('has the server drop a connection to a client that vanished mid-result', () => {
+            expect(extra.options).toBe('-c tcp_user_timeout=30000');
+        });
+
         it('keeps the existing pool size and wait limits', () => {
             expect(extra).toMatchObject({
                 max: 10,

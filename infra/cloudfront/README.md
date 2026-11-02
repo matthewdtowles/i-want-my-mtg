@@ -65,3 +65,16 @@ Then, signed in:
 - Mobile: the Inventory tab lists your cards, and a card added from card detail appears straight away.
 - MCP: `add_inventory` followed by `list_inventory` shows the new card.
 - The next deploy's `verify-release.sh` passes.
+
+## Access logs
+
+`setup-access-logs.sh` sends CloudFront's access logs (standard logging v2) to a private S3 bucket that deletes them after 30 days. Every request is logged, cache hits included, with the client's network (`asn`) and country, so a crawl like the one on 2026-11-01 can be identified without SSH. The query string and cookies are left out, because verification and reset links carry tokens and the cookie is the login token.
+
+```
+infra/cloudfront/setup-access-logs.sh           # preview, changes nothing
+infra/cloudfront/setup-access-logs.sh apply     # create the bucket and the delivery
+infra/cloudfront/setup-access-logs.sh top 3     # busiest networks, countries, IPs, agents, paths in the last 3 hours
+infra/cloudfront/setup-access-logs.sh rollback  # stop delivering (the bucket and its logs stay)
+```
+
+At normal traffic (about 11,000 requests an hour) this is a few GB a month, well under $1 in delivery and storage.

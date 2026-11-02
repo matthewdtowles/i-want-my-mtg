@@ -16,6 +16,16 @@ export const CACHE_TTL_KEY = 'cache-control-ttl';
  */
 export const CacheTTL = (seconds: number) => SetMetadata(CACHE_TTL_KEY, seconds);
 
+export const SHARED_CACHE_TTL_KEY = 'cache-control-shared-ttl';
+
+/**
+ * Let shared caches (CloudFront) keep a public response for `seconds` (s-maxage) while
+ * browsers keep the max-age above. A browser's cache key has no cookie, so a long
+ * browser TTL would show a visitor who just signed in a page cached while signed out;
+ * CloudFront's cache key includes the auth cookie, so it can hold pages longer.
+ */
+export const SharedCacheTTL = (seconds: number) => SetMetadata(SHARED_CACHE_TTL_KEY, seconds);
+
 /**
  * Adds Cache-Control headers to GET API responses.
  * - Authenticated endpoints (cookie/bearer): no-store
@@ -65,9 +75,15 @@ export class CacheControlInterceptor implements NestInterceptor {
                     return;
                 }
 
+                const sharedTtl = this.reflector.getAllAndOverride<number>(SHARED_CACHE_TTL_KEY, [
+                    context.getHandler(),
+                    context.getClass(),
+                ]);
                 res.setHeader(
                     'Cache-Control',
-                    `public, max-age=${ttl}, stale-while-revalidate=${CacheControlInterceptor.STALE_WHILE_REVALIDATE}`
+                    `public, max-age=${ttl}, ` +
+                        (sharedTtl ? `s-maxage=${sharedTtl}, ` : '') +
+                        `stale-while-revalidate=${CacheControlInterceptor.STALE_WHILE_REVALIDATE}`
                 );
             })
         );

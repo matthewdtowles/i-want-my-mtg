@@ -1,4 +1,5 @@
 import { Controller, Get, Inject, Param, Query, Render, Req, UseGuards } from '@nestjs/common';
+import { SharedCacheTTL } from 'src/http/api/shared/cache-control.interceptor';
 import { OptionalAuthGuard } from 'src/http/auth/optional-auth.guard';
 import { AuthenticatedRequest } from 'src/http/base/authenticated.request';
 import { parseDaysParam } from 'src/http/base/query.util';
@@ -22,6 +23,10 @@ export class CardController {
         return this.cardOrchestrator.getPriceHistory(cardId, parseDaysParam(days));
     }
 
+    // Prices change once a day, so CloudFront can serve a signed-out card page for an hour.
+    // A crawl of every card page took the site down on 2026-11-01; each page it reaches
+    // now costs the database once an hour instead of once a minute.
+    @SharedCacheTTL(3600)
     @UseGuards(OptionalAuthGuard)
     @Get(':setCode/:setNumber')
     @Render('card')

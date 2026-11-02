@@ -60,18 +60,27 @@ export class CardOrchestrator {
                     `Card with set code ${setCode} and number ${setNumber} not found`
                 );
             }
-            const inventory: Inventory[] =
-                userId > 0 ? await this.inventoryService.findForUser(userId, coreCard.id) : [];
+            const rawOptions = toStringRecord(req.query);
+            const parsedOptions = new SafeQueryOptions(rawOptions);
+
+            // Everything below needs only the card, so it runs together rather than in
+            // series. The printings page is fetched before its count is known; a page
+            // past the end is rare enough to refetch once it is.
+            const [inventory, totalPrintings, requestedPrintings, buylist] = await Promise.all([
+                userId > 0
+                    ? this.inventoryService.findForUser(userId, coreCard.id)
+                    : Promise.resolve([] as Inventory[]),
+                this.cardService.totalWithName(coreCard.name),
+                this.cardService.findWithName(coreCard.name, parsedOptions),
+                this.findBuylist(coreCard.id),
+            ]);
 
             const singleCard: SingleCardResponseDto = CardPresenter.toSingleCardResponse(
                 coreCard,
                 InventoryPresenter.toQuantityMap(inventory)?.get(coreCard.id),
                 CardImgType.NORMAL
             );
-            const totalPrintings = await this.cardService.totalWithName(singleCard.name);
 
-            const rawOptions = toStringRecord(req.query);
-            const parsedOptions = new SafeQueryOptions(rawOptions);
             const lastPage = Math.max(1, Math.ceil(totalPrintings / parsedOptions.limit));
             const options =
                 parsedOptions.page > lastPage
@@ -79,10 +88,10 @@ export class CardOrchestrator {
                     : parsedOptions;
 
             this.LOGGER.debug(`Options: ${JSON.stringify(options)}`);
-            const allPrintings: Card[] = await this.cardService.findWithName(
-                singleCard.name,
-                options
-            );
+            const allPrintings: Card[] =
+                options === parsedOptions
+                    ? requestedPrintings
+                    : await this.cardService.findWithName(coreCard.name, options);
             const baseUrl = buildCardUrl(singleCard.setCode, singleCard.number);
 
             // Compute cost basis and untracked quantities if user is authenticated
@@ -145,15 +154,6 @@ export class CardOrchestrator {
                 }
             }
 
-            // Current buylist offers (empty until scry populates the granular store)
-            let buylist;
-            try {
-                const offers = await this.cardService.findCurrentBuylist(coreCard.id);
-                buylist = CardPresenter.toBuylistView(offers);
-            } catch (err) {
-                this.LOGGER.debug(`Buylist unavailable: ${err?.message}`);
-            }
-
             const otherPrintings = allPrintings
                 .filter((card) => card.setCode !== setCode || card.number !== setNumber)
                 .map((card) => CardPresenter.toCardResponse(card, null, CardImgType.NORMAL));
@@ -210,6 +210,17 @@ export class CardOrchestrator {
         } catch (error) {
             this.LOGGER.debug(`Error finding set card ${setCode}/${setNumber}: ${error?.message}`);
             HttpErrorHandler.toHttpException(error, 'findSetCard');
+        }
+    }
+
+    /** Current buylist offers (empty until scry populates the granular store). */
+    private async findBuylist(cardId: string) {
+        try {
+            const offers = await this.cardService.findCurrentBuylist(cardId);
+            return CardPresenter.toBuylistView(offers);
+        } catch (err) {
+            this.LOGGER.debug(`Buylist unavailable: ${err?.message}`);
+            return undefined;
         }
     }
 

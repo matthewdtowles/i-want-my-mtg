@@ -342,6 +342,43 @@ describe('CardOrchestrator', () => {
             expect(result.pagination.totalPages).toBeGreaterThan(0);
         });
 
+        it('fetches the requested printings page once when it exists', async () => {
+            mockCardService.findBySetCodeAndNumber.mockResolvedValue(mockCard);
+            mockCardService.findWithName.mockResolvedValue([mockCard]);
+            mockCardService.totalWithName.mockResolvedValue(25);
+            mockInventoryService.findForUser.mockResolvedValue([]);
+            const req = { ...mockAuthenticatedRequest, query: { page: '2', limit: '10' } };
+
+            await orchestrator.findSetCard(req as unknown as AuthenticatedRequest, 'tst', '1');
+
+            expect(cardService.findWithName).toHaveBeenCalledTimes(1);
+            expect(cardService.findWithName).toHaveBeenCalledWith(
+                mockCard.name,
+                expect.objectContaining({ page: 2 })
+            );
+        });
+
+        it('refetches the last printings page when the requested one is past the end', async () => {
+            mockCardService.findBySetCodeAndNumber.mockResolvedValue(mockCard);
+            mockCardService.findWithName.mockResolvedValue([mockCard]);
+            mockCardService.totalWithName.mockResolvedValue(25);
+            mockInventoryService.findForUser.mockResolvedValue([]);
+            const req = { ...mockAuthenticatedRequest, query: { page: '9', limit: '10' } };
+
+            const result = await orchestrator.findSetCard(
+                req as unknown as AuthenticatedRequest,
+                'tst',
+                '1'
+            );
+
+            expect(cardService.findWithName).toHaveBeenCalledTimes(2);
+            expect(cardService.findWithName).toHaveBeenLastCalledWith(
+                mockCard.name,
+                expect.objectContaining({ page: 3 })
+            );
+            expect(result.otherPrintings).toBeDefined();
+        });
+
         it('should include filter view', async () => {
             mockCardService.findBySetCodeAndNumber.mockResolvedValue(mockCard);
             mockCardService.findWithName.mockResolvedValue([mockCard]);

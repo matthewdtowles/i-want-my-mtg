@@ -50,13 +50,17 @@ fi
 echo "alias db-managed='source ~/.env && psql \"\$DATABASE_URL\"'" >> ~/.bashrc
 log_info "Alias db-managed configured."
 
+# The running image, so a failed migration can put it back.
+PREVIOUS_IMAGE="$(docker inspect --format '{{.Image}}' "$(docker compose ps -q web 2>/dev/null)" 2>/dev/null || true)"
+
+# Pull while the current version is still serving, so the site is only down for the
+# migrations and the restart.
+log_info "Pulling latest images..."
+docker compose pull web
+
 # Stop existing containers
 log_info "Stopping existing containers..."
 docker compose down --remove-orphans || true
-
-# Pull latest images
-log_info "Pulling latest images..."
-docker compose pull web
 
 # Run database migrations against managed DB
 log_info "Running database migrations..."
@@ -64,7 +68,17 @@ source ~/.env
 export DATABASE_URL
 export MIGRATIONS_DIR="$HOME/migrations"
 chmod +x migrations/run_migrations.sh
-migrations/run_migrations.sh
+if ! migrations/run_migrations.sh; then
+    # On 2026-11-01 a migration timed out here and the deploy exited with nothing
+    # serving. Bring the previous version back before failing.
+    log_error "Migrations failed!"
+    if [ -n "$PREVIOUS_IMAGE" ]; then
+        log_warn "Restarting the previous version..."
+        docker tag "$PREVIOUS_IMAGE" ghcr.io/matthewdtowles/i-want-my-mtg/web:latest
+        docker compose up -d web
+    fi
+    exit 1
+fi
 
 # Start web service
 log_info "Starting web service..."

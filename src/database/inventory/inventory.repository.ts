@@ -119,8 +119,35 @@ export class InventoryRepository implements InventoryRepositoryPort {
             qb.andWhere(`${this.TABLE}.isFoil = :isFoil`, { isFoil: options.finish === 'foil' });
         }
 
-        this.queryHelper.applyOptions(qb, options);
-        const results = await qb.getMany();
+        this.queryHelper.applyFilters(qb, options.filter);
+
+        // The page's keys first, then those rows in full. Selecting only keys lets
+        // Postgres drop the price and set joins unless the sort needs them, so the
+        // latest price is found for 25 items instead of the whole collection. It is
+        // skip/take's plan without its DISTINCT, which every join here makes redundant
+        // (each matches at most one row): 42ms against 67-110ms for 35,693 cards. One
+        // query with LIMIT priced every item first for Show All, 350ms. The key columns
+        // break ties: sortNumber repeats across sets, and Postgres doesn't keep tied
+        // rows in the same order from one page to the next.
+        const keysQb = qb
+            .clone()
+            .select(`${this.TABLE}.cardId`, 'cardId')
+            .addSelect(`${this.TABLE}.isFoil`, 'isFoil');
+        this.queryHelper.applyOrdering(keysQb, options);
+        keysQb.addOrderBy(`${this.TABLE}.cardId`, 'ASC').addOrderBy(`${this.TABLE}.isFoil`, 'ASC');
+        keysQb.limit(options.limit).offset((options.page - 1) * options.limit);
+        const keys: { cardId: string; isFoil: boolean }[] = await keysQb.getRawMany();
+        if (keys.length === 0) return [];
+
+        const rows = await qb
+            .andWhere(`${this.TABLE}.cardId IN (:...pageCardIds)`, {
+                pageCardIds: keys.map((key) => key.cardId),
+            })
+            .getMany();
+        const byKey = new Map(rows.map((row) => [`${row.cardId}:${row.isFoil}`, row]));
+        const results = keys
+            .map((key) => byKey.get(`${key.cardId}:${key.isFoil}`))
+            .filter((row): row is InventoryOrmEntity => row !== undefined);
         this.LOGGER.debug(`Found ${results.length} inventory items for userId: ${userId}.`);
         return results.map((item: InventoryOrmEntity) => InventoryMapper.toCore(item));
     }
@@ -156,18 +183,22 @@ export class InventoryRepository implements InventoryRepositoryPort {
             SELECT COALESCE(SUM(
                 ${PriceCalculationPolicy.inventoryItemValueExpression()} * i.quantity
             ), 0) AS total_value
-            FROM inventory i
-            -- The newest price row per card, the row latestPriceCondition selects, looked
-            -- up by index per card. Joining price under latestPriceCondition re-ran its
-            -- MAX subquery twice per row: 283ms for a 35,693-card collection, against
-            -- 179ms here, and 7.2ms against 2.8ms for 406 cards.
-            LEFT JOIN LATERAL (
-                SELECT pr.normal, pr.foil FROM price pr
-                WHERE pr.card_id = i.card_id
-                ORDER BY pr.date DESC
-                LIMIT 1
-            ) p ON true
-            WHERE i.user_id = $1
+            -- Each item joined to every price row of its card, keeping the newest: the
+            -- row latestPriceCondition selects. For a large collection Postgres joins
+            -- all of price in one hash instead of looking it up per item: 135ms per-item
+            -- against 47ms here for 35,693 cards, and 1.7ms against 2.0ms for 406.
+            -- COLLATE "C" sorts ids bytewise, which is most of the saving and still
+            -- groups equal ids together. The lateral names the kept price columns p, as
+            -- the value expression expects.
+            FROM (
+                SELECT DISTINCT ON (i.card_id COLLATE "C", i.foil)
+                    i.foil, i.quantity, p.normal, p.foil AS p_foil
+                FROM inventory i
+                LEFT JOIN price p ON p.card_id = i.card_id
+                WHERE i.user_id = $1
+                ORDER BY i.card_id COLLATE "C", i.foil, p.date DESC
+            ) i
+            CROSS JOIN LATERAL (SELECT i.normal, i.p_foil AS foil) p
             `,
             [userId]
         );

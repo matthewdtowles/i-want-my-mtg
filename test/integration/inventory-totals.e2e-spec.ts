@@ -83,6 +83,21 @@ describe('Inventory page totals (e2e)', () => {
         expect(res.text).toMatch(/app-stat-tile-value">3</);
     });
 
+    it('lists each owned row on exactly one page when the sort has ties', async () => {
+        // Cards 1 and 305 both have quantity 1.
+        const ids: string[] = [];
+        for (let page = 1; page <= 3; page++) {
+            const res = await request(app.getHttpServer())
+                .get(
+                    `/api/v1/inventory?baseOnly=false&sort=inventory.quantity&limit=1&page=${page}`
+                )
+                .set('Cookie', cookie)
+                .expect(200);
+            ids.push(...res.body.data.map((item: { cardId: string }) => item.cardId));
+        }
+        expect(ids.sort()).toEqual([TEST_CARD_ID, TEST_CARD_ID_2, VARIANT_CARD_ID].sort());
+    });
+
     it('counts only base-set rows by default', async () => {
         const res = await request(app.getHttpServer())
             .get('/inventory')

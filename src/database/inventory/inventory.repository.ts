@@ -8,7 +8,10 @@ import { INVENTORY_SORTS, SortOptions } from 'src/core/query/sort-options.enum';
 import { QueryBuilderHelper } from 'src/database/query/query-builder.helper';
 import { activeEntityManager } from 'src/database/transaction-runner';
 import { getLogger } from 'src/logger/global-app-logger';
-import { latestPriceCondition } from 'src/database/query/latest-price.sql';
+import {
+    latestPriceCondition,
+    latestPriceConditionForManySets,
+} from 'src/database/query/latest-price.sql';
 import { In, Repository } from 'typeorm';
 import { InventoryMapper } from './inventory.mapper';
 import { InventoryOrmEntity } from './inventory.orm-entity';
@@ -263,7 +266,7 @@ export class InventoryRepository implements InventoryRepositoryPort {
             FROM inventory i
             JOIN card c ON i.card_id = c.id
             LEFT JOIN price p ON p.card_id = c.id
-                AND ${latestPriceCondition('p', 'c')}
+                AND ${latestPriceConditionForManySets('p', 'c')}
             WHERE i.user_id = $1
             AND c.set_code IN (${placeholders})
             GROUP BY c.set_code

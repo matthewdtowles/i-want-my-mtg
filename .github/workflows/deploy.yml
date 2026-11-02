@@ -191,9 +191,13 @@ jobs:
                     echo "exists=false" >> "$GITHUB_OUTPUT"
                   fi
 
+            # --target pins the tag to the commit this run built. Without it the tag
+            # lands on main's head when the step runs: on 2026-11-01 #658's run tagged
+            # #659's commit, already merged, so #659's run found that tag on its HEAD and
+            # reused 1.64.14 instead of releasing 1.64.15.
             - name: Create release
               if: steps.check.outputs.exists == 'false'
-              run: gh release create "${{ needs.version.outputs.version }}" --generate-notes --title "${{ needs.version.outputs.version }}"
+              run: gh release create "${{ needs.version.outputs.version }}" --target "${{ github.sha }}" --generate-notes --title "${{ needs.version.outputs.version }}"
               env:
                   GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 

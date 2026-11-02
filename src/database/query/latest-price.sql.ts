@@ -14,3 +14,16 @@
 export function latestPriceCondition(priceAlias: string, cardAlias: string): string {
     return `${priceAlias}.date = (SELECT MAX(p2.date) FROM price p2 WHERE p2.card_id = ${cardAlias}.id)`;
 }
+
+/**
+ * The same latest-price predicate, written as "no newer row exists", for aggregates
+ * over many sets at once. There Postgres re-runs the MAX subquery above for every
+ * joined row (22,083 times for one signed-in sets page); this form costs a scan of
+ * price instead. On that page's owned-value query it took the page from 476ms to
+ * 303ms p50 locally. For a single card or set the trade reverses (a binder's value
+ * query went from 12ms to 20ms), so everything else keeps latestPriceCondition.
+ * Both select the same row, since (card_id, date) is unique.
+ */
+export function latestPriceConditionForManySets(priceAlias: string, cardAlias: string): string {
+    return `NOT EXISTS (SELECT 1 FROM price p2 WHERE p2.card_id = ${cardAlias}.id AND p2.date > ${priceAlias}.date)`;
+}

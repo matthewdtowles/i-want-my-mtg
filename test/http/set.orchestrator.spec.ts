@@ -92,7 +92,7 @@ describe('SetOrchestrator', () => {
                         findByCards: jest.fn(),
                         getUniqueOwnedCountByUserId: jest.fn(),
                         totalValueForSet: jest.fn(),
-                        totalInventoryItemsForSet: jest.fn(),
+                        ownedCountsForSet: jest.fn(),
                         ownedValueForSet: jest.fn(),
                         inventoryTotalsForSets: jest.fn(),
                         ownedValuesForSets: jest.fn(),
@@ -408,7 +408,7 @@ describe('SetOrchestrator', () => {
             cardService.findBySet.mockResolvedValue([mockCard]);
             cardService.totalInSet.mockResolvedValue(1);
             inventoryService.findByCards.mockResolvedValue([]);
-            inventoryService.totalInventoryItemsForSet.mockResolvedValue(0);
+            inventoryService.ownedCountsForSet.mockResolvedValue({ base: 0, all: 0 });
             inventoryService.ownedValueForSet.mockResolvedValue(0);
 
             const result = await orchestrator.findBySetCode(
@@ -444,7 +444,7 @@ describe('SetOrchestrator', () => {
             cardService.findBySet.mockResolvedValue([mockCard]);
             cardService.totalInSet.mockResolvedValue(1);
             inventoryService.findByCards.mockResolvedValue([]);
-            inventoryService.totalInventoryItemsForSet.mockResolvedValue(0);
+            inventoryService.ownedCountsForSet.mockResolvedValue({ base: 0, all: 0 });
             inventoryService.ownedValueForSet.mockResolvedValue(0);
 
             const result = await orchestrator.findBySetCode(unauthReq, 'TST', mockQueryOptions);
@@ -454,7 +454,7 @@ describe('SetOrchestrator', () => {
             // Anonymous visitors own nothing, so the set page must not issue any
             // inventory queries with userId 0 (B12).
             expect(inventoryService.findByCards).not.toHaveBeenCalled();
-            expect(inventoryService.totalInventoryItemsForSet).not.toHaveBeenCalled();
+            expect(inventoryService.ownedCountsForSet).not.toHaveBeenCalled();
             expect(inventoryService.ownedValueForSet).not.toHaveBeenCalled();
             expect(result.set.ownedTotal).toBe(0);
         });
@@ -481,7 +481,7 @@ describe('SetOrchestrator', () => {
             // 3 cards match the filter out of 100 base cards
             cardService.totalInSet.mockResolvedValue(3);
             inventoryService.findByCards.mockResolvedValue([]);
-            inventoryService.totalInventoryItemsForSet.mockResolvedValue(0);
+            inventoryService.ownedCountsForSet.mockResolvedValue({ base: 0, all: 0 });
             inventoryService.ownedValueForSet.mockResolvedValue(0);
 
             const result = await orchestrator.findBySetCode(
@@ -511,7 +511,7 @@ describe('SetOrchestrator', () => {
             // 12 cards match filter => 3 pages at limit=5
             cardService.totalInSet.mockResolvedValue(12);
             inventoryService.findByCards.mockResolvedValue([]);
-            inventoryService.totalInventoryItemsForSet.mockResolvedValue(0);
+            inventoryService.ownedCountsForSet.mockResolvedValue({ base: 0, all: 0 });
             inventoryService.ownedValueForSet.mockResolvedValue(0);
 
             const result = await orchestrator.findBySetCode(
@@ -535,7 +535,7 @@ describe('SetOrchestrator', () => {
             cardService.findBySet.mockResolvedValue([mockCard]);
             cardService.totalInSet.mockResolvedValue(8);
             inventoryService.findByCards.mockResolvedValue([]);
-            inventoryService.totalInventoryItemsForSet.mockResolvedValue(0);
+            inventoryService.ownedCountsForSet.mockResolvedValue({ base: 0, all: 0 });
             inventoryService.ownedValueForSet.mockResolvedValue(0);
 
             await orchestrator.findBySetCode(mockAuthenticatedRequest, 'TST', filteredOptions);
@@ -550,7 +550,7 @@ describe('SetOrchestrator', () => {
             );
             cardService.findBySet.mockResolvedValue([mockCard]);
             inventoryService.findByCards.mockResolvedValue([]);
-            inventoryService.totalInventoryItemsForSet.mockResolvedValue(0);
+            inventoryService.ownedCountsForSet.mockResolvedValue({ base: 0, all: 0 });
             inventoryService.ownedValueForSet.mockResolvedValue(0);
 
             const result = await orchestrator.findBySetCode(
@@ -590,7 +590,7 @@ describe('SetOrchestrator', () => {
                 cardService.findBySet.mockResolvedValue([mockCard]);
                 cardService.totalInSet.mockResolvedValue(1);
                 inventoryService.findByCards.mockResolvedValue([]);
-                inventoryService.totalInventoryItemsForSet.mockResolvedValue(0);
+                inventoryService.ownedCountsForSet.mockResolvedValue({ base: 0, all: 0 });
                 inventoryService.ownedValueForSet.mockResolvedValue(0);
             });
 
@@ -706,7 +706,7 @@ describe('SetOrchestrator', () => {
             cardService.findBySet.mockResolvedValue([mockCard]);
             cardService.totalInSet.mockResolvedValue(5);
             inventoryService.findByCards.mockResolvedValue([]);
-            inventoryService.totalInventoryItemsForSet.mockResolvedValue(0);
+            inventoryService.ownedCountsForSet.mockResolvedValue({ base: 0, all: 0 });
             inventoryService.ownedValueForSet.mockResolvedValue(0);
 
             await orchestrator.findBySetCode(mockAuthenticatedRequest, 'TST', mockQueryOptions);
@@ -726,7 +726,7 @@ describe('SetOrchestrator', () => {
             setService.findByCode.mockResolvedValue(ltr);
             cardService.findBySet.mockResolvedValue([mockCard]);
             inventoryService.findByCards.mockResolvedValue([]);
-            inventoryService.totalInventoryItemsForSet.mockResolvedValue(0);
+            inventoryService.ownedCountsForSet.mockResolvedValue({ base: 0, all: 0 });
             inventoryService.ownedValueForSet.mockResolvedValue(0);
 
             const result = await orchestrator.findBySetCode(

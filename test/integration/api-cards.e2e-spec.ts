@@ -501,20 +501,30 @@ describe('Cards API (e2e)', () => {
         });
 
         it('leaves out cards from a set released in the last two weeks', async () => {
-            await ds.query(`UPDATE "set" SET release_date = CURRENT_DATE - 13 WHERE code = 'tst'`);
+            // The moves are cached for an hour, so each release date is read by a
+            // fresh app.
+            async function total(): Promise<number> {
+                const fresh = await createTestApp();
+                try {
+                    const res = await request(fresh.getHttpServer())
+                        .get('/api/v1/cards/movers')
+                        .expect(200);
+                    return res.body.meta.total;
+                } finally {
+                    await closeTestApp(fresh);
+                }
+            }
+
             try {
-                const res = await request(app.getHttpServer())
-                    .get('/api/v1/cards/movers')
-                    .expect(200);
-                expect(res.body.data).toEqual([]);
+                await ds.query(
+                    `UPDATE "set" SET release_date = CURRENT_DATE - 13 WHERE code = 'tst'`
+                );
+                expect(await total()).toBe(0);
 
                 await ds.query(
                     `UPDATE "set" SET release_date = CURRENT_DATE - 14 WHERE code = 'tst'`
                 );
-                const old = await request(app.getHttpServer())
-                    .get('/api/v1/cards/movers')
-                    .expect(200);
-                expect(old.body.meta.total).toBe(3);
+                expect(await total()).toBe(3);
             } finally {
                 await ds.query(`UPDATE "set" SET release_date = '2024-01-01' WHERE code = 'tst'`);
             }

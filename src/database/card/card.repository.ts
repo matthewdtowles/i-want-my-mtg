@@ -1,10 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Card } from 'src/core/card/card.entity';
-import { PriceFinish, PriceMoverRow } from 'src/core/card/price-mover.entity';
+import { CardRarity } from 'src/core/card/card.rarity.enum';
+import { Format } from 'src/core/card/format.enum';
+import { LegalityStatus } from 'src/core/card/legality.status.enum';
+import { PriceFinish, WeeklyMove } from 'src/core/card/price-mover.entity';
 import { CardRepositoryPort } from 'src/core/card/ports/card.repository.port';
 import { PriceCalculationPolicy } from 'src/core/pricing/price-calculation.policy';
-import { PriceMoverQueryOptions } from 'src/core/query/price-mover-query-options.dto';
 import { Finish, SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
 import { SET_CARD_SORTS, SortOptions } from 'src/core/query/sort-options.enum';
 import { latestPriceCondition } from 'src/database/query/latest-price.sql';
@@ -501,106 +503,70 @@ export class CardRepository implements CardRepositoryPort {
     }
 
     /**
-     * Ranks each finish of each printing by its stored weekly change, leaving out
-     * the `flipping` finishes (see findFlippingPrices).
+     * Every finish of every printing with a weekly change, for the service to filter,
+     * rank and page in memory. Filtering here per request meant joining the whole
+     * catalog every time: 0.5-1s on prod for an answer that changes once a day.
      *
      * Cards from a set released in the NEW_SET_DAYS before the price date are left
-     * out too. A set is listed at a placeholder price before release, so on
-     * 2026-11-16, three days after Star Trek came out, its cards filled the top of
-     * the list: Warship Flight Crew read $0.35 -> $8.89, +2440%. That is the market
-     * finding a price, not a move.
-     *
-     * The catalog filters mirror applyCatalogFilters, written as raw SQL because the
-     * finishes are unpacked with a LATERAL VALUES list.
+     * out. A set is listed at a placeholder price before release, so on 2026-11-16,
+     * three days after Star Trek came out, its cards filled the top of the movers:
+     * Warship Flight Crew read $0.35 -> $8.89, +2440%. That is the market finding a
+     * price, not a move.
      */
-    async findPriceMovers(
-        options: PriceMoverQueryOptions,
-        flipping: PriceFinish[]
-    ): Promise<{ rows: PriceMoverRow[]; total: number }> {
+    async findWeeklyMoves(): Promise<WeeklyMove[]> {
         const NEW_SET_DAYS = 14;
-        const params: unknown[] = [
-            options.minPrice,
-            flipping.map((f) => f.cardId),
-            flipping.map((f) => f.finish),
-        ];
-        const where: string[] = [
-            options.direction === 'up' ? 'f.change > 0' : 'f.change < 0',
-            'f.price - f.change > 0',
-            'GREATEST(f.price, f.price - f.change) >= $1',
-            `s.release_date <= p.date - ${NEW_SET_DAYS}`,
-            'NOT EXISTS (SELECT 1 FROM price p2 WHERE p2.card_id = p.card_id AND p2.date > p.date)',
-        ];
-        let legalityJoin = '';
-        if (options.finish) {
-            params.push(options.finish);
-            where.push(`f.finish = $${params.length}`);
-        }
-        if (options.setCode) {
-            params.push(options.setCode);
-            where.push(`c.set_code = $${params.length}`);
-        }
-        if (options.rarity) {
-            params.push(options.rarity);
-            where.push(`c.rarity = $${params.length}`);
-        }
-        if (options.type) {
-            params.push(`%${options.type}%`);
-            where.push(`c.type ILIKE $${params.length}`);
-        }
-        if (options.format && options.legality) {
-            params.push(options.format, options.legality);
-            legalityJoin = `JOIN legality lg ON lg.card_id = c.id AND lg.format = $${params.length - 1} AND lg.status = $${params.length}`;
-        }
-        const rank = options.by === 'amount' ? 'm.change' : 'm.change / (m.price - m.change)';
-        const order = options.direction === 'up' ? 'DESC' : 'ASC';
-        params.push(options.limit, (options.page - 1) * options.limit);
-
-        const sql = `
-            WITH moves AS (
-                SELECT p.card_id, f.finish, f.price, f.change
-                FROM price p
-                JOIN card c ON c.id = p.card_id
-                JOIN "set" s ON s.code = c.set_code
-                ${legalityJoin}
-                CROSS JOIN LATERAL (VALUES
-                    ('normal', p.normal, p.normal_change_weekly),
-                    ('foil', p.foil, p.foil_change_weekly)
-                ) AS f(finish, price, change)
-                WHERE ${where.join(' AND ')}
-            )
-            SELECT m.card_id, m.finish, m.price, m.change,
-                m.price - m.change AS previous_price,
-                ROUND(m.change / (m.price - m.change) * 100, 1) AS change_percent,
-                COUNT(*) OVER () AS total
-            FROM moves m
-            WHERE NOT EXISTS (
-                SELECT 1
-                FROM unnest($2::varchar[], $3::text[]) AS fl(card_id, finish)
-                WHERE fl.card_id = m.card_id AND fl.finish = m.finish
-            )
-            ORDER BY ${rank} ${order}, m.card_id, m.finish
-            LIMIT $${params.length - 1} OFFSET $${params.length}`;
-
         const raw: {
             card_id: string;
             finish: Finish;
+            set_code: string;
+            rarity: CardRarity;
+            type: string;
             price: string;
             change: string;
             previous_price: string;
             change_percent: string;
-            total: string;
-        }[] = await this.repository.query(sql, params);
-        return {
-            rows: raw.map((r) => ({
-                cardId: r.card_id,
-                finish: r.finish,
-                price: Number(r.price),
-                previousPrice: Number(r.previous_price),
-                change: Number(r.change),
-                changePercent: Number(r.change_percent),
-            })),
-            total: Number(raw[0]?.total ?? 0),
-        };
+        }[] = await this.repository.query(`
+            SELECT p.card_id, f.finish, c.set_code, c.rarity, c.type, f.price, f.change,
+                f.price - f.change AS previous_price,
+                ROUND(f.change / (f.price - f.change) * 100, 1) AS change_percent
+            FROM price p
+            JOIN card c ON c.id = p.card_id
+            JOIN "set" s ON s.code = c.set_code
+            CROSS JOIN LATERAL (VALUES
+                ('normal', p.normal, p.normal_change_weekly),
+                ('foil', p.foil, p.foil_change_weekly)
+            ) AS f(finish, price, change)
+            WHERE f.change <> 0
+                AND f.price - f.change > 0
+                AND s.release_date <= p.date - ${NEW_SET_DAYS}
+                AND NOT EXISTS (
+                    SELECT 1 FROM price p2 WHERE p2.card_id = p.card_id AND p2.date > p.date
+                )`);
+        return raw.map((r) => ({
+            cardId: r.card_id,
+            finish: r.finish,
+            setCode: r.set_code,
+            rarity: r.rarity,
+            type: r.type,
+            price: Number(r.price),
+            previousPrice: Number(r.previous_price),
+            change: Number(r.change),
+            changePercent: Number(r.change_percent),
+        }));
+    }
+
+    async findCardIdsWithLegality(
+        cardIds: string[],
+        format: Format,
+        status: LegalityStatus
+    ): Promise<string[]> {
+        if (cardIds.length === 0) return [];
+        const raw: { card_id: string }[] = await this.repository.query(
+            `SELECT card_id FROM legality
+             WHERE format = $1 AND status = $2 AND card_id = ANY($3::varchar[])`,
+            [format, status, cardIds]
+        );
+        return raw.map((r) => r.card_id);
     }
 
     private applyRelationJoins(qb: SelectQueryBuilder<CardOrmEntity>, relations: string[]): void {

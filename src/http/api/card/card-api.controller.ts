@@ -10,15 +10,26 @@ import {
 import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ApiOkEnvelope } from '../shared/api-ok-envelope.decorator';
 import { CardService } from 'src/core/card/card.service';
-import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
+import {
+    DEFAULT_MOVER_MIN_PRICE,
+    MOVER_DIRECTION_VALUES,
+    MOVER_RANK_VALUES,
+    PriceMoverQueryOptions,
+} from 'src/core/query/price-mover-query-options.dto';
+import { FINISH_VALUES, SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
 import { SearchQueryOptions } from 'src/core/query/search-query-options.dto';
 import { CardPresenter } from 'src/http/hbs/card/card.presenter';
 import { parseDaysParam } from 'src/http/base/query.util';
 import { ApiResponseDto, PaginationMeta } from 'src/http/base/api-response.dto';
-import { CardApiResponseDto, PriceHistoryPointDto } from './dto/card-response.dto';
+import {
+    CardApiResponseDto,
+    PriceHistoryPointDto,
+    PriceMoverApiResponseDto,
+} from './dto/card-response.dto';
 import { CardBuylistApiResponseDto } from './dto/card-buylist-response.dto';
 import { CardApiPresenter } from './card-api.presenter';
 import { ApiRateLimitGuard } from '../shared/api-rate-limit.guard';
+import { CacheTTL, SharedCacheTTL } from '../shared/cache-control.interceptor';
 import { OptionalAuthOrApiKeyGuard } from '../shared/optional-auth-or-api-key.guard';
 import { QueryValidationErrorDto } from '../shared/dto/query-validation-error.dto';
 import {
@@ -131,6 +142,101 @@ export class CardApiController {
 
         return ApiResponseDto.ok(
             cards.map((c) => CardApiPresenter.toCardApiResponse(c)),
+            new PaginationMeta(options.page, options.limit, total)
+        );
+    }
+
+    @Get('movers')
+    @ApiOperation({
+        operationId: 'getPriceMovers',
+        summary: "The week's biggest price increases or decreases",
+        description:
+            'One row per printing and finish, ranked by the change over the last 7 days. Only cards worth at least `minPrice` before or after the move count, and a finish whose daily price jumped back and forth during the week is left out, since that comes from a missing vendor price rather than a real move.',
+    })
+    @ApiQuery({
+        name: 'direction',
+        required: false,
+        description: '"up" for the biggest increases (default), "down" for the biggest decreases',
+        enum: [...MOVER_DIRECTION_VALUES],
+    })
+    @ApiQuery({
+        name: 'by',
+        required: false,
+        description: 'Rank by "percent" change (default) or dollar "amount"',
+        enum: [...MOVER_RANK_VALUES],
+    })
+    @ApiQuery({
+        name: 'minPrice',
+        required: false,
+        type: Number,
+        description: `Ignore cards worth less than this, in dollars, both before and after the move. Defaults to ${DEFAULT_MOVER_MIN_PRICE}.`,
+    })
+    @ApiQuery({
+        name: 'finish',
+        required: false,
+        description: 'Only this finish. Both by default.',
+        enum: [...FINISH_VALUES],
+    })
+    @ApiQuery({
+        name: 'setCode',
+        required: false,
+        type: String,
+        description: 'Restrict to a single set (e.g. LEA, MH3)',
+    })
+    @ApiQuery({
+        name: 'rarity',
+        required: false,
+        description: 'Filter by rarity',
+        enum: [...RARITY_VALUES],
+    })
+    @ApiQuery({
+        name: 'type',
+        required: false,
+        type: String,
+        description: 'Substring match on card type line (e.g. "creature", "instant")',
+    })
+    @ApiQuery({
+        name: 'format',
+        required: false,
+        description: 'Filter by format legality (joins legality table; defaults legality=legal)',
+        enum: [...FORMAT_VALUES],
+    })
+    @ApiQuery({
+        name: 'legality',
+        required: false,
+        description: 'Legality status; only meaningful with format. Defaults to "legal".',
+        enum: [...LEGALITY_VALUES],
+    })
+    @ApiQuery({ name: 'page', required: false, type: Number })
+    @ApiQuery({ name: 'limit', required: false, type: Number })
+    @ApiOkEnvelope(PriceMoverApiResponseDto, {
+        isArray: true,
+        description: 'Price moves, biggest first',
+    })
+    @ApiResponse({
+        status: 400,
+        description:
+            'Invalid filter value (unknown direction/by/finish/rarity/format/legality, negative minPrice, malformed setCode, or legality without format)',
+        type: QueryValidationErrorDto,
+    })
+    // Prices change once a day, when the ingest runs.
+    @CacheTTL(300)
+    @SharedCacheTTL(3600)
+    async getPriceMovers(
+        @Query() query: Record<string, string>
+    ): Promise<ApiResponseDto<PriceMoverApiResponseDto[]>> {
+        validateApiQuery(query, {
+            movers: true,
+            finish: true,
+            rarity: true,
+            format: true,
+            legality: true,
+            setCode: true,
+        });
+        const options = new PriceMoverQueryOptions(query);
+        const { movers, total } = await this.cardService.findPriceMovers(options);
+        return ApiResponseDto.ok(
+            movers.map((m) => CardApiPresenter.toPriceMover(m)),
             new PaginationMeta(options.page, options.limit, total)
         );
     }

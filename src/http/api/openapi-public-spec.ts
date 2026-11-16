@@ -8,6 +8,7 @@
  */
 const PUBLIC_PATH_ALLOWLIST: ReadonlyArray<string> = Object.freeze([
     '/api/v1/cards',
+    '/api/v1/cards/movers',
     '/api/v1/cards/{setCode}/{setNumber}',
     '/api/v1/cards/{setCode}/{setNumber}/prices',
     '/api/v1/cards/{setCode}/{setNumber}/price-history',

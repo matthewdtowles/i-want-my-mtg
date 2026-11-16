@@ -1,9 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Card } from 'src/core/card/card.entity';
+import { PriceMoverRow } from 'src/core/card/price-mover.entity';
 import { CardRepositoryPort } from 'src/core/card/ports/card.repository.port';
 import { PriceCalculationPolicy } from 'src/core/pricing/price-calculation.policy';
-import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
+import { PriceMoverQueryOptions } from 'src/core/query/price-mover-query-options.dto';
+import { Finish, SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
 import { SET_CARD_SORTS, SortOptions } from 'src/core/query/sort-options.enum';
 import { latestPriceCondition } from 'src/database/query/latest-price.sql';
 import { QueryBuilderHelper } from 'src/database/query/query-builder.helper';
@@ -56,7 +58,10 @@ export class CardRepository implements CardRepositoryPort {
         return ormCard ? CardMapper.toCore(ormCard) : null;
     }
 
-    async findByIds(ids: string[], options?: { includeLatestPrice?: boolean }): Promise<Card[]> {
+    async findByIds(
+        ids: string[],
+        options?: { includeLatestPrice?: boolean; includeSet?: boolean }
+    ): Promise<Card[]> {
         this.LOGGER.debug(`Finding ${ids.length} cards by ids.`);
         if (ids.length === 0) return [];
         const qb = this.repository
@@ -68,6 +73,9 @@ export class CardRepository implements CardRepositoryPort {
                 'prices',
                 latestPriceCondition('prices', 'card')
             );
+        }
+        if (options?.includeSet) {
+            qb.leftJoinAndSelect(`${this.TABLE}.set`, 'set');
         }
         const ormCards = await qb.getMany();
         const cards = ormCards.map(CardMapper.toCore);
@@ -429,6 +437,125 @@ export class CardRepository implements CardRepositoryPort {
             )
         );
         return groups.flat().map(CardMapper.toCore);
+    }
+
+    /**
+     * Ranks each finish of each printing by its stored weekly change.
+     *
+     * The `price` row averages two vendors' retail prices, and when one vendor is
+     * missing for a day the average jumps to the other vendor's price and back. On
+     * 2026-11-12 that made Nicol Bolas, the Ravager (M19) read +42% for the week while
+     * its daily price went 18, 25, 18, 25, 25, 18, 18, 18, 25, and most of the
+     * biggest "movers" looked like it. So a finish whose daily price both rose and
+     * fell by FLIP_STEP (10%) or more in a day over the week is left out: a real
+     * move goes one way.
+     *
+     * Only a move of FLIP_STEP or more is checked. A flip distorts the weekly change
+     * only when the week's start and end land on different vendors, which is a big
+     * change; checking every row instead cost 0.8s on the full catalog.
+     *
+     * JIT is off for the query: the planner overestimates the per-row history check
+     * and spent 330ms compiling a query that runs in 250ms without it.
+     *
+     * The catalog filters mirror applyCatalogFilters, written as raw SQL because the
+     * finishes are unpacked with a LATERAL VALUES list.
+     */
+    async findPriceMovers(
+        options: PriceMoverQueryOptions
+    ): Promise<{ rows: PriceMoverRow[]; total: number }> {
+        const FLIP_STEP = 0.1;
+        const params: unknown[] = [options.minPrice];
+        const where: string[] = [
+            options.direction === 'up' ? 'f.change > 0' : 'f.change < 0',
+            'f.price - f.change > 0',
+            'GREATEST(f.price, f.price - f.change) >= $1',
+            'NOT EXISTS (SELECT 1 FROM price p2 WHERE p2.card_id = p.card_id AND p2.date > p.date)',
+        ];
+        let legalityJoin = '';
+        if (options.finish) {
+            params.push(options.finish);
+            where.push(`f.finish = $${params.length}`);
+        }
+        if (options.setCode) {
+            params.push(options.setCode);
+            where.push(`c.set_code = $${params.length}`);
+        }
+        if (options.rarity) {
+            params.push(options.rarity);
+            where.push(`c.rarity = $${params.length}`);
+        }
+        if (options.type) {
+            params.push(`%${options.type}%`);
+            where.push(`c.type ILIKE $${params.length}`);
+        }
+        if (options.format && options.legality) {
+            params.push(options.format, options.legality);
+            legalityJoin = `JOIN legality lg ON lg.card_id = c.id AND lg.format = $${params.length - 1} AND lg.status = $${params.length}`;
+        }
+        const rank = options.by === 'amount' ? 'm.change' : 'm.change / (m.price - m.change)';
+        const order = options.direction === 'up' ? 'DESC' : 'ASC';
+        params.push(options.limit, (options.page - 1) * options.limit);
+
+        const sql = `
+            WITH moves AS (
+                SELECT p.card_id, p.date, f.finish, f.price, f.change
+                FROM price p
+                JOIN card c ON c.id = p.card_id
+                ${legalityJoin}
+                CROSS JOIN LATERAL (VALUES
+                    ('normal', p.normal, p.normal_change_weekly),
+                    ('foil', p.foil, p.foil_change_weekly)
+                ) AS f(finish, price, change)
+                WHERE ${where.join(' AND ')}
+            )
+            SELECT m.card_id, m.finish, m.price, m.change,
+                m.price - m.change AS previous_price,
+                ROUND(m.change / (m.price - m.change) * 100, 1) AS change_percent,
+                COUNT(*) OVER () AS total
+            FROM moves m
+            WHERE NOT (
+                ABS(m.change) >= (m.price - m.change) * ${FLIP_STEP}
+                AND EXISTS (
+                    SELECT 1
+                    FROM (
+                        SELECT
+                            CASE m.finish WHEN 'normal' THEN ph.normal ELSE ph.foil END AS value,
+                            LAG(CASE m.finish WHEN 'normal' THEN ph.normal ELSE ph.foil END)
+                                OVER (ORDER BY ph.date) AS prev
+                        FROM price_history ph
+                        WHERE ph.card_id = m.card_id AND ph.date >= m.date - 7
+                    ) d
+                    WHERE d.prev > 0
+                    HAVING bool_or(d.value >= d.prev * ${1 + FLIP_STEP})
+                        AND bool_or(d.value <= d.prev / ${1 + FLIP_STEP})
+                )
+            )
+            ORDER BY ${rank} ${order}, m.card_id, m.finish
+            LIMIT $${params.length - 1} OFFSET $${params.length}`;
+
+        const raw: {
+            card_id: string;
+            finish: Finish;
+            price: string;
+            change: string;
+            previous_price: string;
+            change_percent: string;
+            total: string;
+        }[] = await this.repository.manager.transaction(async (manager) => {
+            await manager.query('SET LOCAL jit = off');
+            return manager.query(sql, params);
+        });
+        return {
+            rows: raw.map((r) => ({
+                cardId: r.card_id,
+                finish: r.finish,
+                price: Number(r.price),
+                previousPrice: Number(r.previous_price),
+                change: Number(r.change),
+                changePercent: Number(r.change_percent),
+            })),
+            total: Number(raw[0]?.total ?? 0),
+        };
     }
 
     private applyRelationJoins(qb: SelectQueryBuilder<CardOrmEntity>, relations: string[]): void {

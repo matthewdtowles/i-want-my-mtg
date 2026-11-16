@@ -195,6 +195,31 @@ describe('CardApiPresenter', () => {
         });
     });
 
+    describe('toPriceMover', () => {
+        it('wraps the card and carries the move unchanged', () => {
+            const card = createCard({ prices: [createPrice()] });
+            const result = CardApiPresenter.toPriceMover({
+                cardId: 'card-1',
+                card,
+                finish: 'foil',
+                price: 288.23,
+                previousPrice: 196.46,
+                change: 91.77,
+                changePercent: 46.7,
+            });
+
+            expect(result.card).toEqual(CardApiPresenter.toCardApiResponse(card));
+            expect(result).toMatchObject({
+                finish: 'foil',
+                price: 288.23,
+                previousPrice: 196.46,
+                change: 91.77,
+                changePercent: 46.7,
+            });
+            expect(result).not.toHaveProperty('cardId');
+        });
+    });
+
     describe('toBuylist', () => {
         it('groups offers by finish with the best marked and the vendor display name', () => {
             const result = CardApiPresenter.toBuylist('card-1', [

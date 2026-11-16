@@ -8,6 +8,13 @@ import {
     safeFormat,
     safeRarity,
 } from 'src/core/query/safe-query-options.dto';
+import {
+    MOVER_DIRECTION_VALUES,
+    MOVER_RANK_VALUES,
+    safeMinPrice,
+    safeMoverDirection,
+    safeMoverRank,
+} from 'src/core/query/price-mover-query-options.dto';
 import { SortOptions } from 'src/core/query/sort-options.enum';
 import { TRANSACTION_TYPES, parseTransactionType } from 'src/core/transaction/transaction.entity';
 
@@ -83,6 +90,8 @@ export interface StrictQueryFlags {
     transactionType?: boolean;
     /** Validate `groupBy` against {@link GROUP_BY_VALUES} (exact, single value). */
     groupBy?: boolean;
+    /** Validate the price movers' `direction`, `by` and `minPrice`. */
+    movers?: boolean;
 }
 
 /**
@@ -179,6 +188,23 @@ export function validateApiQuery(query: Record<string, unknown>, flags: StrictQu
         const value = readParam(query, 'groupBy');
         if (value !== undefined && !GROUP_BY_VALUES.includes(value)) {
             throw enumError('groupBy', value, GROUP_BY_VALUES);
+        }
+    }
+    if (flags.movers) {
+        const direction = readParam(query, 'direction');
+        if (direction !== undefined && safeMoverDirection(direction) === undefined) {
+            throw enumError('direction', direction, MOVER_DIRECTION_VALUES);
+        }
+        const by = readParam(query, 'by');
+        if (by !== undefined && safeMoverRank(by) === undefined) {
+            throw enumError('by', by, MOVER_RANK_VALUES);
+        }
+        const minPrice = readParam(query, 'minPrice');
+        if (minPrice !== undefined && safeMinPrice(minPrice) === undefined) {
+            throw new InvalidQueryParamException(
+                'minPrice',
+                `Invalid value '${minPrice}' for query parameter 'minPrice'. Must be a number of 0 or more.`
+            );
         }
     }
 }

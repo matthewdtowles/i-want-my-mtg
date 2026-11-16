@@ -88,3 +88,23 @@ export class PriceHistoryPointDto {
     @ApiPropertyOptional()
     readonly foil: number | null;
 }
+
+export class PriceMoverApiResponseDto {
+    @ApiProperty({ type: CardApiResponseDto })
+    readonly card: CardApiResponseDto;
+
+    @ApiProperty({ enum: ['normal', 'foil'] })
+    readonly finish: string;
+
+    @ApiProperty({ description: "Today's price for this finish" })
+    readonly price: number;
+
+    @ApiProperty({ description: 'The price a week ago' })
+    readonly previousPrice: number;
+
+    @ApiProperty({ description: 'price - previousPrice' })
+    readonly change: number;
+
+    @ApiProperty({ description: 'change as a percentage of previousPrice, to one decimal' })
+    readonly changePercent: number;
+}

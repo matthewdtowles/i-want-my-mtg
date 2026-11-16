@@ -141,6 +141,40 @@ describe('validateApiQuery', () => {
         });
     });
 
+    describe('price movers', () => {
+        it('accepts valid direction, by and minPrice in any case', () => {
+            expect(() =>
+                validateApiQuery(
+                    { direction: 'DOWN', by: 'amount', minPrice: '0' },
+                    { movers: true }
+                )
+            ).not.toThrow();
+            expect(() =>
+                validateApiQuery(
+                    { direction: 'up', by: 'Percent', minPrice: '2.5' },
+                    { movers: true }
+                )
+            ).not.toThrow();
+        });
+
+        it('rejects an unknown direction with the allowed value list', () => {
+            const err = capture({ direction: 'sideways' }, { movers: true });
+            expect(err.param).toBe('direction');
+            expect(err.allowedValues).toEqual(['up', 'down']);
+        });
+
+        it('rejects an unknown by with the allowed value list', () => {
+            const err = capture({ by: 'volume' }, { movers: true });
+            expect(err.param).toBe('by');
+            expect(err.allowedValues).toEqual(['percent', 'amount']);
+        });
+
+        it.each(['-1', 'abc', 'Infinity'])('rejects minPrice %s', (minPrice) => {
+            const err = capture({ minPrice }, { movers: true });
+            expect(err.param).toBe('minPrice');
+        });
+    });
+
     describe('repeated (array) query params', () => {
         it('400s a param parsed as an array instead of throwing a 500', () => {
             const err = capture({ setCode: ['mh3', 'lea'] }, { setCode: true });

@@ -1,9 +1,11 @@
 import { Inject, Injectable } from '@nestjs/common';
+import { PriceMoverQueryOptions } from 'src/core/query/price-mover-query-options.dto';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
 import { getLogger } from 'src/logger/global-app-logger';
 import { normalizeSetCode } from 'src/shared/utils/set-code.util';
 import { Card } from './card.entity';
 import { GranularPrice } from './granular-price.entity';
+import { PriceMover } from './price-mover.entity';
 import { CardRepositoryPort } from './ports/card.repository.port';
 import { GranularPriceRepositoryPort } from './ports/granular-price.repository.port';
 import { PriceHistoryRepositoryPort } from './ports/price-history.repository.port';
@@ -145,6 +147,29 @@ export class CardService {
         const prices = await this.priceHistoryRepository.findByCardId(cardId, days);
         this.LOGGER.debug(`Found ${prices?.length} price history records for card ${cardId}.`);
         return prices;
+    }
+
+    /**
+     * The week's biggest price moves (see CardRepositoryPort.findPriceMovers), each
+     * with its card and latest prices.
+     */
+    async findPriceMovers(
+        options: PriceMoverQueryOptions
+    ): Promise<{ movers: PriceMover[]; total: number }> {
+        this.LOGGER.debug(`Find price movers, options: ${JSON.stringify(options)}.`);
+        const { rows, total } = await this.repository.findPriceMovers(options);
+        const cardIds = [...new Set(rows.map((r) => r.cardId))];
+        const cards = await this.repository.findByIds(cardIds, {
+            includeLatestPrice: true,
+            includeSet: true,
+        });
+        const cardsById = new Map(cards.map((c) => [c.id, c]));
+        const movers: PriceMover[] = [];
+        for (const row of rows) {
+            const card = cardsById.get(row.cardId);
+            if (card) movers.push({ ...row, card });
+        }
+        return { movers, total };
     }
 
     async findCurrentBuylist(cardId: string): Promise<GranularPrice[]> {

@@ -1,6 +1,13 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { z } from 'zod';
 import { CardService } from 'src/core/card/card.service';
+import {
+    DEFAULT_MOVER_MIN_PRICE,
+    MOVER_DIRECTION_VALUES,
+    MOVER_RANK_VALUES,
+    PriceMoverQueryOptions,
+} from 'src/core/query/price-mover-query-options.dto';
+import { FINISH_VALUES } from 'src/core/query/safe-query-options.dto';
 import { SearchQueryOptions } from 'src/core/query/search-query-options.dto';
 import { ApiResponseDto, PaginationMeta } from 'src/http/base/api-response.dto';
 import { parseDaysParam } from 'src/http/base/query.util';
@@ -11,6 +18,8 @@ import {
     READ_ONLY,
     formatParam,
     legalityParam,
+    limitParam,
+    pageParam,
     rarityParam,
     refineLegalityRequiresFormat,
 } from './common';
@@ -118,6 +127,54 @@ export class CardMcpTools {
                 annotations: READ_ONLY,
                 handler: async (args) => this.getCardPrintings(args),
             },
+            {
+                name: 'get_price_movers',
+                description:
+                    "The week's biggest Magic: The Gathering price moves: the cards whose price rose (direction 'up', the default) or fell (direction 'down') the most over the last 7 days, one row per printing and finish, with today's price, the price a week ago, and the change in dollars and percent. Ranked by percent unless by is 'amount'. Cards worth less than minPrice (default $5) both before and after the move are left out, and so are prices that jumped back and forth during the week, which come from a missing vendor price rather than a real move. Narrow it with setCode, rarity, type, format legality or finish.",
+                inputSchema: refineLegalityRequiresFormat(
+                    z.object({
+                        direction: z
+                            .enum([...MOVER_DIRECTION_VALUES])
+                            .optional()
+                            .describe(
+                                "'up' for the biggest increases (default), 'down' for decreases."
+                            ),
+                        by: z
+                            .enum([...MOVER_RANK_VALUES])
+                            .optional()
+                            .describe("Rank by 'percent' change (default) or dollar 'amount'."),
+                        minPrice: z
+                            .number()
+                            .min(0)
+                            .optional()
+                            .describe(
+                                `Ignore cards worth less than this many dollars both before and after the move. Defaults to ${DEFAULT_MOVER_MIN_PRICE}.`
+                            ),
+                        finish: z
+                            .enum([...FINISH_VALUES])
+                            .optional()
+                            .describe('Only this finish. Both by default.'),
+                        setCode: z
+                            .string()
+                            .optional()
+                            .describe("3-5 character set code (e.g. 'lea', 'mh3')."),
+                        rarity: rarityParam,
+                        type: z
+                            .string()
+                            .optional()
+                            .describe(
+                                "Substring match against card type line (e.g. 'Goblin', 'Instant')."
+                            ),
+                        format: formatParam,
+                        legality: legalityParam,
+                        page: pageParam,
+                        limit: limitParam,
+                    })
+                ),
+                requiresAuth: false,
+                annotations: READ_ONLY,
+                handler: async (args) => this.getPriceMovers(args),
+            },
         ];
     }
 
@@ -195,6 +252,15 @@ export class CardMcpTools {
         ]);
         return ApiResponseDto.ok(
             printings.map((c) => CardApiPresenter.toCardApiResponse(c)),
+            new PaginationMeta(options.page, options.limit, total)
+        );
+    }
+
+    private async getPriceMovers(args: Record<string, unknown>): Promise<unknown> {
+        const options = new PriceMoverQueryOptions(this.toQuery(args));
+        const { movers, total } = await this.cardService.findPriceMovers(options);
+        return ApiResponseDto.ok(
+            movers.map((m) => CardApiPresenter.toPriceMover(m)),
             new PaginationMeta(options.page, options.limit, total)
         );
     }

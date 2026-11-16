@@ -16,6 +16,12 @@ export interface PriceMoverRow {
     readonly changePercent: number;
 }
 
+/** One finish of one printing, e.g. a price left out of the movers. */
+export interface PriceFinish {
+    readonly cardId: string;
+    readonly finish: Finish;
+}
+
 export interface PriceMover extends PriceMoverRow {
     readonly card: Card;
 }

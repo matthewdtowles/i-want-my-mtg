@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Card } from 'src/core/card/card.entity';
-import { PriceMoverRow } from 'src/core/card/price-mover.entity';
+import { PriceFinish, PriceMoverRow } from 'src/core/card/price-mover.entity';
 import { CardRepositoryPort } from 'src/core/card/ports/card.repository.port';
 import { PriceCalculationPolicy } from 'src/core/pricing/price-calculation.policy';
 import { PriceMoverQueryOptions } from 'src/core/query/price-mover-query-options.dto';
@@ -440,35 +440,94 @@ export class CardRepository implements CardRepositoryPort {
     }
 
     /**
-     * Ranks each finish of each printing by its stored weekly change.
-     *
      * The `price` row averages two vendors' retail prices, and when one vendor is
      * missing for a day the average jumps to the other vendor's price and back. On
      * 2026-11-12 that made Nicol Bolas, the Ravager (M19) read +42% for the week while
      * its daily price went 18, 25, 18, 25, 25, 18, 18, 18, 25, and most of the
      * biggest "movers" looked like it. So a finish whose daily price both rose and
-     * fell by FLIP_STEP (10%) or more in a day over the week is left out: a real
-     * move goes one way.
+     * fell by FLIP_STEP (10%) or more in a day over the week is a flip: a real move
+     * goes one way.
      *
-     * Only a move of FLIP_STEP or more is checked. A flip distorts the weekly change
-     * only when the week's start and end land on different vendors, which is a big
-     * change; checking every row instead cost 0.8s on the full catalog.
+     * Only a weekly move of FLIP_STEP or more is checked. A flip distorts the weekly
+     * change only when the week's start and end land on different vendors, which is a
+     * big change; checking every row instead cost 0.8s on the full catalog.
+     *
+     * This reads a week of history for each of the tens of thousands of big moves,
+     * which took 1-5s per movers request on prod when it ran inside that query, so it
+     * runs on its own and the service caches it.
      *
      * JIT is off for the query: the planner overestimates the per-row history check
      * and spent 330ms compiling a query that runs in 250ms without it.
+     */
+    async findFlippingPrices(): Promise<PriceFinish[]> {
+        const FLIP_STEP = 0.1;
+        const sql = `
+            WITH moves AS (
+                SELECT p.card_id, p.date, f.finish
+                FROM price p
+                CROSS JOIN LATERAL (VALUES
+                    ('normal', p.normal, p.normal_change_weekly),
+                    ('foil', p.foil, p.foil_change_weekly)
+                ) AS f(finish, price, change)
+                WHERE f.price - f.change > 0
+                    AND ABS(f.change) >= (f.price - f.change) * ${FLIP_STEP}
+                    AND NOT EXISTS (
+                        SELECT 1 FROM price p2 WHERE p2.card_id = p.card_id AND p2.date > p.date
+                    )
+            )
+            SELECT m.card_id, m.finish
+            FROM moves m
+            WHERE EXISTS (
+                SELECT 1
+                FROM (
+                    SELECT
+                        CASE m.finish WHEN 'normal' THEN ph.normal ELSE ph.foil END AS value,
+                        LAG(CASE m.finish WHEN 'normal' THEN ph.normal ELSE ph.foil END)
+                            OVER (ORDER BY ph.date) AS prev
+                    FROM price_history ph
+                    WHERE ph.card_id = m.card_id AND ph.date >= m.date - 7
+                ) d
+                WHERE d.prev > 0
+                HAVING bool_or(d.value >= d.prev * ${1 + FLIP_STEP})
+                    AND bool_or(d.value <= d.prev / ${1 + FLIP_STEP})
+            )`;
+
+        const raw: { card_id: string; finish: Finish }[] =
+            await this.repository.manager.transaction(async (manager) => {
+                await manager.query('SET LOCAL jit = off');
+                return manager.query(sql);
+            });
+        return raw.map((r) => ({ cardId: r.card_id, finish: r.finish }));
+    }
+
+    /**
+     * Ranks each finish of each printing by its stored weekly change, leaving out
+     * the `flipping` finishes (see findFlippingPrices).
+     *
+     * Cards from a set released in the NEW_SET_DAYS before the price date are left
+     * out too. A set is listed at a placeholder price before release, so on
+     * 2026-11-16, three days after Star Trek came out, its cards filled the top of
+     * the list: Warship Flight Crew read $0.35 -> $8.89, +2440%. That is the market
+     * finding a price, not a move.
      *
      * The catalog filters mirror applyCatalogFilters, written as raw SQL because the
      * finishes are unpacked with a LATERAL VALUES list.
      */
     async findPriceMovers(
-        options: PriceMoverQueryOptions
+        options: PriceMoverQueryOptions,
+        flipping: PriceFinish[]
     ): Promise<{ rows: PriceMoverRow[]; total: number }> {
-        const FLIP_STEP = 0.1;
-        const params: unknown[] = [options.minPrice];
+        const NEW_SET_DAYS = 14;
+        const params: unknown[] = [
+            options.minPrice,
+            flipping.map((f) => f.cardId),
+            flipping.map((f) => f.finish),
+        ];
         const where: string[] = [
             options.direction === 'up' ? 'f.change > 0' : 'f.change < 0',
             'f.price - f.change > 0',
             'GREATEST(f.price, f.price - f.change) >= $1',
+            `s.release_date <= p.date - ${NEW_SET_DAYS}`,
             'NOT EXISTS (SELECT 1 FROM price p2 WHERE p2.card_id = p.card_id AND p2.date > p.date)',
         ];
         let legalityJoin = '';
@@ -498,9 +557,10 @@ export class CardRepository implements CardRepositoryPort {
 
         const sql = `
             WITH moves AS (
-                SELECT p.card_id, p.date, f.finish, f.price, f.change
+                SELECT p.card_id, f.finish, f.price, f.change
                 FROM price p
                 JOIN card c ON c.id = p.card_id
+                JOIN "set" s ON s.code = c.set_code
                 ${legalityJoin}
                 CROSS JOIN LATERAL (VALUES
                     ('normal', p.normal, p.normal_change_weekly),
@@ -513,22 +573,10 @@ export class CardRepository implements CardRepositoryPort {
                 ROUND(m.change / (m.price - m.change) * 100, 1) AS change_percent,
                 COUNT(*) OVER () AS total
             FROM moves m
-            WHERE NOT (
-                ABS(m.change) >= (m.price - m.change) * ${FLIP_STEP}
-                AND EXISTS (
-                    SELECT 1
-                    FROM (
-                        SELECT
-                            CASE m.finish WHEN 'normal' THEN ph.normal ELSE ph.foil END AS value,
-                            LAG(CASE m.finish WHEN 'normal' THEN ph.normal ELSE ph.foil END)
-                                OVER (ORDER BY ph.date) AS prev
-                        FROM price_history ph
-                        WHERE ph.card_id = m.card_id AND ph.date >= m.date - 7
-                    ) d
-                    WHERE d.prev > 0
-                    HAVING bool_or(d.value >= d.prev * ${1 + FLIP_STEP})
-                        AND bool_or(d.value <= d.prev / ${1 + FLIP_STEP})
-                )
+            WHERE NOT EXISTS (
+                SELECT 1
+                FROM unnest($2::varchar[], $3::text[]) AS fl(card_id, finish)
+                WHERE fl.card_id = m.card_id AND fl.finish = m.finish
             )
             ORDER BY ${rank} ${order}, m.card_id, m.finish
             LIMIT $${params.length - 1} OFFSET $${params.length}`;
@@ -541,10 +589,7 @@ export class CardRepository implements CardRepositoryPort {
             previous_price: string;
             change_percent: string;
             total: string;
-        }[] = await this.repository.manager.transaction(async (manager) => {
-            await manager.query('SET LOCAL jit = off');
-            return manager.query(sql, params);
-        });
+        }[] = await this.repository.query(sql, params);
         return {
             rows: raw.map((r) => ({
                 cardId: r.card_id,

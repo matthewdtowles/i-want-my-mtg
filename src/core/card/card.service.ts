@@ -5,7 +5,7 @@ import { getLogger } from 'src/logger/global-app-logger';
 import { normalizeSetCode } from 'src/shared/utils/set-code.util';
 import { Card } from './card.entity';
 import { GranularPrice } from './granular-price.entity';
-import { PriceMover } from './price-mover.entity';
+import { PriceFinish, PriceMover } from './price-mover.entity';
 import { CardRepositoryPort } from './ports/card.repository.port';
 import { GranularPriceRepositoryPort } from './ports/granular-price.repository.port';
 import { PriceHistoryRepositoryPort } from './ports/price-history.repository.port';
@@ -20,12 +20,22 @@ import { Price } from './price.entity';
  */
 const COVER_CACHE_TTL_MS = 60 * 60 * 1000;
 
+/**
+ * The flipping prices left out of the movers only change with the daily ingest,
+ * but finding them reads a week of history for every big move: 1-5s on prod when
+ * every movers request did it. An hour keeps a new day's flips at most an hour late.
+ */
+const FLIP_CACHE_TTL_MS = 60 * 60 * 1000;
+
 @Injectable()
 export class CardService {
     private readonly LOGGER = getLogger(CardService.name);
     // Keyed by normalized set code. `img: null` records a set with no cover,
     // so it is not looked up again on every render.
     private readonly coverCache = new Map<string, { img: string | null; expires: number }>();
+    // The promise is cached, not its result, so requests that arrive while the
+    // flips are being found share the one query.
+    private flipCache: { flips: Promise<PriceFinish[]>; expires: number } | undefined;
 
     constructor(
         @Inject(CardRepositoryPort) private readonly repository: CardRepositoryPort,
@@ -157,7 +167,8 @@ export class CardService {
         options: PriceMoverQueryOptions
     ): Promise<{ movers: PriceMover[]; total: number }> {
         this.LOGGER.debug(`Find price movers, options: ${JSON.stringify(options)}.`);
-        const { rows, total } = await this.repository.findPriceMovers(options);
+        const flipping = await this.flippingPrices();
+        const { rows, total } = await this.repository.findPriceMovers(options, flipping);
         const cardIds = [...new Set(rows.map((r) => r.cardId))];
         const cards = await this.repository.findByIds(cardIds, {
             includeLatestPrice: true,
@@ -170,6 +181,19 @@ export class CardService {
             if (card) movers.push({ ...row, card });
         }
         return { movers, total };
+    }
+
+    private flippingPrices(): Promise<PriceFinish[]> {
+        const now = Date.now();
+        if (!(this.flipCache?.expires > now)) {
+            const flips = this.repository.findFlippingPrices();
+            this.flipCache = { flips, expires: now + FLIP_CACHE_TTL_MS };
+            // A failed query is not cached: the next request tries again.
+            flips.catch(() => {
+                if (this.flipCache?.flips === flips) this.flipCache = undefined;
+            });
+        }
+        return this.flipCache.flips;
     }
 
     async findCurrentBuylist(cardId: string): Promise<GranularPrice[]> {

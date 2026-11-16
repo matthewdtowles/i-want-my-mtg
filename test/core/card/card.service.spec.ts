@@ -10,6 +10,7 @@ import { GranularPrice } from 'src/core/card/granular-price.entity';
 import { GranularPriceRepositoryPort } from 'src/core/card/ports/granular-price.repository.port';
 import { PriceHistoryRepositoryPort } from 'src/core/card/ports/price-history.repository.port';
 import { Price } from 'src/core/card/price.entity';
+import { PriceMoverQueryOptions } from 'src/core/query/price-mover-query-options.dto';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
 
 describe('CardService', () => {
@@ -544,6 +545,80 @@ describe('CardService', () => {
         it('does not query for an empty list', async () => {
             expect(await fresh.coverImagesForSets([])).toEqual(new Map());
             expect(covers).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('findPriceMovers', () => {
+        const HOUR = 60 * 60 * 1000;
+        const flipping = [{ cardId: 'flip-id', finish: 'normal' as const }];
+        const row = {
+            cardId: 'test-card-id',
+            finish: 'foil' as const,
+            price: 20,
+            previousPrice: 12,
+            change: 8,
+            changePercent: 66.7,
+        };
+        let repo: {
+            findFlippingPrices: jest.Mock;
+            findPriceMovers: jest.Mock;
+            findByIds: jest.Mock;
+        };
+        let fresh: CardService;
+
+        beforeEach(() => {
+            jest.useFakeTimers({ now: new Date('2026-11-16T12:00:00Z') });
+            repo = {
+                findFlippingPrices: jest.fn().mockResolvedValue(flipping),
+                findPriceMovers: jest.fn().mockResolvedValue({ rows: [row], total: 1 }),
+                findByIds: jest.fn().mockResolvedValue([testCard]),
+            };
+            fresh = new CardService(
+                repo as unknown as CardRepositoryPort,
+                mockPriceHistoryRepository as unknown as PriceHistoryRepositoryPort,
+                mockGranularPriceRepository as unknown as GranularPriceRepositoryPort
+            );
+        });
+
+        afterEach(() => jest.useRealTimers());
+
+        it('leaves out the flipping prices and attaches each card', async () => {
+            const options = new PriceMoverQueryOptions();
+
+            const result = await fresh.findPriceMovers(options);
+
+            expect(repo.findPriceMovers).toHaveBeenCalledWith(options, flipping);
+            expect(repo.findByIds).toHaveBeenCalledWith(['test-card-id'], {
+                includeLatestPrice: true,
+                includeSet: true,
+            });
+            expect(result).toEqual({ movers: [{ ...row, card: testCard }], total: 1 });
+        });
+
+        it('finds the flipping prices once an hour, shared by concurrent requests', async () => {
+            await Promise.all([
+                fresh.findPriceMovers(new PriceMoverQueryOptions()),
+                fresh.findPriceMovers(new PriceMoverQueryOptions({ direction: 'down' })),
+            ]);
+            jest.advanceTimersByTime(HOUR - 1);
+            await fresh.findPriceMovers(new PriceMoverQueryOptions());
+            expect(repo.findFlippingPrices).toHaveBeenCalledTimes(1);
+
+            jest.advanceTimersByTime(1);
+            await fresh.findPriceMovers(new PriceMoverQueryOptions());
+            expect(repo.findFlippingPrices).toHaveBeenCalledTimes(2);
+        });
+
+        it('tries the flipping prices again after a failure', async () => {
+            repo.findFlippingPrices.mockRejectedValueOnce(new Error('timeout'));
+
+            await expect(fresh.findPriceMovers(new PriceMoverQueryOptions())).rejects.toThrow(
+                'timeout'
+            );
+            await fresh.findPriceMovers(new PriceMoverQueryOptions());
+
+            expect(repo.findFlippingPrices).toHaveBeenCalledTimes(2);
+            expect(repo.findPriceMovers).toHaveBeenCalledTimes(1);
         });
     });
 });

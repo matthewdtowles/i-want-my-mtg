@@ -691,6 +691,15 @@ describe('CardService', () => {
             expect(repo.findFlippingPrices).toHaveBeenCalledTimes(2);
         });
 
+        it('loads the moves again when there are none, as mid-ingest', async () => {
+            repo.findWeeklyMoves.mockResolvedValueOnce([]);
+
+            expect(await ids()).toEqual([]);
+            expect(await ids()).toEqual(['a', 'e', 'b']);
+            await ids();
+            expect(repo.findWeeklyMoves).toHaveBeenCalledTimes(2);
+        });
+
         it('loads the moves again after a failure', async () => {
             repo.findFlippingPrices.mockRejectedValueOnce(new Error('timeout'));
 

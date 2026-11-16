@@ -500,6 +500,26 @@ describe('Cards API (e2e)', () => {
             expect(modern.body.data).toEqual([]);
         });
 
+        it('leaves out cards from a set released in the last two weeks', async () => {
+            await ds.query(`UPDATE "set" SET release_date = CURRENT_DATE - 13 WHERE code = 'tst'`);
+            try {
+                const res = await request(app.getHttpServer())
+                    .get('/api/v1/cards/movers')
+                    .expect(200);
+                expect(res.body.data).toEqual([]);
+
+                await ds.query(
+                    `UPDATE "set" SET release_date = CURRENT_DATE - 14 WHERE code = 'tst'`
+                );
+                const old = await request(app.getHttpServer())
+                    .get('/api/v1/cards/movers')
+                    .expect(200);
+                expect(old.body.meta.total).toBe(3);
+            } finally {
+                await ds.query(`UPDATE "set" SET release_date = '2024-01-01' WHERE code = 'tst'`);
+            }
+        });
+
         it('pages with the total of every match', async () => {
             const res = await request(app.getHttpServer())
                 .get('/api/v1/cards/movers?limit=1&page=2')

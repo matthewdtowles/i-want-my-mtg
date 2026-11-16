@@ -1,7 +1,7 @@
 import { PriceMoverQueryOptions } from 'src/core/query/price-mover-query-options.dto';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
 import { Card } from '../card.entity';
-import { PriceMoverRow } from '../price-mover.entity';
+import { PriceFinish, PriceMoverRow } from '../price-mover.entity';
 
 export const CardRepositoryPort = 'CardRepositoryPort';
 
@@ -166,15 +166,24 @@ export interface CardRepositoryPort {
     findByNameAndSetCode(name: string, setCode: string): Promise<Card[]>;
 
     /**
+     * The finishes whose weekly change is distorted by a daily price flipping up
+     * and down over the week (see the implementation). Reads the price history of
+     * every big weekly move, so callers cache it.
+     */
+    findFlippingPrices(): Promise<PriceFinish[]>;
+
+    /**
      * The week's biggest price moves, one row per printing and finish, ranked by
      * `options.by` in `options.direction`. Only moves where the old or new price
-     * is at least `options.minPrice` count, and a finish whose daily price
-     * flipped up and down over the week is left out (see the implementation).
+     * is at least `options.minPrice` count. Cards from a set released in the two
+     * weeks before the price date and the `flipping` finishes are left out.
      * Takes the catalog filters (setCode, rarity, type, format/legality) and
      * `finish`.
+     * @param flipping Finishes to leave out, from {@link findFlippingPrices}.
      * @returns the page of rows and the total number of rows that matched.
      */
     findPriceMovers(
-        options: PriceMoverQueryOptions
+        options: PriceMoverQueryOptions,
+        flipping: PriceFinish[]
     ): Promise<{ rows: PriceMoverRow[]; total: number }>;
 }

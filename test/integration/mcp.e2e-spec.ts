@@ -79,7 +79,7 @@ describe('MCP endpoint (e2e)', () => {
     });
 
     describe('tools/list', () => {
-        it('returns the full 34-tool surface with snake_case names and descriptions', async () => {
+        it('returns the full 35-tool surface with snake_case names and descriptions', async () => {
             const res = await mcp({
                 jsonrpc: '2.0',
                 id: 1,
@@ -92,7 +92,7 @@ describe('MCP endpoint (e2e)', () => {
                 inputSchema: { type: string };
             }[];
 
-            expect(tools).toHaveLength(34);
+            expect(tools).toHaveLength(35);
             for (const tool of tools) {
                 expect(tool.name).toMatch(/^[a-z][a-z0-9_]*$/);
                 expect(typeof tool.description).toBe('string');
@@ -120,6 +120,19 @@ describe('MCP endpoint (e2e)', () => {
             const payload = toolPayload(res.body);
             expect(payload.success).toBe(true);
             expect(payload.data.name).toBe('Test Angel');
+        });
+
+        it('get_price_movers returns a page of moves anonymously', async () => {
+            const res = await callTool('get_price_movers', {
+                direction: 'down',
+                minPrice: 0,
+            }).expect(200);
+
+            expect(res.body.result.isError).toBeFalsy();
+            const payload = toolPayload(res.body);
+            expect(payload.success).toBe(true);
+            expect(Array.isArray(payload.data)).toBe(true);
+            expect(payload.meta).toHaveProperty('total');
         });
 
         it('list_set_cards returns the seeded set anonymously', async () => {

@@ -35,6 +35,7 @@ const EXPECTED_NAMES = [
     'get_card_prices',
     'get_card_price_history',
     'get_card_printings',
+    'get_price_movers',
     'search_sets',
     'get_set',
     'list_set_cards',
@@ -77,6 +78,7 @@ const READ_ONLY = new Set([
     'get_card_prices',
     'get_card_price_history',
     'get_card_printings',
+    'get_price_movers',
     'search_sets',
     'get_set',
     'list_set_cards',
@@ -96,8 +98,8 @@ describe('McpToolRegistry', () => {
     const registry = buildRegistry();
     const tools = registry.list();
 
-    it('exposes exactly 34 tools in the documented order', () => {
-        expect(tools).toHaveLength(34);
+    it('exposes exactly 35 tools in the documented order', () => {
+        expect(tools).toHaveLength(35);
         expect(tools.map((t) => t.name)).toEqual(EXPECTED_NAMES);
     });
 

@@ -73,6 +73,15 @@ const card = z.object({
     purchaseUrlTcgplayerEtched: str.optional(),
 });
 
+const priceMover = z.object({
+    card,
+    finish: str,
+    price: num,
+    previousPrice: num,
+    change: num,
+    changePercent: num,
+});
+
 const pricePoint = z.object({ date: str, normal: num.nullable(), foil: num.nullable() });
 
 const set = z.object({
@@ -236,6 +245,7 @@ export const outputSchemaByName: Record<string, z.ZodTypeAny> = {
     get_card_prices: ok(card),
     get_card_price_history: ok(z.array(pricePoint)),
     get_card_printings: okPaginated(card),
+    get_price_movers: okPaginated(priceMover),
     // sets
     search_sets: okPaginated(set),
     get_set: ok(set),

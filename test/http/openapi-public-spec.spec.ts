@@ -23,6 +23,7 @@ function fakeDoc() {
             '/api/v1/cards/{setCode}/{setNumber}/printings': {
                 get: { operationId: 'getCardPrintings' },
             },
+            '/api/v1/cards/movers': { get: { operationId: 'getPriceMovers' } },
             '/api/v1/sets': { get: { operationId: 'listSets' } },
             '/api/v1/sets/{code}': { get: { operationId: 'getSet' } },
             '/api/v1/sets/{code}/cards': { get: { operationId: 'getSetCards' } },

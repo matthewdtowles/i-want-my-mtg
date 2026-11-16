@@ -1,5 +1,7 @@
+import { PriceMoverQueryOptions } from 'src/core/query/price-mover-query-options.dto';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
 import { Card } from '../card.entity';
+import { PriceMoverRow } from '../price-mover.entity';
 
 export const CardRepositoryPort = 'CardRepositoryPort';
 
@@ -107,9 +109,13 @@ export interface CardRepositoryPort {
      * @param ids Array of unique identifiers.
      * @param options Optional query options.
      * @param options.includeLatestPrice When true, joins the most recent price row per card.
+     * @param options.includeSet When true, joins each card's set.
      * @returns Promise resolving to an array of Card entities.
      */
-    findByIds(ids: string[], options?: { includeLatestPrice?: boolean }): Promise<Card[]>;
+    findByIds(
+        ids: string[],
+        options?: { includeLatestPrice?: boolean; includeSet?: boolean }
+    ): Promise<Card[]>;
 
     /**
      * Searches cards by name using partial matching (ILIKE).
@@ -158,4 +164,17 @@ export interface CardRepositoryPort {
      * @returns Promise resolving to an array of matching Card entities.
      */
     findByNameAndSetCode(name: string, setCode: string): Promise<Card[]>;
+
+    /**
+     * The week's biggest price moves, one row per printing and finish, ranked by
+     * `options.by` in `options.direction`. Only moves where the old or new price
+     * is at least `options.minPrice` count, and a finish whose daily price
+     * flipped up and down over the week is left out (see the implementation).
+     * Takes the catalog filters (setCode, rarity, type, format/legality) and
+     * `finish`.
+     * @returns the page of rows and the total number of rows that matched.
+     */
+    findPriceMovers(
+        options: PriceMoverQueryOptions
+    ): Promise<{ rows: PriceMoverRow[]; total: number }>;
 }

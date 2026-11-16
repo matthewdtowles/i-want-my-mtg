@@ -2,11 +2,12 @@ import { AffiliateLinkPolicy } from 'src/core/affiliate/affiliate-link.policy';
 import { Card } from 'src/core/card/card.entity';
 import { Format } from 'src/core/card/format.enum';
 import { GranularPrice } from 'src/core/card/granular-price.entity';
+import { PriceMover } from 'src/core/card/price-mover.entity';
 import { DeckLegalityPolicy } from 'src/core/deck/deck-legality.policy';
 import { groupBuylistByFinish } from 'src/core/pricing/buylist.policy';
 import { vendorDisplayName } from 'src/core/pricing/vendor';
 import { CardBuylistApiResponseDto } from './dto/card-buylist-response.dto';
-import { CardApiResponseDto } from './dto/card-response.dto';
+import { CardApiResponseDto, PriceMoverApiResponseDto } from './dto/card-response.dto';
 
 export class CardApiPresenter {
     /** Structured buylist offers for a card — same grouping the card page uses, raw numbers. */
@@ -74,5 +75,16 @@ export class CardApiPresenter {
             return base;
         }
         return { ...base, legal: DeckLegalityPolicy.isCardLegal(format, card.legalities) };
+    }
+
+    static toPriceMover(mover: PriceMover): PriceMoverApiResponseDto {
+        return {
+            card: this.toCardApiResponse(mover.card),
+            finish: mover.finish,
+            price: mover.price,
+            previousPrice: mover.previousPrice,
+            change: mover.change,
+            changePercent: mover.changePercent,
+        };
     }
 }

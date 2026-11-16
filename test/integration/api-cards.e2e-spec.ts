@@ -1,9 +1,12 @@
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
+import { DataSource } from 'typeorm';
 import {
     createTestApp,
     closeTestApp,
     TEST_CARD_ID,
+    TEST_CARD_ID_2,
+    TEST_CARD_ID_4,
     TEST_CARD_SET_CODE,
     TEST_CARD_NUMBER,
 } from './setup';
@@ -358,6 +361,164 @@ describe('Cards API (e2e)', () => {
             expect(res.body.success).toBe(true);
             expect(Array.isArray(res.body.data)).toBe(true);
         });
+    });
+
+    describe('GET /api/v1/cards/movers', () => {
+        // Seeded prices: card 1 $5 normal, card 2 $1.50, card 4 $20 / $40 foil and
+        // card 305 $50 / $90 foil. The weekly changes below make:
+        //   card 4 normal  $12 -> $20  +66.7%, rising steadily
+        //   card 4 foil    $36 -> $40  +11.1%
+        //   card 1 normal  $4.50 -> $5 +11.1% (its seeded history rises steadily)
+        //   card 2 normal  $1 -> $1.50 +50%, under the default $5 floor
+        //   card 305 normal $30 -> $50 +66.7%, but its daily price flips 30/50/30/50
+        //   card 305 foil  $100 -> $90 -10%, falling steadily
+        const CARD_305 = '00000000-0000-4000-a000-000000000305';
+        const HISTORY_DAYS = [6, 5, 4, 2];
+        let ds: DataSource;
+
+        beforeAll(async () => {
+            ds = app.get(DataSource);
+            const changes: [string, number | null, number | null][] = [
+                [TEST_CARD_ID, 0.5, null],
+                [TEST_CARD_ID_2, 0.5, null],
+                [TEST_CARD_ID_4, 8, 4],
+                [CARD_305, 20, -10],
+            ];
+            for (const [cardId, normal, foil] of changes) {
+                await ds.query(
+                    `UPDATE price SET normal_change_weekly = $2, foil_change_weekly = $3 WHERE card_id = $1`,
+                    [cardId, normal, foil]
+                );
+            }
+            const history: [string, number, number][] = [
+                [TEST_CARD_ID_4, 12, 36],
+                [TEST_CARD_ID_4, 12, 36],
+                [TEST_CARD_ID_4, 16, 38],
+                [TEST_CARD_ID_4, 20, 40],
+                [CARD_305, 30, 100],
+                [CARD_305, 50, 100],
+                [CARD_305, 30, 100],
+                [CARD_305, 50, 90],
+            ];
+            for (let i = 0; i < history.length; i++) {
+                const [cardId, normal, foil] = history[i];
+                await ds.query(
+                    `INSERT INTO price_history (card_id, normal, foil, date)
+                     VALUES ($1, $2, $3, CURRENT_DATE - $4::int)`,
+                    [cardId, normal, foil, HISTORY_DAYS[i % HISTORY_DAYS.length]]
+                );
+            }
+        });
+
+        afterAll(async () => {
+            await ds.query(
+                `UPDATE price SET normal_change_weekly = NULL, foil_change_weekly = NULL
+                 WHERE card_id = ANY($1)`,
+                [[TEST_CARD_ID, TEST_CARD_ID_2, TEST_CARD_ID_4, CARD_305]]
+            );
+            await ds.query(
+                `DELETE FROM price_history
+                 WHERE card_id = ANY($1) AND date = ANY(SELECT CURRENT_DATE - d FROM unnest($2::int[]) d)`,
+                [[TEST_CARD_ID_4, CARD_305], HISTORY_DAYS]
+            );
+        });
+
+        function moves(body: {
+            data: { card: { id: string }; finish: string; changePercent: number }[];
+        }): string[] {
+            return body.data.map((m) => `${m.card.id.slice(-3)} ${m.finish}`);
+        }
+
+        it('ranks the biggest percent increases and drops the flipping price', async () => {
+            const res = await request(app.getHttpServer()).get('/api/v1/cards/movers').expect(200);
+
+            expect(res.body.success).toBe(true);
+            expect(moves(res.body)).toEqual(['004 normal', '001 normal', '004 foil']);
+            expect(res.body.meta).toMatchObject({ page: 1, total: 3 });
+            expect(res.body.data[0]).toMatchObject({
+                finish: 'normal',
+                price: 20,
+                previousPrice: 12,
+                change: 8,
+                changePercent: 66.7,
+            });
+            expect(res.body.data[0].card).toMatchObject({
+                name: 'Test Dragon',
+                setName: 'Test Set',
+            });
+        });
+
+        it('ranks by dollar amount', async () => {
+            const res = await request(app.getHttpServer())
+                .get('/api/v1/cards/movers?by=amount')
+                .expect(200);
+
+            expect(moves(res.body)).toEqual(['004 normal', '004 foil', '001 normal']);
+        });
+
+        it('lists the biggest decreases with direction=down', async () => {
+            const res = await request(app.getHttpServer())
+                .get('/api/v1/cards/movers?direction=down')
+                .expect(200);
+
+            expect(moves(res.body)).toEqual(['305 foil']);
+            expect(res.body.data[0]).toMatchObject({
+                previousPrice: 100,
+                change: -10,
+                changePercent: -10,
+            });
+        });
+
+        it('includes cheaper cards when minPrice is lowered', async () => {
+            const res = await request(app.getHttpServer())
+                .get('/api/v1/cards/movers?minPrice=0')
+                .expect(200);
+
+            expect(moves(res.body)).toEqual(['004 normal', '002 normal', '001 normal', '004 foil']);
+        });
+
+        it('filters by finish, rarity, set and format', async () => {
+            const foil = await request(app.getHttpServer())
+                .get('/api/v1/cards/movers?finish=foil')
+                .expect(200);
+            expect(moves(foil.body)).toEqual(['004 foil']);
+
+            const rare = await request(app.getHttpServer())
+                .get('/api/v1/cards/movers?rarity=rare')
+                .expect(200);
+            expect(moves(rare.body)).toEqual(['001 normal']);
+
+            const otherSet = await request(app.getHttpServer())
+                .get('/api/v1/cards/movers?setCode=NOPE')
+                .expect(200);
+            expect(otherSet.body.data).toEqual([]);
+            expect(otherSet.body.meta.total).toBe(0);
+
+            const modern = await request(app.getHttpServer())
+                .get('/api/v1/cards/movers?format=modern')
+                .expect(200);
+            expect(modern.body.data).toEqual([]);
+        });
+
+        it('pages with the total of every match', async () => {
+            const res = await request(app.getHttpServer())
+                .get('/api/v1/cards/movers?limit=1&page=2')
+                .expect(200);
+
+            expect(moves(res.body)).toEqual(['001 normal']);
+            expect(res.body.meta).toMatchObject({ page: 2, limit: 1, total: 3, totalPages: 3 });
+        });
+
+        it.each([['direction=sideways'], ['by=volume'], ['minPrice=-1'], ['finish=etched']])(
+            'returns 400 for %s',
+            async (query) => {
+                const res = await request(app.getHttpServer())
+                    .get(`/api/v1/cards/movers?${query}`)
+                    .expect(400);
+
+                expect(res.body.success).toBe(false);
+            }
+        );
     });
 
     describe('GET /api/v1/cards/:setCode/:setNumber/printings', () => {

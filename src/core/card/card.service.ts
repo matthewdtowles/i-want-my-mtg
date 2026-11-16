@@ -5,7 +5,7 @@ import { getLogger } from 'src/logger/global-app-logger';
 import { normalizeSetCode } from 'src/shared/utils/set-code.util';
 import { Card } from './card.entity';
 import { GranularPrice } from './granular-price.entity';
-import { PriceFinish, PriceMover } from './price-mover.entity';
+import { PriceMover, WeeklyMove } from './price-mover.entity';
 import { CardRepositoryPort } from './ports/card.repository.port';
 import { GranularPriceRepositoryPort } from './ports/granular-price.repository.port';
 import { PriceHistoryRepositoryPort } from './ports/price-history.repository.port';
@@ -21,11 +21,11 @@ import { Price } from './price.entity';
 const COVER_CACHE_TTL_MS = 60 * 60 * 1000;
 
 /**
- * The flipping prices left out of the movers only change with the daily ingest,
- * but finding them reads a week of history for every big move: 1-5s on prod when
- * every movers request did it. An hour keeps a new day's flips at most an hour late.
+ * The week's moves only change with the daily ingest, but finding them reads the
+ * whole catalog and a week of history for every big move: 1-5s on prod when every
+ * movers request did it. An hour keeps a new day's moves at most an hour late.
  */
-const FLIP_CACHE_TTL_MS = 60 * 60 * 1000;
+const MOVES_CACHE_TTL_MS = 60 * 60 * 1000;
 
 @Injectable()
 export class CardService {
@@ -34,8 +34,8 @@ export class CardService {
     // so it is not looked up again on every render.
     private readonly coverCache = new Map<string, { img: string | null; expires: number }>();
     // The promise is cached, not its result, so requests that arrive while the
-    // flips are being found share the one query.
-    private flipCache: { flips: Promise<PriceFinish[]>; expires: number } | undefined;
+    // moves are being loaded share the one load.
+    private movesCache: { moves: Promise<WeeklyMove[]>; expires: number } | undefined;
 
     constructor(
         @Inject(CardRepositoryPort) private readonly repository: CardRepositoryPort,
@@ -160,40 +160,92 @@ export class CardService {
     }
 
     /**
-     * The week's biggest price moves (see CardRepositoryPort.findPriceMovers), each
-     * with its card and latest prices.
+     * The week's biggest price moves, one per printing and finish, ranked by
+     * `options.by` in `options.direction`, each with its card and latest prices.
+     * Only moves where the old or new price is at least `options.minPrice` count.
+     * Takes the catalog filters (setCode, rarity, type, format/legality) and
+     * `finish`. Flipping prices and cards from new sets are left out (see
+     * CardRepositoryPort.findFlippingPrices and findWeeklyMoves).
      */
     async findPriceMovers(
         options: PriceMoverQueryOptions
     ): Promise<{ movers: PriceMover[]; total: number }> {
         this.LOGGER.debug(`Find price movers, options: ${JSON.stringify(options)}.`);
-        const flipping = await this.flippingPrices();
-        const { rows, total } = await this.repository.findPriceMovers(options, flipping);
-        const cardIds = [...new Set(rows.map((r) => r.cardId))];
+        const type = options.type?.toLowerCase();
+        let matches = (await this.weeklyMoves()).filter(
+            (m) =>
+                (options.direction === 'up' ? m.change > 0 : m.change < 0) &&
+                Math.max(m.price, m.previousPrice) >= options.minPrice &&
+                (!options.finish || m.finish === options.finish) &&
+                (!options.setCode || m.setCode === options.setCode) &&
+                (!options.rarity || m.rarity === options.rarity) &&
+                (!type || m.type.toLowerCase().includes(type))
+        );
+        if (options.format && options.legality) {
+            const cardIds = [...new Set(matches.map((m) => m.cardId))];
+            const legal = new Set(
+                await this.repository.findCardIdsWithLegality(
+                    cardIds,
+                    options.format,
+                    options.legality
+                )
+            );
+            matches = matches.filter((m) => legal.has(m.cardId));
+        }
+
+        const rank = (m: WeeklyMove) =>
+            options.by === 'amount' ? m.change : m.change / m.previousPrice;
+        const sign = options.direction === 'up' ? -1 : 1;
+        matches.sort(
+            (a, b) =>
+                sign * (rank(a) - rank(b)) ||
+                (a.cardId < b.cardId ? -1 : a.cardId > b.cardId ? 1 : 0) ||
+                (a.finish < b.finish ? -1 : a.finish > b.finish ? 1 : 0)
+        );
+        const start = (options.page - 1) * options.limit;
+        const page = matches.slice(start, start + options.limit);
+
+        const cardIds = [...new Set(page.map((m) => m.cardId))];
         const cards = await this.repository.findByIds(cardIds, {
             includeLatestPrice: true,
             includeSet: true,
         });
         const cardsById = new Map(cards.map((c) => [c.id, c]));
         const movers: PriceMover[] = [];
-        for (const row of rows) {
-            const card = cardsById.get(row.cardId);
-            if (card) movers.push({ ...row, card });
+        for (const m of page) {
+            const card = cardsById.get(m.cardId);
+            if (card) {
+                movers.push({
+                    cardId: m.cardId,
+                    finish: m.finish,
+                    price: m.price,
+                    previousPrice: m.previousPrice,
+                    change: m.change,
+                    changePercent: m.changePercent,
+                    card,
+                });
+            }
         }
-        return { movers, total };
+        return { movers, total: matches.length };
     }
 
-    private flippingPrices(): Promise<PriceFinish[]> {
+    private weeklyMoves(): Promise<WeeklyMove[]> {
         const now = Date.now();
-        if (!(this.flipCache?.expires > now)) {
-            const flips = this.repository.findFlippingPrices();
-            this.flipCache = { flips, expires: now + FLIP_CACHE_TTL_MS };
-            // A failed query is not cached: the next request tries again.
-            flips.catch(() => {
-                if (this.flipCache?.flips === flips) this.flipCache = undefined;
+        if (!(this.movesCache?.expires > now)) {
+            const moves = Promise.all([
+                this.repository.findWeeklyMoves(),
+                this.repository.findFlippingPrices(),
+            ]).then(([all, flipping]) => {
+                const flipped = new Set(flipping.map((f) => `${f.cardId}:${f.finish}`));
+                return all.filter((m) => !flipped.has(`${m.cardId}:${m.finish}`));
+            });
+            this.movesCache = { moves, expires: now + MOVES_CACHE_TTL_MS };
+            // A failed load is not cached: the next request tries again.
+            moves.catch(() => {
+                if (this.movesCache?.moves === moves) this.movesCache = undefined;
             });
         }
-        return this.flipCache.flips;
+        return this.movesCache.moves;
     }
 
     async findCurrentBuylist(cardId: string): Promise<GranularPrice[]> {

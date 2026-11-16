@@ -10,6 +10,7 @@ import { GranularPrice } from 'src/core/card/granular-price.entity';
 import { GranularPriceRepositoryPort } from 'src/core/card/ports/granular-price.repository.port';
 import { PriceHistoryRepositoryPort } from 'src/core/card/ports/price-history.repository.port';
 import { Price } from 'src/core/card/price.entity';
+import { WeeklyMove } from 'src/core/card/price-mover.entity';
 import { PriceMoverQueryOptions } from 'src/core/query/price-mover-query-options.dto';
 import { SafeQueryOptions } from 'src/core/query/safe-query-options.dto';
 
@@ -550,28 +551,67 @@ describe('CardService', () => {
 
     describe('findPriceMovers', () => {
         const HOUR = 60 * 60 * 1000;
-        const flipping = [{ cardId: 'flip-id', finish: 'normal' as const }];
-        const row = {
-            cardId: 'test-card-id',
-            finish: 'foil' as const,
-            price: 20,
-            previousPrice: 12,
-            change: 8,
-            changePercent: 66.7,
-        };
+        function move(
+            cardId: string,
+            previousPrice: number,
+            price: number,
+            extra: Partial<WeeklyMove> = {}
+        ): WeeklyMove {
+            const change = price - previousPrice;
+            return {
+                cardId,
+                finish: 'normal',
+                setCode: 'abc',
+                rarity: CardRarity.Rare,
+                type: 'Creature - Dragon',
+                price,
+                previousPrice,
+                change,
+                changePercent: Math.round((change / previousPrice) * 1000) / 10,
+                ...extra,
+            };
+        }
+        // a: +100% (+$10)   b: +20% (+$20)   c: -50% (-$10)   d: +300% but $1 -> $4
+        // e: +50% foil mythic instant from set 'xyz'   f: +80%, but its price flips
+        const moves = [
+            move('a', 10, 20),
+            move('b', 100, 120),
+            move('c', 20, 10),
+            move('d', 1, 4),
+            move('e', 10, 15, {
+                finish: 'foil',
+                setCode: 'xyz',
+                rarity: CardRarity.Mythic,
+                type: 'Instant',
+            }),
+            move('f', 10, 18),
+        ];
         let repo: {
+            findWeeklyMoves: jest.Mock;
             findFlippingPrices: jest.Mock;
-            findPriceMovers: jest.Mock;
+            findCardIdsWithLegality: jest.Mock;
             findByIds: jest.Mock;
         };
         let fresh: CardService;
 
+        function card(id: string): Card {
+            return new Card({ ...testCard, id });
+        }
+
+        async function ids(query: Record<string, string> = {}): Promise<string[]> {
+            const { movers } = await fresh.findPriceMovers(new PriceMoverQueryOptions(query));
+            return movers.map((m) => m.cardId);
+        }
+
         beforeEach(() => {
             jest.useFakeTimers({ now: new Date('2026-11-16T12:00:00Z') });
             repo = {
-                findFlippingPrices: jest.fn().mockResolvedValue(flipping),
-                findPriceMovers: jest.fn().mockResolvedValue({ rows: [row], total: 1 }),
-                findByIds: jest.fn().mockResolvedValue([testCard]),
+                findWeeklyMoves: jest.fn().mockResolvedValue(moves),
+                findFlippingPrices: jest
+                    .fn()
+                    .mockResolvedValue([{ cardId: 'f', finish: 'normal' }]),
+                findCardIdsWithLegality: jest.fn(),
+                findByIds: jest.fn(async (cardIds: string[]) => cardIds.map(card)),
             };
             fresh = new CardService(
                 repo as unknown as CardRepositoryPort,
@@ -582,43 +622,81 @@ describe('CardService', () => {
 
         afterEach(() => jest.useRealTimers());
 
-        it('leaves out the flipping prices and attaches each card', async () => {
-            const options = new PriceMoverQueryOptions();
+        it('ranks increases by percent over the $5 floor, without flips, with each card', async () => {
+            const result = await fresh.findPriceMovers(new PriceMoverQueryOptions());
 
-            const result = await fresh.findPriceMovers(options);
-
-            expect(repo.findPriceMovers).toHaveBeenCalledWith(options, flipping);
-            expect(repo.findByIds).toHaveBeenCalledWith(['test-card-id'], {
+            expect(result.movers.map((m) => m.cardId)).toEqual(['a', 'e', 'b']);
+            expect(result.total).toBe(3);
+            expect(result.movers[0]).toEqual({
+                cardId: 'a',
+                finish: 'normal',
+                price: 20,
+                previousPrice: 10,
+                change: 10,
+                changePercent: 100,
+                card: card('a'),
+            });
+            expect(repo.findByIds).toHaveBeenCalledWith(['a', 'e', 'b'], {
                 includeLatestPrice: true,
                 includeSet: true,
             });
-            expect(result).toEqual({ movers: [{ ...row, card: testCard }], total: 1 });
         });
 
-        it('finds the flipping prices once an hour, shared by concurrent requests', async () => {
-            await Promise.all([
-                fresh.findPriceMovers(new PriceMoverQueryOptions()),
-                fresh.findPriceMovers(new PriceMoverQueryOptions({ direction: 'down' })),
-            ]);
+        it('ranks by amount and lists decreases', async () => {
+            expect(await ids({ by: 'amount' })).toEqual(['b', 'a', 'e']);
+            expect(await ids({ direction: 'down' })).toEqual(['c']);
+        });
+
+        it('lowers the floor with minPrice', async () => {
+            expect(await ids({ minPrice: '0' })).toEqual(['d', 'a', 'e', 'b']);
+        });
+
+        it('filters by finish, set, rarity and type', async () => {
+            expect(await ids({ finish: 'foil' })).toEqual(['e']);
+            expect(await ids({ setCode: 'XYZ' })).toEqual(['e']);
+            expect(await ids({ rarity: 'rare' })).toEqual(['a', 'b']);
+            expect(await ids({ type: 'dragon' })).toEqual(['a', 'b']);
+        });
+
+        it('filters by legality in a format', async () => {
+            repo.findCardIdsWithLegality.mockResolvedValue(['b']);
+
+            expect(await ids({ format: 'commander', legality: 'legal' })).toEqual(['b']);
+            expect(repo.findCardIdsWithLegality).toHaveBeenCalledWith(
+                ['a', 'b', 'e'],
+                'commander',
+                'legal'
+            );
+        });
+
+        it('pages with the total of every match', async () => {
+            const result = await fresh.findPriceMovers(
+                new PriceMoverQueryOptions({ page: '2', limit: '2' })
+            );
+
+            expect(result.movers.map((m) => m.cardId)).toEqual(['b']);
+            expect(result.total).toBe(3);
+        });
+
+        it('loads the moves once an hour, shared by concurrent requests', async () => {
+            await Promise.all([ids(), ids({ direction: 'down' })]);
             jest.advanceTimersByTime(HOUR - 1);
-            await fresh.findPriceMovers(new PriceMoverQueryOptions());
+            await ids();
+            expect(repo.findWeeklyMoves).toHaveBeenCalledTimes(1);
             expect(repo.findFlippingPrices).toHaveBeenCalledTimes(1);
 
             jest.advanceTimersByTime(1);
-            await fresh.findPriceMovers(new PriceMoverQueryOptions());
+            await ids();
+            expect(repo.findWeeklyMoves).toHaveBeenCalledTimes(2);
             expect(repo.findFlippingPrices).toHaveBeenCalledTimes(2);
         });
 
-        it('tries the flipping prices again after a failure', async () => {
+        it('loads the moves again after a failure', async () => {
             repo.findFlippingPrices.mockRejectedValueOnce(new Error('timeout'));
 
-            await expect(fresh.findPriceMovers(new PriceMoverQueryOptions())).rejects.toThrow(
-                'timeout'
-            );
-            await fresh.findPriceMovers(new PriceMoverQueryOptions());
-
-            expect(repo.findFlippingPrices).toHaveBeenCalledTimes(2);
-            expect(repo.findPriceMovers).toHaveBeenCalledTimes(1);
+            await expect(ids()).rejects.toThrow('timeout');
+            expect(await ids()).toEqual(['a', 'e', 'b']);
+            expect(repo.findWeeklyMoves).toHaveBeenCalledTimes(2);
         });
     });
 });

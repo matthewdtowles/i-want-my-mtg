@@ -240,10 +240,14 @@ export class CardService {
                 return all.filter((m) => !flipped.has(`${m.cardId}:${m.finish}`));
             });
             this.movesCache = { moves, expires: now + MOVES_CACHE_TTL_MS };
-            // A failed load is not cached: the next request tries again.
-            moves.catch(() => {
+            // A failed or empty load is not cached: the next request tries again.
+            // The ingest writes a new day's prices with no weekly change and fills
+            // the changes in at the end, so on 2026-11-16 a load during that window
+            // would have served no movers for the next hour.
+            const forget = () => {
                 if (this.movesCache?.moves === moves) this.movesCache = undefined;
-            });
+            };
+            moves.then((loaded) => loaded.length === 0 && forget(), forget);
         }
         return this.movesCache.moves;
     }

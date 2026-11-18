@@ -29,6 +29,10 @@ sudo chmod 755 /opt/scripts/ingest-chain.sh
 # one-day-old catalog and so never fired. Remove any copy left by an older deploy.
 sudo rm -f /opt/scripts/ingest-retry.sh
 
+# Install the wrapper every cron job runs through, which mails readable failure reports
+sudo cp ~/cron/cron-mail.sh /opt/scripts/cron-mail.sh
+sudo chmod 755 /opt/scripts/cron-mail.sh
+
 # Install log cleanup script
 sudo cp ~/cron/clean_logs.sh /opt/scripts/clean_logs.sh
 sudo chmod 755 /opt/scripts/clean_logs.sh

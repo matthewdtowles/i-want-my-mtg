@@ -18,14 +18,15 @@ PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
 # Where cron mails job output.
 #
-# Every job below redirects stdout - and only stdout - to its own log. scry
-# sends its whole report there via tracing and writes command failures to
-# stderr, so the only thing that ever reaches this address is a failure: a
-# non-zero exit, a run killed by its timeout, or a run skipped because the
-# previous one is still holding the lock. Successful runs mail nothing.
+# Every job runs through cron-mail.sh, which mails a plain-English report when
+# the job fails: a subject saying what broke, what users see, and whether it
+# retries on its own or needs you (ACTION NEEDED after repeated failures). It
+# sends through the local MTA itself; if that fails it writes the report to
+# stderr, and cron mails that the old way. Successful runs mail nothing.
 #
-# Do not add `2>&1` to these lines - that is what silenced two days of failed
-# ingests. Requires a working local MTA.
+# Each line redirects stdout - and only stdout - to its own log. Do not add
+# `2>&1`: the fallback above rides on stderr, and redirecting it is what once
+# silenced two days of failed ingests. Requires a working local MTA.
 MAILTO=legal@iwantmymtg.net
 
 # MTGJSON pipeline (hourly, gated).
@@ -45,13 +46,13 @@ MAILTO=legal@iwantmymtg.net
 #
 # Hourly costs ~5KB a day and picks up a publish within the hour, whenever it
 # lands. Nothing is mailed on the hours with nothing to do.
-0 * * * * ubuntu /opt/scripts/ingest-chain.sh >> /var/log/i-want-my-mtg/ingestion.log
+0 * * * * ubuntu /opt/scripts/cron-mail.sh hourly-update /opt/scripts/ingest-chain.sh >> /var/log/i-want-my-mtg/ingestion.log
 
 # Price history retention cleanup (weekly, Sunday at 3 AM)
-0 3 * * 0 ubuntu /opt/scripts/scry.sh retention >> /var/log/i-want-my-mtg/retention.log
+0 3 * * 0 ubuntu /opt/scripts/cron-mail.sh retention /opt/scripts/scry.sh retention >> /var/log/i-want-my-mtg/retention.log
 
 # Published tournament-deck ingest (daily at 3:30 AM; fetches the prior 2 days)
-30 3 * * * ubuntu /opt/scripts/scry.sh ingest-decks --days 2 >> /var/log/i-want-my-mtg/decks.log
+30 3 * * * ubuntu /opt/scripts/cron-mail.sh decks /opt/scripts/scry.sh ingest-decks --days 2 >> /var/log/i-want-my-mtg/decks.log
 
 # Data freshness check (daily at 10:00 UTC, well after the ingest window).
 # `scry health` exits non-zero when the newest price row is more than a day
@@ -60,8 +61,8 @@ MAILTO=legal@iwantmymtg.net
 # same-day, and one day old means a single upstream build was skipped.
 # The ingest is now hourly and gated, so there is no slot to sit after; this
 # is simply a daily read of how fresh the catalog ended up.
-0 10 * * * ubuntu /opt/scripts/scry.sh health >> /var/log/i-want-my-mtg/health.log
+0 10 * * * ubuntu /opt/scripts/cron-mail.sh health /opt/scripts/scry.sh health >> /var/log/i-want-my-mtg/health.log
 
 # Log cleanup (weekly, Sunday at 4 AM)
-0 4 * * 0 ubuntu /opt/scripts/clean_logs.sh >> /var/log/i-want-my-mtg/cleanup.log
+0 4 * * 0 ubuntu /opt/scripts/cron-mail.sh log-cleanup /opt/scripts/clean_logs.sh >> /var/log/i-want-my-mtg/cleanup.log
 

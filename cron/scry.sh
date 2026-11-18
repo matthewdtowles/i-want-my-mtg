@@ -30,7 +30,8 @@ echo "Sourcing .env..."
 source /home/ubuntu/.env
 
 if [ -z "${DATABASE_URL:-}" ]; then
-    echo "ERROR: Required variable DATABASE_URL is not set in .env" >&2
+    echo "SUMMARY: Could not start scry: DATABASE_URL is not set in /home/ubuntu/.env" >&2
+    echo "IMPACT: Nothing is being updated until this is fixed." >&2
     exit 1
 fi
 echo "Environment variables validated."
@@ -40,7 +41,9 @@ echo "Environment variables validated."
 # script ends.
 exec 9>"$LOCK_FILE"
 if ! flock -n 9; then
-    echo "ERROR: scry ${COMMAND} is already running (lock ${LOCK_FILE}); skipping this run" >&2
+    echo "SUMMARY: Skipped: the previous scry ${COMMAND} is still running" >&2
+    echo "IMPACT: Nothing was updated by this run." >&2
+    echo "Lock held: ${LOCK_FILE}" >&2
     exit 1
 fi
 
@@ -49,8 +52,8 @@ status=0
 timeout --signal=TERM --kill-after=60s "$TIMEOUT_SECONDS" /opt/scripts/scry "${@:-ingest}" || status=$?
 
 if [ "$status" -eq 124 ]; then
-    echo "ERROR: scry ${*:-ingest} exceeded ${TIMEOUT_SECONDS}s and was killed" >&2
+    echo "SUMMARY: scry ${*:-ingest} ran over ${TIMEOUT_SECONDS}s and was stopped" >&2
 elif [ "$status" -ne 0 ]; then
-    echo "ERROR: scry ${*:-ingest} exited with status ${status}" >&2
+    echo "scry ${*:-ingest} exited with status ${status}." >&2
 fi
 exit "$status"

@@ -38,7 +38,8 @@ echo "$(date -u +%Y-%m-%dT%H:%M:%SZ) ingest-chain: checking for new price data..
 # read as "previous run still going" and answered with exit 0, skipping every
 # hour forever behind a reassuring log line.
 if ! exec 9>"$LOCK_FILE"; then
-    echo "ERROR: cannot open lock file $LOCK_FILE; not running the pipeline." >&2
+    echo "SUMMARY: Could not start: the lock file $LOCK_FILE cannot be opened" >&2
+    echo "IMPACT: Nothing is being updated until this is fixed." >&2
     exit 1
 fi
 if ! flock -n 9; then
@@ -46,12 +47,18 @@ if ! flock -n 9; then
     exit 0
 fi
 
-/opt/scripts/scry.sh has-new-prices >> "$LOG_DIR/ingestion.log" 2>&1
-case $? in
+# Captured rather than streamed so a failure can quote its error lines in the
+# mail; the whole output still lands in the log.
+check_output=$(/opt/scripts/scry.sh has-new-prices 2>&1)
+check=$?
+printf '%s\n' "$check_output" >> "$LOG_DIR/ingestion.log"
+case $check in
     0) echo "ingest-chain: new data upstream, running the full pipeline." ;;
     3) echo "ingest-chain: already current, nothing to do."; exit 0 ;;
     *)
-        echo "ERROR: ingest-chain could not determine whether new price data exists; skipping this hour." >&2
+        echo "SUMMARY: Could not check MTGJSON for new data, so nothing was updated this hour" >&2
+        echo "IMPACT: Nothing changed; the site still shows the last successful update." >&2
+        printf '%s\n' "$check_output" | grep -E '^(Error|ERROR|SUMMARY)' >&2
         exit 1
         ;;
 esac
@@ -63,13 +70,18 @@ esac
 status=0
 
 echo "$(date -u +%Y-%m-%dT%H:%M:%SZ) ingest-chain: ingest"
+# On failure scry prints its own SUMMARY and step table first, so the generic
+# SUMMARY here only becomes the headline when scry died without one.
 if ! /opt/scripts/scry.sh ingest >> "$LOG_DIR/ingestion.log"; then
-    echo "ERROR: ingest failed; skipping price alerts and portfolio summary." >&2
+    echo "SUMMARY: The data update did not finish" >&2
+    echo "IMPACT: Price alerts were not sent and portfolio values were not refreshed; they run only after a complete update." >&2
     exit 1
 fi
 
 # Both of the following are best-effort: neither should mask a successful
-# ingest, but a failure still needs to reach the mail.
+# ingest, but a failure still needs to reach the mail. Neither is retried: the
+# next hour's has-new-prices sees the complete ingest and stops, so each says
+# so in an ACTION line rather than letting the mail promise a retry.
 echo "$(date -u +%Y-%m-%dT%H:%M:%SZ) ingest-chain: price alerts"
 api_key=$(grep '^INTERNAL_API_KEY=' /home/ubuntu/.env | cut -d= -f2- | sed 's/^"//;s/"$//')
 # Bounded, like every other step. The scry.sh calls inherit its `timeout`; this
@@ -83,13 +95,17 @@ api_key=$(grep '^INTERNAL_API_KEY=' /home/ubuntu/.env | cut -d= -f2- | sed 's/^"
 # local API call and well under scry.sh's 2400s.
 if ! curl -sSf --connect-timeout 10 --max-time 600 -X POST -H "x-api-key: $api_key" \
         http://localhost/api/v1/price-alerts/process >> "$LOG_DIR/price-alerts.log"; then
-    echo "ERROR: price-alert processing failed or timed out after a successful ingest." >&2
+    echo "SUMMARY: Price alerts were not sent (the data update itself succeeded)" >&2
+    echo "IMPACT: Users with price alerts were not notified about this update's price changes." >&2
+    echo "ACTION: Not retried on its own; alerts next go out after MTGJSON's next build. To send them now, run the price-alerts curl from /opt/scripts/ingest-chain.sh on the server." >&2
     status=1
 fi
 
 echo "$(date -u +%Y-%m-%dT%H:%M:%SZ) ingest-chain: portfolio summary"
 if ! /opt/scripts/scry.sh portfolio-summary >> "$LOG_DIR/portfolio.log"; then
-    echo "ERROR: portfolio-summary failed after a successful ingest." >&2
+    echo "SUMMARY: Portfolio values were not refreshed (the data update itself succeeded)" >&2
+    echo "IMPACT: Portfolio values and performance still reflect the previous update." >&2
+    echo "ACTION: Not retried on its own; it next runs after MTGJSON's next build. To refresh now, run /opt/scripts/scry.sh portfolio-summary on the server." >&2
     status=1
 fi
 
